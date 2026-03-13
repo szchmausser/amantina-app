@@ -15,6 +15,12 @@ trait ProfileValidationRules
     protected function profileRules(?int $userId = null): array
     {
         return [
+            'cedula' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('users', 'cedula')->ignore($userId),
+            ],
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
         ];
