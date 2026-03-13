@@ -1307,16 +1307,53 @@ php artisan test
 
 > Este documento define el enfoque de autorización adoptado para el proyecto Amantina App. Debe ser seguido estrictamente. No se deben proponer variaciones a este diseño sin justificación explícita.
 
-##### Roles del sistema (exactamente 4, no se esperan más)
+##### 1.1 Estructura técnica de roles y permisos (Hito 2)
 
-| Rol             | Descripción                                               |
-| --------------- | --------------------------------------------------------- |
-| `admin`         | Control total del sistema                                 |
-| `docente`       | Registra jornadas, asistencia y horas de sus estudiantes  |
-| `estudiante`    | Solo lectura — consulta su propio progreso                |
-| `representante` | Solo lectura — consulta la información de su representado |
+**Roles (Gestionado por Spatie Laravel Permissions)**
+Total roles: 4
+- `admin`
+- `docente`
+- `estudiante`
+- `representante`
 
-##### Relación docente-estudiante (IMPORTANTE)
+**Permissions (Gestionado por Spatie Laravel Permissions)**
+Total permissions: 9
+- `users:create` (crear usuarios)
+- `users:view-any` (ver información de otros)
+- `users:view-self` (ver información propia)
+- `users:edit-any` (editar información de otros)
+- `users:edit-self` (editar información propia)
+- `users:delete` (eliminar usuarios)
+- `institution:view`
+- `institution:edit`
+- `institution:update`
+
+**Role-Permission Matrix (Gestionado por Laravel Policies)**
+
+- **admin**: Posee todos los permisos.
+
+- **teacher**:
+  - `users:create` (Un usuario puede crear usuarios de tipo estudiante, mas no usuarios de tipo admin o profesor, este tipo de usuarios solo lo puede crear otro usuario con rol de administrador).
+  - `users:view-any` (ver información de otros).
+  - `users:view-self` (ver información propia).
+  - `users:edit-any` (editar información de usuarios con rol de estudiante o representante, mas no usuarios con rol de profesor o administrador).
+  - `users:edit-self` (editar información propia).
+  - `institution:view` (ver información de la institución).
+
+- **student**:
+  - `users:view-any` (ver información de su representante).
+  - `users:view-self` (ver información propia).
+  - `users:edit-self` (editar información propia).
+  - `institution:view` (ver información de la institución).
+
+- **representative**:
+  - `users:view-any` (ver información de su representado).
+  - `users:view-self` (ver información propia).
+  - `users:edit-any` (editar información de representado solamente).
+  - `users:edit-self` (editar información propia).
+  - `institution:view` (ver información de la institución).
+
+##### 1.2 Relación docente-estudiante (IMPORTANTE)
 
 La relación entre docente y estudiante **no es directa**. Está mediada por la estructura académica:
 
@@ -1326,7 +1363,7 @@ La relación entre docente y estudiante **no es directa**. Está mediada por la 
 
 Esta relación es dinámica: cambia cada año escolar sin romper el historial.
 
-##### Quién registra horas
+##### 1.3 Quién registra horas
 
 **Los estudiantes NUNCA registran sus propias horas.** Solo el `admin` y el `docente` pueden registrar/editar horas, y el docente únicamente para estudiantes de su sección activa.
 
@@ -1365,59 +1402,25 @@ Ejemplos: `users:edit`, `hours:create`, `reports:view`.
 
 **NO se incluye el alcance en el nombre del permiso.** El alcance (sobre quién o qué objeto aplica) es responsabilidad exclusiva de la Policy.
 
-##### Lista completa de permisos
+##### Lista de permisos y asignación (Hito 2)
+
+Los permisos se asignan a los roles siguiendo la matriz definida en los lineamientos (Sección 1.1). La lista de permisos base para este hito es:
 
 ```php
-$permisos = [
-    // Gestión de usuarios
-    'users:view-any',
+$permisos_hito2 = [
     'users:create',
-    'users:edit',
+    'users:view-any',
+    'users:view-self',
+    'users:edit-any',
+    'users:edit-self',
     'users:delete',
-    'users:toggle-active',
-
-    // Registro y gestión de horas
-    'hours:view-any',
-    'hours:create',
-    'hours:edit',
-    'hours:approve',
-    'hours:delete',
-
-    // Reportes
-    'reports:view',
-    'reports:export',
-
-    // Estructura académica (secciones, años escolares, asignaciones)
-    'academic:manage',
+    'institution:view',
+    'institution:edit',
+    'institution:update',
 ];
 ```
 
-##### Asignación de permisos por rol
-
-```php
-$matrix = [
-    'admin' => $permisos, // todos los permisos
-
-    'docente' => [
-        'users:view-any',
-        'hours:view-any',
-        'hours:create',
-        'hours:edit',
-        'hours:approve',
-        'reports:view',
-    ],
-
-    'estudiante' => [
-        'hours:view-any',  // solo los suyos — restringido por Policy
-        'reports:view',    // solo el suyo — restringido por Policy
-    ],
-
-    'representante' => [
-        'hours:view-any',  // solo los de su representado — restringido por Policy
-        'reports:view',
-    ],
-];
-```
+> **Nota crítica:** `users:view-any` y `users:edit-any` son permisos con alcance restringido por Policies para los roles no administrativos. Siempre se evalúan ambas capas.
 
 > **Nota crítica:** `hours:view-any` en `estudiante` y `representante` NO significa que pueden ver todas las horas del sistema. El permiso les da acceso al recurso en general; la Policy restringe qué registros específicos pueden ver. Siempre se evalúan ambas capas.
 
