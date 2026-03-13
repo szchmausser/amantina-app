@@ -27,6 +27,40 @@ Cada hito está organizado de la misma forma para facilitar la lectura y la repl
 
 ---
 
+# Plan de Desarrollo
+
+El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalidad completamente operativa de punta a punta: migracion, modelo, validaciones, seeders, factories, controlador y UI. No se crean todas las migraciones al inicio. El principio es que al finalizar cada hito el sistema tenga algo nuevo y funcional que se pueda usar, probar y validar antes de continuar.
+
+| Prerequisito antes del Hito 0: PHP 8.2+, Composer, Node.js 20+, npm y PostgreSQL instalados en el entorno de desarrollo. |
+| --- |
+
+## Resumen de Hitos
+
+| Hito | Título | Enfoque Principal |
+| --- | --- | --- |
+| 0 | Instalacion y esqueleto base | Setup inicial, auth base, Spatie |
+| 1 | Usuarios: base del sistema | Tabla users definitiva y seeder admin |
+| 2 | Roles y permisos | RBAC con Spatie Permissions |
+| 3 | Autenticacion personalizada | Login con contexto y multi-rol |
+| 4 | CRUD de usuarios | Gestión integral y perfil de usuario |
+| 5 | Estructura academica | Años, lapsos, grados y secciones |
+| 6 | Inscripciones y asignaciones | Vínculo alumno/sección y profesor/sección |
+| 7 | Representantes | Vínculo representante/estudiante |
+| 8 | Informacion de salud | Condiciones médicas y soportes |
+| 9 | Catalogos de configuracion | Actividades y ubicaciones |
+| 10 | Jornadas de campo | Registro central de actividades |
+| 11 | Asistencia y subactividades | Acreditación de horas y evidencias |
+| 12 | Horas externas | Acreditación para transferidos |
+| 13 | Acumulados y dashboards | Progreso visual y KPIs |
+| 14 | Reportes en PDF | Generación de certificados y listados |
+| 15 | Revision y estabilizacion | QA final y seeders demo |
+
+> [!NOTE]
+> Este plan dicta la planificación general del proyecto. Los detalles de cada hito se desarrollan en las secciones siguientes.
+
+---
+
+
 ### Hito 0 — Instalación y esqueleto base
 
 Punto de partida del proyecto. Todo lo que se instala aquí es prerrequisito para todos los hitos siguientes. Al finalizar este hito el proyecto debe estar corriendo en el navegador con el login del starter kit operativo y PostgreSQL conectado.
@@ -1178,6 +1212,32 @@ class InstitutionTest extends TestCase
 ```
 
 
+#### 4. Preparación para Agentes de IA (Meta-desarrollo)
+
+Para garantizar la mantenibilidad y agilidad del desarrollo asistido por Inteligencia Artificial, se han implementado capas de "instrucciones de oro" y herramientas de comunicación nativa entre el código y los agentes que aseguran la coherencia del proyecto a largo plazo.
+
+##### 4.1 — Archivo de Reglas y Convenciones (AGENTS.md)
+
+Se ha creado el archivo raíz `AGENTS.md` que actúa como la "fuente de verdad" para cualquier IA que interactúe con el repositorio. Este archivo es el primer punto de lectura para agentes externos y define:
+- **Idioma**: Código en Inglés, Interfaz en Español.
+- **Arquitectura**: Uso obligatorio de `SoftDeletes` y la entidad centralizada `Institution`.
+- **Contexto**: Referencias indexadas a los documentos de `ia_docs/` para garantizar que la IA comprenda el negocio antes de proponer cambios.
+
+##### 4.2 — Integración de Laravel Boost (MCP)
+
+Se ha instalado y configurado `laravel/boost` para exponer un servidor MCP (Model Context Protocol). Esta integración técnica dota a los agentes de IA (Antigravity, Cursor, Windsurf) de capacidades de introspección profunda:
+- **Base de Datos**: Inspección del esquema y ejecución de queries de lectura.
+- **Rutas**: Listado de endpoints, nombres y middleware asociados.
+- **Tinker**: Ejecución de código PHP en caliente para validar lógica de modelos y controladores.
+
+```bash
+# Instalación del puente IA
+composer require laravel/boost --dev
+php artisan boost:install
+```
+
+---
+
 Ejecución final requerida para cerrar este hito con estado saludable:
 ```bash
 php artisan optimize:clear
@@ -1185,5 +1245,5 @@ php artisan migrate:fresh --seed
 php artisan test
 ```
 
-> **ENTREGA:** La entidad central `Institution` y la tabla hiper-extendida `users` conviven y automatizan parámetros administrativos. Se comprobó la integridad del framework ante omisiones (`SoftDeletes`) y como lección aprendida para cualquier programador que lea el manual, se han establecido fundaciones que deberán restringirse estrictamente en el **Hito 2 (RBAC)**.
+> **ENTREGA:** La entidad central `Institution` y la tabla hiper-extendida `users` conviven y automatizan parámetros administrativos. El proyecto queda técnicamente "blindado" para el desarrollo asistido por IA mediante `AGENTS.md` y `Laravel Boost`. Se han establecido fundaciones que deberán restringirse estrictamente en el **Hito 2 (RBAC)**.
 
