@@ -1,0 +1,18 @@
+{
+    "agents": [
+        "codex",
+        "opencode",
+        "cursor",
+        "gemini"
+    ],
+    "guidelines": true,
+    "herd_mcp": false,
+    "mcp": true,
+    "nightwatch_mcp": false,
+    "sail": false,
+    "skills": [
+        "wayfinder-development",
+        "inertia-react-development",
+        "tailwindcss-development"
+    ]
+}

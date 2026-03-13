@@ -73,10 +73,31 @@ La tabla `users` es la entidad central de autenticación del sistema. Se decidi�
 
 #### 3.1 Registro de Usuarios
 
-El formulario de registro público es exclusivo para estudiantes. Los profesores y representantes son registrados internamente por un administrador del sistema, no tienen acceso al formulario público. Para los estudiantes, el sistema permite dos vías de creación de cuenta: el administrador o profesor puede crear la cuenta con datos mínimos, o el propio estudiante puede registrarse directamente. Esto responde a la realidad operativa de la institución: en algunos casos los profesores tendrán la información antes que los propios alumnos, y en otros el alumno podrá registrarse por su cuenta. Los campos de contacto personal (teléfono y dirección de residencia) son obligatorios cuando el estudiante crea su propia cuenta, y opcionales cuando la cuenta es creada por un administrador o profesor, ya que es probable que en ese momento no dispongan de esos datos personales. Cuando el profesor crea la cuenta, el estudiante puede complementar sus datos desde su propio perfil.
+El sistema diferencia estrictamente entre el autoregistro público y la gestión administrativa de usuarios para equilibrar la usabilidad del estudiante con el control institucional.
 
-> **Actualización del Proceso de Registro (Asignación Institucional Automática):**
-> De acuerdo a las nuevas reglas de negocio, cuando un estudiante se registra por sí mismo e indica que **no** es un estudiante transferido (`is_transfer = false`), el sistema consulta automáticamente la base de datos de datos institucionales (ver Sección 3.3) y asigna el nombre oficial de la institución local al campo `institution_origin` del alumno de forma transparente.
+##### 3.1.1 — Autoregistro Público (`/register`)
+
+Este canal es **exclusivo para estudiantes**. Los roles de profesor, administrador y representante se gestionan internamente para prevenir el acceso no autorizado de personal no verificado.
+
+| Campo | Regla | Razón de Negocio |
+| :--- | :--- | :--- |
+| **Rol por defecto** | `estudiante` | El sistema está diseñado centrífugaMENTE alrededor del alumno; cualquier acceso externo inicial se presume como tal. |
+| **Datos Personales** | **Obligatorios** | Al ser un autoregistro, el usuario conoce sus datos. Exigirlos desde el inicio evita la existencia de "perfiles fantasma" que requerirían labor administrativa posterior para completarlos. |
+| **Estado inicial** | `is_active = true` | Permite la usabilidad inmediata del sistema tras el registro. |
+| **Transferencias** | Lógica condicionada | Si `is_transfer` es `true`, la `institution_origin` es obligatoria. Si es `false`, el sistema **automatiza** el nombre de la institución local desde la tabla `institution` para reducir errores de digitación y simplificar el flujo. |
+
+##### 3.1.2 — Registro Administrativo (`/admin/users/create`)
+
+Permite al Administrador (o Profesor con permisos) crear usuarios con cualquier rol, adaptándose a la realidad operativa del plantel.
+
+| Rol a Crear | Reglas de Validación | Justificación Operativa |
+| :--- | :--- | :--- |
+| **Estudiante** | Flexibilidad total (Nullables) | Es común que al momento de la inscripción académica no se disponga de todos los datos personales (teléfono, dirección). El admin puede crear la ficha básica y el alumno la completa al loguearse. |
+| **Docente / Admin** | Datos Personales Obligatorios | Debido a su nivel de responsabilidad, no deben existir perfiles de personal institucional sin datos de contacto verificados. La lógica de transferencia no aplica para estos roles. |
+| **Representante** | Datos Personales Obligatorios | Similar a los docentes, se requiere información de contacto completa para el seguimiento de los representados. Un mismo usuario puede ser creado/asignado con roles adicionales si aplica (ej: Profesor que es Representante). |
+
+> [!NOTE]
+> Esta arquitectura de registro asegura que la base de datos mantenga integridad referencial y de datos sin sacrificar la agilidad administrativa necesaria durante los periodos de inscripción escolar.
 
 #### 3.2 División de Datos por Responsabilidad
 
