@@ -27,9 +27,8 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register()
     {
-        // Asegurarnos de que el setting existe para el test
-        \Database\Seeders\SystemSettingSeeder::class;
-        $this->seed(\Database\Seeders\SystemSettingSeeder::class);
+        // Asegurarnos de que la institución existe para el test
+        $this->seed(\Database\Seeders\InstitutionSeeder::class);
 
         $response = $this->post(route('register.store'), [
             'cedula' => '12345678',
@@ -50,7 +49,7 @@ class RegistrationTest extends TestCase
             'cedula' => '12345678',
             'is_active' => true,
             'is_transfer' => false,
-            'institution_origin' => 'Amantina de Sucre', // Verificamos auto-asignación
+            'institution_origin' => 'Amantina de Sucre', // Verificamos auto-asignación desde Institution
         ]);
     }
 

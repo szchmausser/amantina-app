@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            SystemSettingSeeder::class,
+            InstitutionSeeder::class,
             UserSeeder::class,
         ]);
     }

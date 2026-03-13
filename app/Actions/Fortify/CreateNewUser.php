@@ -4,7 +4,7 @@ namespace App\Actions\Fortify;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
-use App\Models\SystemSetting;
+use App\Models\Institution;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
@@ -35,7 +35,7 @@ class CreateNewUser implements CreatesNewUsers
             'is_transfer' => $input['is_transfer'] ?? false,
             'institution_origin' => ($input['is_transfer'] ?? false)
                                         ? ($input['institution_origin'] ?? null)
-                                        : SystemSetting::getValue('institution_name'),
+                                        : Institution::first()?->name,
             'is_active' => true,
         ]);
     }
