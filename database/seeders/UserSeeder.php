@@ -17,7 +17,11 @@ class UserSeeder extends Seeder
             'name' => 'Administrador',
             'email' => 'admin@amantina.test',
             'password' => 'password',
+            'phone' => '04121234567',
+            'address' => null,
             'is_active' => true,
+            'is_transfer' => false,
+            'institution_origin' => null,
         ]);
     }
 }

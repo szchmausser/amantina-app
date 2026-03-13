@@ -29,6 +29,7 @@ class User extends Authenticatable implements HasMedia
         'password',
         'cedula',
         'phone',
+        'address',
         'is_active',
         'is_transfer',
         'institution_origin',
