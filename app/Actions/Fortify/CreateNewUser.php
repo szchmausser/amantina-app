@@ -37,6 +37,6 @@ class CreateNewUser implements CreatesNewUsers
                                         ? ($input['institution_origin'] ?? null)
                                         : Institution::first()?->name,
             'is_active' => true,
-        ]);
+        ])->assignRole('alumno');
     }
 }

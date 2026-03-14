@@ -1301,39 +1301,19 @@ php artisan test
 
 > **ENTREGA:** La entidad central `Institution` y la tabla hiper-extendida `users` conviven y automatizan parámetros administrativos. El proyecto queda técnicamente "blindado" para el desarrollo asistido por IA mediante `AGENTS.md` y `Laravel Boost`. Se han establecido fundaciones que deberán restringirse estrictamente en el **Hito 2 (RBAC)**.
 
-### Hito 2 — Roles Técnicos (Spatie)
-
-#### 1 — Lineamientos de arquitectura
-
-> El Hito 2 se centra exclusivamente en la infraestructura técnica necesaria para el Hito 3 (Autenticación Contextual). No se implementarán políticas de acceso complejas todavía. La seguridad se construirá de forma incremental en cada hito subsiguiente.
-
-##### 1.1 Estructura técnica de roles (Spatie)
-
-Se definen los 4 roles básicos del sistema para permitir la lógica de "Login con Contexto". La autenticación no se basa en permisos individuales en este punto, sino en la pertenencia a un rol y su jerarquía de prioridad.
-
-**Roles base:**
-- `admin` (Jerarquía 1 - Máxima)
-- `profesor` (Jerarquía 2)
-- `alumno` (Jerarquía 3)
-- `representante` (Jerarquía 4 - Mínima)
-
-> **Regla de Negocio (Login)**: Si un usuario posee múltiples roles y no especifica un `context` al loguearse, el sistema asignará automáticamente el rol de mayor jerarquía disponible según la lista anterior.
-
-##### 1.2 Entrega técnica (Hito 2)
-
-- **Spatie**: Roles creados y persistidos en la DB.
-- **Seeds**: El administrador raíz hereda el rol `admin`.
-- **Validación**: `php artisan permission:show` muestra la tabla de roles correctamente.
+### [v] Hito 3 — Autenticación Personalizada (Login con Contexto)
+**Estado:** Finalizado ✅
+**Logros:**
+- **Login en Español**: Interfaz traducida íntegramente (`auth/login.tsx`).
+- **Selector de Contexto**: Soporte para parámetro `context` opcional.
+- **Jerarquía de Roles**: Implementación de prioridad automática (`admin` > `profesor` > `alumno` > `representante`).
+- **Seguridad de Contexto**: Validación agresiva en el Listener `SetActiveRoleContext`. El sistema rechaza contextos no autorizados con un error de validación.
+- **Rol por Defecto**: El registro público (`/register`) asigna automáticamente el rol `alumno`.
+- **Persistencia**: Middleware `EnsureRoleContext` para mantener el rol activo ante pérdidas de sesión.
+- **Integración React**: Los componentes reciben `auth.active_role` y `auth.available_roles` vía Inertia.
+- **Calidad**: Suite `LoginContextTest` con cobertura de casos base y seguridad (6/6 PASS).
 
 ---
-
-### Hito 3 — Autenticación Personalizada (Login con Contexto)
-
-> **Contexto**: Un usuario puede tener múltiples roles (ej. un Docente que también es Representante). El login debe permitir elegir el "contexto" de entrada.
-
-- Implementación de `LoginRequest` con campo `context`.
-- Middleware de verificación de rol activo.
-- Interfaz de selección de rol post-login.
 
 ---
 
