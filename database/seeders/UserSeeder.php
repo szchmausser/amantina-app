@@ -22,6 +22,6 @@ class UserSeeder extends Seeder
             'is_active' => true,
             'is_transfer' => false,
             'institution_origin' => null,
-        ]);
+        ])->assignRole('admin');
     }
 }

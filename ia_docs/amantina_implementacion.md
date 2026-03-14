@@ -40,12 +40,12 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 | ---- | ---------------------------- | ----------------------------------------- |
 | 0    | Instalacion y esqueleto base | Setup inicial, auth base, Spatie          |
 | 1    | Usuarios: base del sistema   | Tabla users definitiva y seeder admin     |
-| 2    | Roles y permisos             | RBAC con Spatie Permissions               |
+| 2    | Roles técnicos (Spatie)      | Definición de roles base para Auth        |
 | 3    | Autenticacion personalizada  | Login con contexto y multi-rol            |
-| 4    | CRUD de usuarios             | Gestión integral y perfil de usuario      |
+| 4    | CRUD de usuarios             | Gestión integral y UserPolicy base        |
 | 5    | Estructura academica         | Años, lapsos, grados y secciones          |
-| 6    | Inscripciones y asignaciones | Vínculo alumno/sección y profesor/sección |
-| 7    | Representantes               | Vínculo representante/estudiante          |
+| 6    | Inscripciones y asignaciones | Vínculo académico y lógica de secciones   |
+| 7    | Representantes y RBAC final  | Vínculo familiar y Policies de relación   |
 | 8    | Informacion de salud         | Condiciones médicas y soportes            |
 | 9    | Catalogos de configuracion   | Actividades y ubicaciones                 |
 | 10   | Jornadas de campo            | Registro central de actividades           |
@@ -1301,514 +1301,128 @@ php artisan test
 
 > **ENTREGA:** La entidad central `Institution` y la tabla hiper-extendida `users` conviven y automatizan parámetros administrativos. El proyecto queda técnicamente "blindado" para el desarrollo asistido por IA mediante `AGENTS.md` y `Laravel Boost`. Se han establecido fundaciones que deberán restringirse estrictamente en el **Hito 2 (RBAC)**.
 
-### Hito 2 — Roles y Permisos (RBAC) con Spatie Laravel Permissions + Laravel Policies
+### Hito 2 — Roles Técnicos (Spatie)
 
 #### 1 — Lineamientos de arquitectura
 
-> Este documento define el enfoque de autorización adoptado para el proyecto Amantina App. Debe ser seguido estrictamente. No se deben proponer variaciones a este diseño sin justificación explícita.
+> El Hito 2 se centra exclusivamente en la infraestructura técnica necesaria para el Hito 3 (Autenticación Contextual). No se implementarán políticas de acceso complejas todavía. La seguridad se construirá de forma incremental en cada hito subsiguiente.
 
-##### 1.1 Estructura técnica de roles y permisos (Hito 2)
+##### 1.1 Estructura técnica de roles (Spatie)
 
-**Roles (Gestionado por Spatie Laravel Permissions)**
-Total roles: 4
-- `admin`
-- `docente`
-- `estudiante`
-- `representante`
+Se definen los 4 roles básicos del sistema para permitir la lógica de "Login con Contexto". La autenticación no se basa en permisos individuales en este punto, sino en la pertenencia a un rol y su jerarquía de prioridad.
 
-**Permissions (Gestionado por Spatie Laravel Permissions)**
-Total permissions: 9
-- `users:create` (crear usuarios)
-- `users:view-any` (ver información de otros)
-- `users:view-self` (ver información propia)
-- `users:edit-any` (editar información de otros)
-- `users:edit-self` (editar información propia)
-- `users:delete` (eliminar usuarios)
-- `institution:view`
-- `institution:edit`
-- `institution:update`
+**Roles base:**
+- `admin` (Jerarquía 1 - Máxima)
+- `profesor` (Jerarquía 2)
+- `alumno` (Jerarquía 3)
+- `representante` (Jerarquía 4 - Mínima)
 
-**Role-Permission Matrix (Gestionado por Laravel Policies)**
+> **Regla de Negocio (Login)**: Si un usuario posee múltiples roles y no especifica un `context` al loguearse, el sistema asignará automáticamente el rol de mayor jerarquía disponible según la lista anterior.
+
+##### 1.2 Entrega técnica (Hito 2)
+
+- **Spatie**: Roles creados y persistidos en la DB.
+- **Seeds**: El administrador raíz hereda el rol `admin`.
+- **Validación**: `php artisan permission:show` muestra la tabla de roles correctamente.
+
+---
+
+### Hito 3 — Autenticación Personalizada (Login con Contexto)
+
+> **Contexto**: Un usuario puede tener múltiples roles (ej. un Docente que también es Representante). El login debe permitir elegir el "contexto" de entrada.
+
+- Implementación de `LoginRequest` con campo `context`.
+- Middleware de verificación de rol activo.
+- Interfaz de selección de rol post-login.
+
+---
+
+### Hito 4 — CRUD de Usuarios y UserPolicy Base
+
+> **Contexto**: Gestión administrativa de cuentas. Introducción de la Capa 2 de seguridad (Policies) para el recurso User.
+
+- CRUD completo con Inertia.
+- `UserPolicy` básica (Admin gestiona todo, Docente ve estudiantes).
+- Filtrado de registros según rol.
+
+---
+
+### Hito 5 — Estructura Académica
+
+> **Contexto**: Definición de Años Escolares, Secciones y Grados.
+
+- Modelos y migraciones para `SchoolYear`, `Section`, `Grade`.
+- Gestión de "Año Escolar Activo".
+
+---
+
+### Hito 6 — Inscripciones y Asignaciones
+
+> **Contexto**: Vinculación de usuarios con la estructura académica.
+
+- Tabla `enrollments` (Estudiante <-> Sección).
+- Tabla `teacher_assignments` (Docente <-> Sección).
+- **Importante**: Aquí nace la "autoridad" del docente sobre el estudiante.
+
+---
+
+### Hito 7 — Representantes y RBAC Final (Seguridad Blindada)
+
+#### 1 — Lineamientos de arquitectura
+
+> En este hito se completa la malla de seguridad. Con las relaciones familiares y académicas ya existentes, se implementan las Policies complejas que cruzan datos de múltiples tablas.
+
+##### 1.1 Estructura completa de Roles y Permisos (Final)
+
+**Role-Permission Matrix (Capa 2 — Policies)**
 
 - **admin**: Posee todos los permisos.
+- **profesor**:
+  - `users:create` (solo estudiantes).
+  - `users:view-any` (solo estudiantes de su sección).
+  - `users:edit-any` (solo estudiantes de su sección).
+  - `institution:view`.
+- **alumno**:
+  - `users:view-any` (sus docentes y su representante).
+  - `users:view-self`.
+  - `institution:view`.
+- **representante**:
+  - `users:view-any` (su representado).
+  - `users:edit-any` (su representado - datos limitados).
+  - `institution:view`.
 
-- **teacher**:
-  - `users:create` (Un usuario puede crear usuarios de tipo estudiante, mas no usuarios de tipo admin o profesor, este tipo de usuarios solo lo puede crear otro usuario con rol de administrador).
-  - `users:view-any` (ver información de otros).
-  - `users:view-self` (ver información propia).
-  - `users:edit-any` (editar información de usuarios con rol de estudiante o representante, mas no usuarios con rol de profesor o administrador).
-  - `users:edit-self` (editar información propia).
-  - `institution:view` (ver información de la institución).
+#### 2. Implementación de Policies de Relación
 
-- **student**:
-  - `users:view-any` (ver información de su representante).
-  - `users:view-self` (ver información propia).
-  - `users:edit-self` (editar información propia).
-  - `institution:view` (ver información de la institución).
-
-- **representative**:
-  - `users:view-any` (ver información de su representado).
-  - `users:view-self` (ver información propia).
-  - `users:edit-any` (editar información de representado solamente).
-  - `users:edit-self` (editar información propia).
-  - `institution:view` (ver información de la institución).
-
-##### 1.2 Relación docente-estudiante (IMPORTANTE)
-
-La relación entre docente y estudiante **no es directa**. Está mediada por la estructura académica:
-
-- Un **estudiante** se vincula a una `Section` a través de la tabla `enrollments` (para un año escolar específico).
-- Un **docente** se vincula a una `Section` a través de la tabla `teacher_assignments` (para un año escolar específico).
-- Un docente tiene autoridad sobre un estudiante **solo si ambos están asignados a la misma sección en el periodo académico activo**.
-
-Esta relación es dinámica: cambia cada año escolar sin romper el historial.
-
-##### 1.3 Quién registra horas
-
-**Los estudiantes NUNCA registran sus propias horas.** Solo el `admin` y el `docente` pueden registrar/editar horas, y el docente únicamente para estudiantes de su sección activa.
-
----
-
-#### 2. Principio fundamental del diseño
-
-El sistema usa **dos capas de autorización independientes**. Ninguna reemplaza a la otra.
-
-```
-Capa 1 — Spatie Permission  →  "¿Puede este usuario realizar esta acción en general?"
-Capa 2 — Laravel Policy     →  "¿Puede este usuario realizar esta acción sobre ESTE objeto específico?"
-```
-
-##### Por qué dos capas
-
-Con solo permisos Spatie, para evitar que un docente edite a un admin, se termina creando permisos excesivamente específicos como `edit-student-profile`, `edit-student-academic`, etc. Esto genera:
-
-- Decenas de permisos difíciles de mantener.
-- Lógica de negocio codificada en nombres de strings en la base de datos.
-- Acumulación de `if/else` en los controladores.
-
-Con Policies, la restricción "quién puede actuar sobre quién" vive en una clase PHP testeable, separada del controlador.
-
----
-
-#### 3. Permisos Spatie (Capa 1)
-
-##### Nomenclatura
-
-```
-recurso:accion
-```
-
-Ejemplos: `users:edit`, `hours:create`, `reports:view`.
-
-**NO se incluye el alcance en el nombre del permiso.** El alcance (sobre quién o qué objeto aplica) es responsabilidad exclusiva de la Policy.
-
-##### Lista de permisos y asignación (Hito 2)
-
-Los permisos se asignan a los roles siguiendo la matriz definida en los lineamientos (Sección 1.1). La lista de permisos base para este hito es:
+##### 2.1 UserPolicy — Resolución de alcances
 
 ```php
-$permisos_hito2 = [
-    'users:create',
-    'users:view-any',
-    'users:view-self',
-    'users:edit-any',
-    'users:edit-self',
-    'users:delete',
-    'institution:view',
-    'institution:edit',
-    'institution:update',
-];
-```
-
-> **Nota crítica:** `users:view-any` y `users:edit-any` son permisos con alcance restringido por Policies para los roles no administrativos. Siempre se evalúan ambas capas.
-
-> **Nota crítica:** `hours:view-any` en `estudiante` y `representante` NO significa que pueden ver todas las horas del sistema. El permiso les da acceso al recurso en general; la Policy restringe qué registros específicos pueden ver. Siempre se evalúan ambas capas.
-
----
-
-#### 4. Laravel Policies (Capa 2)
-
-##### Qué es una Policy
-
-Una Policy es una clase PHP ubicada en `app/Policies/`. Cada método representa una acción y recibe como parámetros el usuario autenticado y el objeto sobre el que se quiere actuar. Retorna `true` (permitido) o `false` (denegado).
-
-##### El método `before`
-
-Todas las Policies del sistema deben incluir el método `before`. Este se ejecuta antes que cualquier otro método de la Policy. Se usa para dar acceso total al `admin` sin repetir ese check en cada método.
-
-```php
-public function before(User $auth, string $ability): ?bool
+public function update(User $auth, User $target): bool
 {
-    if ($auth->hasRole('admin')) return true;
-    return null; // null = continuar evaluando el método correspondiente
+    // Un docente solo edita estudiantes de su sección activa
+    if ($auth->hasRole('profesor') && $target->hasRole('alumno')) {
+        return $this->shareActiveSection($auth, $target);
+    }
+    return false;
 }
 ```
 
-##### Registro de Policies
+##### 2.2 HourPolicy — Seguridad Socioproductiva
 
-En `app/Providers/AuthServiceProvider.php`:
-
-```php
-protected $policies = [
-    User::class    => UserPolicy::class,
-    HourLog::class => HourPolicy::class,
-];
-```
-
----
-
-#### 5. UserPolicy — implementación completa
-
-**Archivo:** `app/Policies/UserPolicy.php`
+Aquí se integra la lógica de: "Solo el docente puede registrar horas si el estudiante está en su sección activa".
 
 ```php
-<?php
-
-namespace App\Policies;
-
-use App\Models\User;
-
-class UserPolicy
+private function shareActiveSection(User $docente, User $student): bool
 {
-    /**
-     * El admin pasa todas las verificaciones sin condiciones.
-     */
-    public function before(User $auth, string $ability): ?bool
-    {
-        if ($auth->hasRole('admin')) return true;
-        return null;
-    }
-
-    /**
-     * ¿Puede ver el listado de usuarios?
-     * Solo el docente (además del admin que ya pasó por before).
-     * Estudiantes y representantes no acceden al listado de usuarios.
-     */
-    public function viewAny(User $auth): bool
-    {
-        return $auth->hasRole('docente');
-    }
-
-    /**
-     * ¿Puede ver el perfil de $target?
-     * Docente: puede ver estudiantes.
-     * Cada usuario puede ver su propio perfil.
-     */
-    public function view(User $auth, User $target): bool
-    {
-        if ($auth->id === $target->id) return true;
-
-        return $auth->hasRole('docente') && $target->hasRole('estudiante');
-    }
-
-    /**
-     * ¿Puede editar los datos de $target?
-     * Docente: solo puede editar estudiantes, nunca a otro docente ni al admin.
-     * Nadie más (fuera del admin) puede editar usuarios.
-     */
-    public function update(User $auth, User $target): bool
-    {
-        return $auth->hasRole('docente') && $target->hasRole('estudiante');
-    }
-
-    /**
-     * ¿Puede eliminar a $target?
-     * Nadie fuera del admin puede eliminar usuarios.
-     * (El admin ya pasó por before(), este método solo aplica a los demás.)
-     */
-    public function delete(User $auth, User $target): bool
-    {
-        return false;
-    }
-
-    /**
-     * ¿Puede activar/desactivar a $target?
-     * Solo el admin. (Ya resuelto por before().)
-     */
-    public function toggleActive(User $auth, User $target): bool
-    {
-        return false;
-    }
+    return DB::table('teacher_assignments as ta')
+        ->join('enrollments as e', 'ta.section_id', '=', 'e.section_id')
+        ->where('ta.user_id', $docente->id)
+        ->where('e.user_id', $student->id)
+        ->exists();
 }
 ```
 
----
+#### 3. Reglas de oro del RBAC en Amantina
 
-#### 6. HourPolicy — implementación completa
-
-**Archivo:** `app/Policies/HourPolicy.php`
-
-```php
-<?php
-
-namespace App\Policies;
-
-use App\Models\User;
-use App\Models\HourLog;
-use Illuminate\Support\Facades\DB;
-
-class HourPolicy
-{
-    /**
-     * El admin pasa todas las verificaciones sin condiciones.
-     */
-    public function before(User $auth, string $ability): ?bool
-    {
-        if ($auth->hasRole('admin')) return true;
-        return null;
-    }
-
-    /**
-     * ¿Puede registrar o editar horas para $student?
-     *
-     * Solo el docente puede, y únicamente si comparte sección activa
-     * con el estudiante. Los estudiantes NUNCA registran sus propias horas.
-     */
-    public function manage(User $auth, User $student): bool
-    {
-        if (!$auth->hasRole('docente')) return false;
-
-        return $this->docenteYEstudianteCompartenSeccion($auth, $student);
-    }
-
-    /**
-     * ¿Puede ver las horas de $student?
-     *
-     * Docente:       si comparte sección activa con el estudiante.
-     * Estudiante:    solo sus propias horas.
-     * Representante: solo las horas de su representado.
-     */
-    public function view(User $auth, User $student): bool
-    {
-        if ($auth->hasRole('docente')) {
-            return $this->docenteYEstudianteCompartenSeccion($auth, $student);
-        }
-
-        if ($auth->hasRole('estudiante')) {
-            return $auth->id === $student->id;
-        }
-
-        if ($auth->hasRole('representante')) {
-            return $auth->represented()
-                ->where('id', $student->id)
-                ->exists();
-        }
-
-        return false;
-    }
-
-    /**
-     * ¿Puede aprobar horas de $student?
-     * Solo el docente con relación de sección activa.
-     */
-    public function approve(User $auth, User $student): bool
-    {
-        if (!$auth->hasRole('docente')) return false;
-
-        return $this->docenteYEstudianteCompartenSeccion($auth, $student);
-    }
-
-    /**
-     * Verifica si el docente y el estudiante comparten sección
-     * en el año escolar activo.
-     *
-     * Lógica:
-     * - teacher_assignments vincula docente → sección → año escolar
-     * - enrollments vincula estudiante → sección → año escolar
-     * - Si existe una sección en común en el periodo activo, hay relación.
-     */
-    private function docenteYEstudianteCompartenSeccion(User $docente, User $student): bool
-    {
-        return DB::table('teacher_assignments as ta')
-            ->join('enrollments as e', 'ta.section_id', '=', 'e.section_id')
-            ->join('school_years as sy', 'ta.school_year_id', '=', 'sy.id')
-            ->where('ta.user_id', $docente->id)
-            ->where('e.user_id', $student->id)
-            ->where('sy.is_active', true)
-            ->exists();
-    }
-}
-```
-
----
-
-#### 7. Uso en controladores
-
-### Patrón estándar — siempre dos capas
-
-```php
-public function unaAccion(Request $request, User $target)
-{
-    // Capa 1: permiso general (Spatie)
-    if (!auth()->user()->hasPermissionTo('users:edit')) {
-        abort(403);
-    }
-
-    // Capa 2: ¿puede actuar sobre ESTE objeto? (Policy)
-    $this->authorize('update', $target);
-
-    // Lógica de negocio...
-}
-```
-
-### Ejemplo real: registrar horas
-
-```php
-// HourController.php
-public function store(Request $request)
-{
-    $student = User::findOrFail($request->student_id);
-
-    // Capa 1: ¿tiene permiso general de crear horas?
-    if (!auth()->user()->hasPermissionTo('hours:create')) {
-        abort(403);
-    }
-
-    // Capa 2: ¿puede registrar horas para ESTE estudiante?
-    // Internamente verifica que docente y estudiante compartan sección activa.
-    $this->authorize('manage', $student);
-
-    HourLog::create([
-        'student_id' => $student->id,
-        'teacher_id' => auth()->id(),
-        // ...resto de campos
-    ]);
-
-    return redirect()->back()->with('success', 'Horas registradas.');
-}
-```
-
-### Ejemplo real: ver horas de un estudiante
-
-```php
-// HourController.php
-public function show(User $student)
-{
-    // Capa 1: ¿tiene permiso general de ver horas?
-    if (!auth()->user()->hasPermissionTo('hours:view-any')) {
-        abort(403);
-    }
-
-    // Capa 2: ¿puede ver las horas de ESTE estudiante?
-    // La Policy decide internamente según el rol del autenticado:
-    // - Docente: verifica sección compartida
-    // - Estudiante: verifica que sea el mismo usuario
-    // - Representante: verifica relación de representación
-    $this->authorize('view', $student);
-
-    $hours = HourLog::where('student_id', $student->id)->get();
-
-    return Inertia::render('Hours/Show', [
-        'student' => $student,
-        'hours'   => $hours,
-    ]);
-}
-```
-
-### Ejemplo real: editar usuario (el caso original del problema)
-
-```php
-// UserController.php
-public function update(Request $request, User $user)
-{
-    // Capa 1: ¿tiene permiso general de editar usuarios?
-    if (!auth()->user()->hasPermissionTo('users:edit')) {
-        abort(403);
-    }
-
-    // Capa 2: ¿puede editar a ESTE usuario?
-    // Si el autenticado es docente y $user es admin → Policy retorna false → 403 automático.
-    // Si el autenticado es docente y $user es estudiante → Policy retorna true → continúa.
-    $this->authorize('update', $user);
-
-    $user->update($request->validated());
-
-    return redirect()->route('users.index');
-}
-```
-
----
-
-#### 8. Pasar permisos al frontend React (Inertia)
-
-Las Policies **nunca se evalúan en el frontend**. El backend evalúa y pasa el resultado como prop booleano.
-
-```php
-// UserController.php
-public function show(User $user)
-{
-    return Inertia::render('Users/Show', [
-        'user' => $user,
-        'can'  => [
-            'edit'         => auth()->user()->can('update', $user),
-            'delete'       => auth()->user()->can('delete', $user),
-            'toggleActive' => auth()->user()->can('toggleActive', $user),
-        ],
-    ]);
-}
-```
-
-```tsx
-// Users/Show.tsx
-interface Props {
-    user: User;
-    can: {
-        edit: boolean;
-        delete: boolean;
-        toggleActive: boolean;
-    };
-}
-
-export default function UserShow({ user, can }: Props) {
-    return (
-        <div>
-            <h1>{user.name}</h1>
-            {can.edit && <Button>Editar</Button>}
-            {can.delete && <Button variant="destructive">Eliminar</Button>}
-            {can.toggleActive && <Button>Activar / Desactivar</Button>}
-        </div>
-    );
-}
-```
-
----
-
-#### 9. Reglas que no se deben romper
-
-1. **Nunca omitir la Capa 1.** Aunque la Policy cubra el caso, el check de permiso Spatie debe estar presente. Las dos capas son independientes y complementarias.
-
-2. **Nunca poner lógica de negocio en los controladores.** Todo `if ($auth->hasRole(...))` relacionado con restricciones sobre objetos específicos pertenece a la Policy, no al controlador.
-
-3. **Nunca codificar el alcance en el nombre del permiso.** `users:edit` es correcto. `users:edit-student-academic` es incorrecto — el alcance es responsabilidad de la Policy.
-
-4. **Nunca evaluar Policies en el frontend.** React recibe booleanos calculados por el backend. No recibe los permisos crudos para evaluarlos en el cliente.
-
-5. **El método `before` es obligatorio en cada Policy.** Garantiza que el admin siempre tenga acceso total sin duplicar esa lógica en cada método.
-
-6. **Los estudiantes nunca registran sus propias horas.** Solo `admin` y `docente` pueden crear o editar `HourLog`. Cualquier implementación que permita otra cosa es incorrecta.
-
----
-
-#### 10. Resumen visual del flujo
-
-```
-Request del usuario
-        │
-        ▼
-┌───────────────────────┐
-│  Capa 1: Spatie       │  ¿Tiene el permiso general?
-│  hasPermissionTo()    │  (users:edit, hours:create, etc.)
-└───────────┬───────────┘
-            │ sí
-            ▼
-┌───────────────────────┐
-│  Capa 2: Policy       │  ¿Puede actuar sobre ESTE objeto?
-│  $this->authorize()   │  (¿este user? ¿este student? ¿esta hora?)
-└───────────┬───────────┘
-            │ sí
-            ▼
-    Lógica del controlador
-    (ya autorizado, sin más ifs de roles)
-```
-
-Si cualquier capa retorna `false` → **403 Forbidden** automático.
+1.  **Capa 1 (Spatie)**: Siempre verifica el permiso general (`users:edit`).
+2.  **Capa 2 (Policy)**: Siempre verifica la relación específica (`$this->authorize('update', $user)`).
+3.  **No Exceptions**: El admin es el único que salta la Capa 2 mediante el método `before()` en las Policies.

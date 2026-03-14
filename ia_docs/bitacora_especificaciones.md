@@ -28,10 +28,10 @@ El endpoint de login acepta un parámetro opcional llamado `context`. Este pará
 
 > **Prioridad automática de rol al login:**
 >
-> - `administrator` (máxima prioridad)
-> - `teacher`
-> - `student`
-> - `representative` (mínima prioridad)
+> - `admin` (máxima prioridad)
+> - `profesor`
+> - `alumno`
+> - `representante` (mínima prioridad)
 >
 > Si se envía `context`, el backend valida que el usuario tenga ese rol. Si no lo tiene, retorna error. El contexto se fija para toda la sesión.
 
