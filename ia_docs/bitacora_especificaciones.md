@@ -43,17 +43,17 @@ La decisión de fijar el contexto para toda la sesión, en lugar de permitir cam
 | ------------- | --------------------------------------------------------------------------------- | ---------------------------- |
 | Administrador | Control total del sistema. Gestiona configuración, usuarios, jornadas y reportes. | Profesor                     |
 | Profesor      | Registra jornadas, toma asistencia, carga horas. Responsable de jornadas propias. | Administrador, Representante |
-| Estudiante    | Solo lectura. Ve su propio historial, horas y novedades.                          | No coexiste                  |
-| Representante | Solo lectura. Ve la información del estudiante que representa.                    | Profesor, Administrador      |
+| Alumno        | Solo lectura. Ve su propio historial, horas y novedades.                          | No coexiste                  |
+| Representante | Solo lectura. Ve la información del alumno que representa.                        | Profesor, Administrador      |
 
 #### 2.3 Matriz de Permisos
 
-| Acción                                  | Estudiante | Representante     | Profesor        | Administrador |
+| Acción                                  | Alumno     | Representante     | Profesor        | Administrador |
 | --------------------------------------- | ---------- | ----------------- | --------------- | ------------- |
 | Ver propio perfil y horas               | Sí         | Sí (representado) | Sí              | Sí            |
 | Ver perfil y horas de otros alumnos     | No         | No                | Sí              | Sí            |
 | Editar datos propios (email, tel, foto) | Sí         | Sí                | Sí              | Sí            |
-| Editar datos académicos del estudiante  | No         | No                | Sí              | Sí            |
+| Editar datos académicos del alumno      | No         | No                | Sí              | Sí            |
 | Crear y editar profesores               | No         | No                | No              | Sí            |
 | Crear jornadas                          | No         | No                | Sí              | Sí            |
 | Editar jornada propia                   | No         | No                | Sí              | Sí            |
@@ -69,19 +69,19 @@ La decisión de fijar el contexto para toda la sesión, en lugar de permitir cam
 
 ### 3. Gestión de Usuarios
 
-La tabla `users` es la entidad central de autenticación del sistema. Se decidió mantener una única tabla para todos los tipos de usuario en lugar de tablas separadas por rol (Usuario, Profesor, Estudiante), porque la diferencia de datos entre roles es mínima: solo dos campos son exclusivos de estudiantes transferidos (`institution_origin` e `is_transfer`). Crear tablas separadas solo para sostener estos dos campos introduciría JOINs innecesarios en consultas frecuentes sin ningún beneficio arquitectónico real. La integridad de que esos campos solo apliquen a estudiantes se garantiza por código. Los campos `phone` y `address` son datos de contacto personal presentes en todos los usuarios, aunque su obligatoriedad en el momento del registro depende de quién cree la cuenta, como se detalla en la sección 3.1.
+La tabla `users` es la entidad central de autenticación del sistema. Se decidió mantener una única tabla para todos los tipos de usuario en lugar de tablas separadas por rol (Usuario, Profesor, Alumno), porque la diferencia de datos entre roles es mínima: solo dos campos son exclusivos de alumnos transferidos (`institution_origin` e `is_transfer`). Crear tablas separadas solo para sostener estos dos campos introduciría JOINs innecesarios en consultas frecuentes sin ningún beneficio arquitectónico real. La integridad de que esos campos solo apliquen a alumnos se garantiza por código. Los campos `phone` y `address` son datos de contacto personal presentes en todos los usuarios, aunque su obligatoriedad en el momento del registro depende de quién cree la cuenta, como se detalla en la sección 3.1.
 
 #### 3.1 Registro de Usuarios
 
-El sistema diferencia estrictamente entre el autoregistro público y la gestión administrativa de usuarios para equilibrar la usabilidad del estudiante con el control institucional.
+El sistema diferencia estrictamente entre el autoregistro público y la gestión administrativa de usuarios para equilibrar la usabilidad del alumno con el control institucional.
 
 ##### 3.1.1 — Autoregistro Público (`/register`)
 
-Este canal es **exclusivo para estudiantes**. Los roles de profesor, administrador y representante se gestionan internamente para prevenir el acceso no autorizado de personal no verificado.
+Este canal es **exclusivo para alumnos**. Los roles de profesor, administrador y representante se gestionan internamente para prevenir el acceso no autorizado de personal no verificado.
 
 | Campo | Regla | Razón de Negocio |
 | :--- | :--- | :--- |
-| **Rol por defecto** | `estudiante` | El sistema está diseñado centrífugaMENTE alrededor del alumno; cualquier acceso externo inicial se presume como tal. |
+| **Rol por defecto** | `alumno` | El sistema está diseñado centrífugaMENTE alrededor del alumno; cualquier acceso externo inicial se presume como tal. |
 | **Datos Personales** | **Obligatorios** | Al ser un autoregistro, el usuario conoce sus datos. Exigirlos desde el inicio evita la existencia de "perfiles fantasma" que requerirían labor administrativa posterior para completarlos. |
 | **Estado inicial** | `is_active = true` | Permite la usabilidad inmediata del sistema tras el registro. |
 | **Transferencias** | Lógica condicionada | Si `is_transfer` es `true`, la `institution_origin` es obligatoria. Si es `false`, el sistema **automatiza** el nombre de la institución local desde la tabla `institution` para reducir errores de digitación y simplificar el flujo. |

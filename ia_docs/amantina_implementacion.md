@@ -1318,9 +1318,15 @@ Se definen los 4 roles básicos del sistema para permitir la lógica de "Login c
 - `representante` (Jerarquía 4 - Mínima)
 
 > **Regla de Negocio (Login)**: Si un usuario posee múltiples roles y no especifica un `context` al loguearse, el sistema asignará automáticamente el rol de mayor jerarquía disponible según la lista anterior.
-
-##### 1.2 Entrega técnica (Hito 2)
-
+### [v] Hito 3 — Autenticación con Contexto y Roles Dinámicos
+**Estado:** Finalizado ✅
+**Logros:**
+- Login traducido íntegramente al español.
+- Implementación de **Jerarquía de Roles** (Prioridad automática).
+- Soporte para parámetro `context` en login (Selección manual).
+- Middleware de resiliencia `EnsureRoleContext` para persistencia de sesión.
+- Integración con Inertia para compartir `active_role` globalmente.
+- Suite de tests `LoginContextTest` (4/4 PASS).
 - **Spatie**: Roles creados y persistidos en la DB.
 - **Seeds**: El administrador raíz hereda el rol `admin`.
 - **Validación**: `php artisan permission:show` muestra la tabla de roles correctamente.
