@@ -2,6 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\User;
+use Database\Seeders\InstitutionSeeder;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Features;
 use Tests\TestCase;
@@ -27,8 +30,8 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register()
     {
-        // Asegurarnos de que la institución existe para el test
-        $this->seed(\Database\Seeders\InstitutionSeeder::class);
+        // Asegurarnos de que la institución y roles existen para el test
+        $this->seed([InstitutionSeeder::class, RoleAndPermissionSeeder::class]);
 
         $response = $this->post(route('register.store'), [
             'cedula' => '12345678',
@@ -79,6 +82,8 @@ class RegistrationTest extends TestCase
 
     public function test_registration_as_transfer_with_institution_origin_success()
     {
+        $this->seed([RoleAndPermissionSeeder::class]);
+
         $response = $this->post(route('register.store'), [
             'cedula' => '12345678',
             'name' => 'Test User',
@@ -99,8 +104,22 @@ class RegistrationTest extends TestCase
         ]);
     }
 
-    public function test_new_user_has_student_role_incomplete()
+    public function test_new_user_has_alumno_role()
     {
-        $this->markTestIncomplete('La asignación del rol student se abordará en el Hito 2.');
+        $this->seed([InstitutionSeeder::class, RoleAndPermissionSeeder::class]);
+
+        $this->post(route('register.store'), [
+            'cedula' => '12345678',
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'phone' => '04121234567',
+            'address' => 'Test Address',
+            'is_transfer' => '0',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $user = User::where('email', 'test@example.com')->first();
+        $this->assertTrue($user->hasRole('alumno'));
     }
 }
