@@ -42,7 +42,7 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 | 1    | Usuarios: base del sistema   | Tabla users definitiva y seeder admin     |
 | 2    | Roles técnicos (Spatie)      | Definición de roles base para Auth        |
 | 3    | Autenticacion personalizada  | Login con contexto y multi-rol            |
-| 4    | CRUD de usuarios             | Gestión integral y UserPolicy base        |
+| 4    | CRUD de usuarios             | Gestión integral y UserPolicy base        | ✅ |
 | 5    | Estructura academica         | Años, lapsos, grados y secciones          |
 | 6    | Inscripciones y asignaciones | Vínculo académico y lógica de secciones   |
 | 7    | Representantes y RBAC final  | Vínculo familiar y Policies de relación   |

@@ -82,7 +82,7 @@ Este canal es **exclusivo para alumnos**. Los roles de profesor, administrador y
 | Campo | Regla | Razón de Negocio |
 | :--- | :--- | :--- |
 | **Rol por defecto** | `alumno` | El sistema está diseñado centrífugaMENTE alrededor del alumno; cualquier acceso externo inicial se presume como tal. |
-| **Datos Personales** | **Obligatorios** | Al ser un autoregistro, el usuario conoce sus datos. Exigirlos desde el inicio evita la existencia de "perfiles fantasma" que requerirían labor administrativa posterior para completarlos. |
+| **Datos Personales** | **Obligatorios** | Al ser un autoregistro, el usuario conoce sus datos. Exigirlos desde el inicio **evita la existencia de "perfiles fantasma"** que requerirían labor administrativa posterior para completarlos. El alumno es responsable de la integridad de su ficha de contacto inicial. |
 | **Estado inicial** | `is_active = true` | Permite la usabilidad inmediata del sistema tras el registro. |
 | **Transferencias** | Lógica condicionada | Si `is_transfer` es `true`, la `institution_origin` es obligatoria. Si es `false`, el sistema **automatiza** el nombre de la institución local desde la tabla `institution` para reducir errores de digitación y simplificar el flujo. |
 
@@ -92,9 +92,9 @@ Permite al Administrador (o Profesor con permisos) crear usuarios con cualquier 
 
 | Rol a Crear | Reglas de Validación | Justificación Operativa |
 | :--- | :--- | :--- |
-| **Estudiante** | Flexibilidad total (Nullables) | Es común que al momento de la inscripción académica no se disponga de todos los datos personales (teléfono, dirección). El admin puede crear la ficha básica y el alumno la completa al loguearse. |
-| **Docente / Admin** | Datos Personales Obligatorios | Debido a su nivel de responsabilidad, no deben existir perfiles de personal institucional sin datos de contacto verificados. La lógica de transferencia no aplica para estos roles. |
-| **Representante** | Datos Personales Obligatorios | Similar a los docentes, se requiere información de contacto completa para el seguimiento de los representados. Un mismo usuario puede ser creado/asignado con roles adicionales si aplica (ej: Profesor que es Representante). |
+| **Alumno** | **Flexibilidad total** (Nullables) | Es común que al momento de la inscripción académica la institución no disponga de todos los datos personales (teléfono, dirección) del estudiante. El admin puede crear la ficha básica para **facilitar la carga rápida** y el alumno tiene la responsabilidad de completarla al loguearse. |
+| **Docente / Admin** | **Datos Obligatorios** | Debido a su alto nivel de responsabilidad y contacto con menores, **no deben existir perfiles de personal institucional sin datos verificados**. La institución debe garantizar que sabe cómo contactar a su personal de forma inmediata. |
+| **Representante** | **Datos Obligatorios** | Similar a los docentes, se requiere información de contacto completa para el seguimiento de los representados. La responsabilidad legal del representante exige trazabilidad absoluta desde su creación. |
 
 > [!NOTE]
 > Esta arquitectura de registro asegura que la base de datos mantenga integridad referencial y de datos sin sacrificar la agilidad administrativa necesaria durante los periodos de inscripción escolar.

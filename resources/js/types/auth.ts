@@ -7,11 +7,20 @@ export type User = {
     two_factor_enabled?: boolean;
     created_at: string;
     updated_at: string;
+    cedula?: string;
+    phone?: string | null;
+    address?: string | null;
+    is_transfer?: boolean;
+    institution_origin?: string | null;
+    roles?: { name: string }[];
     [key: string]: unknown;
 };
 
 export type Auth = {
     user: User;
+    active_role: string | null;
+    available_roles: string[];
+    permissions: string[];
 };
 
 export type TwoFactorSetupData = {
