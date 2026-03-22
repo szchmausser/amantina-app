@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -65,7 +66,8 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $isAlumno = $request->role === 'alumno';
+        $roles = $request->input('roles', []);
+        $isAlumno = in_array('alumno', (array) $roles);
 
         $user = User::create([
             'name' => $request->name,
@@ -79,10 +81,22 @@ class UserController extends Controller
             'is_active' => true,
         ]);
 
-        $user->assignRole($request->role);
+        $user->syncRoles($roles);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Usuario creado correctamente.');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(User $user): Response
+    {
+        Gate::authorize('view', $user);
+
+        return Inertia::render('admin/users/show', [
+            'user' => $user->load(['roles.permissions', 'permissions']),
+        ]);
     }
 
     /**
@@ -93,8 +107,9 @@ class UserController extends Controller
         Gate::authorize('update', $user);
 
         return Inertia::render('admin/users/edit', [
-            'user' => $user->load('roles'),
+            'user' => $user->load(['roles.permissions', 'permissions']),
             'roles' => Role::all()->pluck('name'),
+            'allPermissions' => Permission::orderBy('name')->get()->pluck('name'),
         ]);
     }
 
@@ -103,7 +118,8 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $isAlumno = $request->role === 'alumno';
+        $roles = $request->input('roles', []);
+        $isAlumno = in_array('alumno', (array) $roles);
 
         $user->update([
             'name' => $request->name,
@@ -119,7 +135,11 @@ class UserController extends Controller
             $user->update(['password' => Hash::make($request->password)]);
         }
 
-        $user->syncRoles([$request->role]);
+        $user->syncRoles($roles);
+
+        if ($request->has('direct_permissions')) {
+            $user->syncPermissions($request->validated('direct_permissions') ?? []);
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Usuario actualizado correctamente.');

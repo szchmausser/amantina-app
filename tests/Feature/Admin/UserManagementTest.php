@@ -64,7 +64,7 @@ class UserManagementTest extends TestCase
             'cedula' => 'V-12345678',
             'name' => 'Test Alumno',
             'email' => 'alumno@test.com',
-            'role' => 'alumno',
+            'roles' => ['alumno'],
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'phone' => null,
@@ -95,7 +95,7 @@ class UserManagementTest extends TestCase
             'cedula' => 'V-87654321',
             'name' => 'Test Profesor',
             'email' => 'profesor@test.com',
-            'role' => 'profesor',
+            'roles' => ['profesor'],
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'phone' => null, // Required for profesor
@@ -122,7 +122,7 @@ class UserManagementTest extends TestCase
             'cedula' => $user->cedula,
             'name' => 'Updated Name',
             'email' => 'updated@test.com',
-            'role' => 'profesor',
+            'roles' => ['profesor'],
             'phone' => '04121234567',
             'address' => 'Updated Address',
         ];

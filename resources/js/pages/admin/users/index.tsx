@@ -1,11 +1,11 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, Plus, Search, Trash2 } from 'lucide-react';
+import { Edit, Eye, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { index as userIndex, destroy as userDestroy, create as userCreate, edit as userEdit } from '@/routes/admin/users';
+import { index as userIndex, destroy as userDestroy, create as userCreate, edit as userEdit, show as userShow } from '@/routes/admin/users';
 import type { BreadcrumbItem, User } from '@/types';
 
 interface PaginationLink {
@@ -149,7 +149,9 @@ export default function Index({ users, filters, availableRoles }: Props) {
                                     users.data.map((user) => (
                                         <tr key={user.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30">
                                             <td className="whitespace-nowrap px-6 py-4 font-mono">{user.cedula}</td>
-                                            <td className="whitespace-nowrap px-6 py-4 font-medium">{user.name}</td>
+                                            <td className="whitespace-nowrap px-6 py-4 font-medium decoration-neutral-100 hover:underline">
+                                                <Link href={userShow(user.id).url}>{user.name}</Link>
+                                            </td>
                                             <td className="whitespace-nowrap px-6 py-4 text-neutral-500 dark:text-neutral-400">{user.email}</td>
                                              <td className="whitespace-nowrap px-6 py-4">
                                                 {user.roles && user.roles.map((r) => (
@@ -160,6 +162,12 @@ export default function Index({ users, filters, availableRoles }: Props) {
                                             </td>
                                             <td className="whitespace-nowrap px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2">
+                                                    <Button variant="ghost" size="icon" asChild>
+                                                        <Link href={userShow(user.id).url}>
+                                                            <Eye className="h-4 w-4 text-neutral-500" />
+                                                            <span className="sr-only">Ver detalles</span>
+                                                        </Link>
+                                                    </Button>
                                                     <Button variant="ghost" size="icon" asChild>
                                                         <Link href={userEdit(user.id).url}>
                                                             <Edit className="h-4 w-4" />

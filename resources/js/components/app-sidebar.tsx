@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Users } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, Shield, ShieldCheck, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -46,6 +46,22 @@ export function AppSidebar() {
             title: 'Gestión de Usuarios',
             href: userIndex().url,
             icon: Users,
+        });
+    }
+
+    if (auth.permissions?.includes('roles.view')) {
+        mainNavItems.push({
+            title: 'Gestión de Roles',
+            href: '/admin/roles',
+            icon: Shield,
+        });
+    }
+
+    if (auth.permissions?.includes('permissions.view')) {
+        mainNavItems.push({
+            title: 'Gestión de Permisos',
+            href: '/admin/permissions',
+            icon: ShieldCheck,
         });
     }
 

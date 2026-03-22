@@ -37,7 +37,7 @@ export default function Create({ roles }: Props) {
         cedula: '',
         phone: '',
         address: '',
-        role: '',
+        roles: [] as string[],
         password: '',
         password_confirmation: '',
         is_transfer: false,
@@ -51,16 +51,22 @@ export default function Create({ roles }: Props) {
         post(userStore().url);
     };
 
-    const handleRoleChange = (value: string) => {
+    const toggleRole = (roleName: string) => {
+        const newRoles = data.roles.includes(roleName)
+            ? data.roles.filter((r) => r !== roleName)
+            : [...data.roles, roleName];
+
+        const isAlumno = newRoles.includes('alumno');
+
         setData((previousData) => ({
             ...previousData,
-            role: value,
-            institution_origin: value !== 'alumno' ? '' : previousData.institution_origin,
-            is_transfer: value !== 'alumno' ? false : previousData.is_transfer,
+            roles: newRoles,
+            institution_origin: !isAlumno ? '' : previousData.institution_origin,
+            is_transfer: !isAlumno ? false : previousData.is_transfer,
         }));
     };
 
-    const isAlumno = data.role === 'alumno';
+    const isAlumno = data.roles.includes('alumno');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -102,21 +108,23 @@ export default function Create({ roles }: Props) {
                             <p className="text-xs text-neutral-500">Datos de identificación y contacto institucional.</p>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="role">Rol en el Sistema</Label>
-                            <Select value={data.role} onValueChange={handleRoleChange}>
-                                <SelectTrigger className={errors.role ? 'border-red-500' : ''}>
-                                    <SelectValue placeholder="Seleccionar rol" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {roles.map((r) => (
-                                        <SelectItem key={r} value={r}>
-                                            {r.charAt(0).toUpperCase() + r.slice(1)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <InputError message={errors.role} />
+                        <div className="col-span-full space-y-3">
+                            <Label>Roles en el Sistema</Label>
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                {roles.map((r) => (
+                                    <div key={r} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`role-${r}`}
+                                            checked={data.roles.includes(r)}
+                                            onCheckedChange={() => toggleRole(r)}
+                                        />
+                                        <Label htmlFor={`role-${r}`} className="cursor-pointer capitalize">
+                                            {r}
+                                        </Label>
+                                    </div>
+                                ))}
+                            </div>
+                            <InputError message={errors.roles} />
                         </div>
 
                         <div className="space-y-2">
@@ -179,7 +187,7 @@ export default function Create({ roles }: Props) {
                             <InputError message={errors.address} />
                         </div>
 
-                        {data.role === 'alumno' && (
+                        {isAlumno && (
                             <div className="col-span-full space-y-4 rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800/50">
                                 <div className="flex items-center space-x-2">
                                     <Checkbox

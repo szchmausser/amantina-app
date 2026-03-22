@@ -1343,6 +1343,30 @@ Se definen los 4 roles básicos del sistema para permitir la lógica de "Login c
 - `UserPolicy` básica (Admin gestiona todo, Docente ve estudiantes).
 - Filtrado de registros según rol.
 
+#### [ ] En Desarrollo: Refactorización y Seguridad Blindada
+
+Actualmente se está trabajando en transformar el CRUD básico en un sistema de gestión multi-rol robusto:
+
+1.  **Soporte Multi-rol (Backend):**
+    *   Migración de lógica de rol único (`string`) a múltiples roles (`array`).
+    *   Uso de `$user->syncRoles()` en `UserController` para permitir que un usuario sea, por ejemplo, **Profesor y Representante** simultáneamente.
+    *   Ajuste de `StoreUserRequest` y `UpdateUserRequest` para validar el array de roles.
+
+2.  **Capa de Seguridad (UserPolicy):**
+    *   Implementación estricta de `viewAny`, `create`, `update` y `delete` basada en permisos de Spatie (`users.view`, `users.create`, etc.).
+    *   Configuración de `Gate::before` para que el rol `admin` mantenga control total sin restricciones de Policy.
+
+3.  **Interfaz Multi-rol (Frontend):**
+    *   Sustitución del selector de rol único por un sistema de selección múltiple (Checkboxes) en los formularios de creación y edición.
+    *   Actualización de la tabla de usuarios (`index.tsx`) para mostrar todos los roles asignados mediante Badges.
+
+4.  **Mejoras de UX y Feedback:**
+    *   **Limpieza Automática:** El formulario ahora limpia campos condicionales (`is_transfer`, `institution_origin`) al cambiar de rol para evitar errores de validación "invisibles".
+    *   **Alertas Globales:** Implementación de un componente de alertas en el layout y en el formulario para mostrar errores de validación y mensajes de éxito del backend.
+
+5.  **Integridad de Datos (SoftDeletes):**
+    *   Implementación de **índices únicos parciales** en la base de datos (PostgreSQL) para permitir registrar nuevamente a un usuario con la misma cédula o email si el registro anterior fue eliminado vía SoftDelete.
+
 ---
 
 ### Hito 5 — Estructura Académica
@@ -1419,8 +1443,40 @@ private function shareActiveSection(User $docente, User $student): bool
 }
 ```
 
-#### 3. Reglas de oro del RBAC en Amantina
+---
 
-1.  **Capa 1 (Spatie)**: Siempre verifica el permiso general (`users:edit`).
-2.  **Capa 2 (Policy)**: Siempre verifica la relación específica (`$this->authorize('update', $user)`).
-3.  **No Exceptions**: El admin es el único que salta la Capa 2 mediante el método `before()` en las Policies.
+### Hito 4.2 — Gestión de Roles y Permisos (RBAC Extendido)
+
+Este sub-hito completa la infraestructura de control de acceso permitiendo la gestión visual de los permisos asignados a cada rol y la asignación de permisos directos a usuarios individuales, sin permitir la creación/eliminación de las entidades base desde la UI por seguridad.
+
+#### Archivos involucrados
+
+| Archivo | Acción | Motivo |
+|---------|--------|--------|
+| `app/Http/Controllers/Admin/RoleController.php` | Crear | Listado y asignación de permisos a roles |
+| `app/Http/Controllers/Admin/PermissionController.php` | Crear | Listado informativo de permisos y roles |
+| `app/Http/Requests/Admin/UpdateRoleRequest.php` | Crear | Validación de sincronización de permisos |
+| `resources/js/pages/admin/roles/index.tsx` | Crear | UI de listado de roles con permisos agrupados |
+| `resources/js/pages/admin/roles/edit.tsx` | Crear | UI de edición de permisos por rol |
+| `resources/js/pages/admin/permissions/index.tsx` | Crear | UI informativa de matriz de permisos |
+| `resources/js/pages/admin/users/edit.tsx` | Modificar | Sección de permisos directos para el usuario |
+| `tests/Feature/Admin/RoleManagementTest.php` | Crear | Tests de CRUD restringido de roles |
+| `tests/Feature/Admin/PermissionBasedAccessTest.php` | Crear | Tests de herencia y permisos directos |
+| `resources/js/pages/admin/users/show.tsx` | Crear | Vista de solo lectura de detalles del usuario |
+| `tests/Feature/Admin/UserShowTest.php` | Crear | Tests de acceso a la vista de detalles |
+
+#### Pasos de Implementación
+
+1. **Backend**: Se implementaron controladores que utilizan `Spatie` para sincronizar permisos y se añadió el método `show` para visualizar perfiles detallados. Se restringió la creación/eliminación de roles para mantener la integridad del código que depende de nombres de roles fijos.
+2. **Frontend**: Se crearon vistas en React utilizando componentes de `shadcn/ui` (Checkbox, Badge, Card) para visualizar los permisos agrupados por módulos (ej: `users.*`, `roles.*`) y una vista dedicada de detalles (`show.tsx`).
+3. **Persistencia**: Se habilitó la carga expansiva (`load('roles.permissions', 'permissions')`) para que la UI pueda discernir entre permisos heredados del rol (deshabilitados en edición de usuario) y permisos directos.
+
+#### ENTREGA
+- Panel de Roles donde se pueden editar los permisos de `admin`, `profesor`, etc.
+- Panel de Permisos para ver qué roles tienen acceso a qué funcionalidades.
+- Sección "Permisos Directos" en la edición de cada usuario.
+- **Vista de Detalles de Usuario**: Permite consultar toda la información de un usuario sin entrar en modo edición, con visualización clara de sus capacidades.
+- **Vista de Detalles de Rol**: Permite visualizar los permisos asociados a cada rol de forma organizada por módulos.
+- **Navegación Mejorada**: Se añadieron enlaces directos a la gestión de roles y permisos en la barra lateral.
+- **Roles Múltiples**: Soporte completo para asignar varios roles a un mismo usuario desde los formularios de creación y edición.
+- Cobertura de tests completa para todos los escenarios de acceso y gestión de roles/permisos.

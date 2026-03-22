@@ -23,7 +23,8 @@ class StoreUserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $isAlumno = $this->input('role') === 'alumno';
+        $roles = $this->input('roles', []);
+        $isAlumno = in_array('alumno', (array) $roles);
 
         return [
             'cedula' => [
@@ -42,7 +43,8 @@ class StoreUserRequest extends FormRequest
             ],
             'phone' => [$isAlumno ? 'nullable' : 'required', 'string', 'max:20'],
             'address' => [$isAlumno ? 'nullable' : 'required', 'string', 'max:500'],
-            'role' => ['required', 'string', 'exists:roles,name'],
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => ['string', 'exists:roles,name'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'is_transfer' => ['nullable', 'boolean'],
             'institution_origin' => ['nullable', 'string', 'max:255'],
@@ -59,7 +61,8 @@ class StoreUserRequest extends FormRequest
         return [
             'cedula.unique' => 'Esta cédula ya está registrada.',
             'email.unique' => 'Este correo electrónico ya está registrado.',
-            'role.exists' => 'El rol seleccionado no es válido.',
+            'roles.required' => 'Debes asignar al menos un rol.',
+            'roles.*.exists' => 'Uno de los roles seleccionados no es válido.',
             'phone.required' => 'El teléfono es obligatorio para este tipo de usuario.',
             'address.required' => 'La dirección es obligatoria para este tipo de usuario.',
         ];

@@ -24,6 +24,8 @@ El sistema maneja cuatro roles: Administrador, Profesor, Alumno y Representante.
 
 El sistema utiliza correo electrónico y contraseña como mecanismo de login. El manejo de roles y permisos se implementa mediante Spatie Laravel Permissions, una librería madura y ampliamente adoptada en el ecosistema Laravel que permite asignar múltiples roles a un mismo usuario y definir permisos granulares por rol. Esta elección técnica es deliberada: un ENUM simple en la tabla `users` no podría manejar el caso de un usuario con múltiples roles simultáneos, como un profesor que también es administrador o representante.
 
+Desde el panel de Administración, los administradores pueden gestionar la asignación de permisos a cada rol y otorgar permisos directos a usuarios específicos para casos excepcionales, garantizando una flexibilidad total en el control de acceso sin comprometer la integridad de los roles base.
+
 El endpoint de login acepta un parámetro opcional llamado `context`. Este parámetro existe para resolver un caso de uso real y concreto: un profesor que además es representante de un estudiante necesita poder elegir con qué capacidad desea operar en el sistema en cada sesión. Si no se envía `context`, el backend aplica automáticamente una jerarquía de prioridad:
 
 > **Prioridad automática de rol al login:**
