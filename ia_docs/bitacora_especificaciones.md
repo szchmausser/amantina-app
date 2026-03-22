@@ -2,7 +2,7 @@
 
 ## Especificaciones del Sistema
 
-**Versión 6.0**
+**Versión 6.1** (Refinamiento de Autorización y Consistencia UI)
 
 _Sistema de registro, seguimiento y reporte de horas prácticas acumuladas en la asignatura Socioproductiva._
 
@@ -37,7 +37,7 @@ El endpoint de login acepta un parámetro opcional llamado `context`. Este pará
 >
 > Si se envía `context`, el backend valida que el usuario tenga ese rol. Si no lo tiene, retorna error. El contexto se fija para toda la sesión.
 
-La decisión de fijar el contexto para toda la sesión, en lugar de permitir cambio de rol en caliente, es una decisión de simplicidad arquitectónica. Reduce la complejidad del estado de la sesión tanto en el backend como en el frontend, y cubre el caso de uso sin sobreingeniería.
+La decisión de fijar el contexto para toda la sesión, en lugar de permitir cambio de rol en caliente, es una decisión de simplicidad arquitectónica. El sistema asegura que si el usuario pierde la sesión física o recarga la página, el contexto se recupera mediante un middleware dedicado (`EnsureRoleContext`), garantizando que la experiencia de usuario sea consistente y que los permisos se evalúen siempre contra el rol activo.
 
 #### 2.2 Definición de Roles
 
@@ -67,7 +67,13 @@ La decisión de fijar el contexto para toda la sesión, en lugar de permitir cam
 | Ver información de salud propia         | Sí         | Sí (representado) | Sí              | Sí            |
 | Registrar información de salud          | No         | No                | Sí (a su cargo) | Sí            |
 | Generar reportes                        | No         | No                | Parcial         | Sí            |
-| Gestionar configuración                 | No         | No                | No              | Sí            |
+| Gestión de configuración / Institución    | No         | No                | No              | Sí            |
+| Gestión de Roles y Permisos             | No         | No                | No              | Sí            |
+
+> [!IMPORTANT]
+> A partir de la Versión 6.1, la seguridad se ha reforzado con una **doble capa de validación**:
+> 1.  **Backend (Middleware + Gates/Policies):** Todas las acciones de escritura (`store`, `update`, `delete`) en el panel administrativo están protegidas por `Gate::authorize`.
+> 2.  **Frontend (Conditional Rendering):** La interfaz de usuario oculta proactivamente enlaces de navegación (Sidebar) y botones de acción (Editar, Borrar) para usuarios que no poseen el permiso correspondiente, evitando intentos de acceso fallidos y mejorando la UX.
 
 ### 3. Gestión de Usuarios
 

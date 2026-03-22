@@ -42,7 +42,7 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 | 1    | Usuarios: base del sistema   | Tabla users definitiva y seeder admin     |
 | 2    | Roles técnicos (Spatie)      | Definición de roles base para Auth        |
 | 3    | Autenticacion personalizada  | Login con contexto y multi-rol            |
-| 4    | CRUD de usuarios             | Gestión integral y UserPolicy base        | ✅ |
+| 4    | CRUD de usuarios y RBAC      | Gestión integral y Seguridad Blindada     | ✅ |
 | 5    | Estructura academica         | Años, lapsos, grados y secciones          |
 | 6    | Inscripciones y asignaciones | Vínculo académico y lógica de secciones   |
 | 7    | Representantes y RBAC final  | Vínculo familiar y Policies de relación   |
@@ -1335,37 +1335,24 @@ Se definen los 4 roles básicos del sistema para permitir la lógica de "Login c
 
 ---
 
-### Hito 4 — CRUD de Usuarios y UserPolicy Base
+### [v] Hito 4 — CRUD de Usuarios y Seguridad Blindada
+**Estado:** Finalizado ✅
 
-> **Contexto**: Gestión administrativa de cuentas. Introducción de la Capa 2 de seguridad (Policies) para el recurso User.
+Este hito transformó la gestión básica de usuarios en un sistema robusto, multi-rol y altamente seguro, sentando las bases para el control administrativo de la institución.
 
-- CRUD completo con Inertia.
-- `UserPolicy` básica (Admin gestiona todo, Docente ve estudiantes).
-- Filtrado de registros según rol.
-
-#### [ ] En Desarrollo: Refactorización y Seguridad Blindada
-
-Actualmente se está trabajando en transformar el CRUD básico en un sistema de gestión multi-rol robusto:
-
-1.  **Soporte Multi-rol (Backend):**
-    *   Migración de lógica de rol único (`string`) a múltiples roles (`array`).
-    *   Uso de `$user->syncRoles()` en `UserController` para permitir que un usuario sea, por ejemplo, **Profesor y Representante** simultáneamente.
-    *   Ajuste de `StoreUserRequest` y `UpdateUserRequest` para validar el array de roles.
-
-2.  **Capa de Seguridad (UserPolicy):**
-    *   Implementación estricta de `viewAny`, `create`, `update` y `delete` basada en permisos de Spatie (`users.view`, `users.create`, etc.).
-    *   Configuración de `Gate::before` para que el rol `admin` mantenga control total sin restricciones de Policy.
-
-3.  **Interfaz Multi-rol (Frontend):**
-    *   Sustitución del selector de rol único por un sistema de selección múltiple (Checkboxes) en los formularios de creación y edición.
-    *   Actualización de la tabla de usuarios (`index.tsx`) para mostrar todos los roles asignados mediante Badges.
-
-4.  **Mejoras de UX y Feedback:**
-    *   **Limpieza Automática:** El formulario ahora limpia campos condicionales (`is_transfer`, `institution_origin`) al cambiar de rol para evitar errores de validación "invisibles".
-    *   **Alertas Globales:** Implementación de un componente de alertas en el layout y en el formulario para mostrar errores de validación y mensajes de éxito del backend.
-
-5.  **Integridad de Datos (SoftDeletes):**
-    *   Implementación de **índices únicos parciales** en la base de datos (PostgreSQL) para permitir registrar nuevamente a un usuario con la misma cédula o email si el registro anterior fue eliminado vía SoftDelete.
+**Logros:**
+- **Soporte Multi-rol**: Migración exitosa a `syncRoles()` permitiendo que un usuario posea múltiples identidades (ej: Profesor + Representante).
+- **CRUD Administrativo**: Se implementó la creación y edición de usuarios con limpieza automática de campos condicionales (`is_transfer`, `institution_origin`).
+- **Vista de Detalles (Show)**: Se creó una ficha de usuario de solo lectura para consulta rápida sin riesgo de edición accidental.
+- **Refinamiento de Autorización (Seguridad Capa 2)**:
+    - **Controladores Protegidos**: Uso de `Gate::authorize()` en todos los métodos de escritura (`store`, `update`, `delete`).
+    - **Alineación de Requests**: `UpdateUserRequest` ahora delega a `UserPolicy`, permitiendo el autocontrol de perfil de forma segura.
+    - **Frontend Inteligente**: Los botones de acción y enlaces del sidebar se ocultan dinámicamente según los permisos del usuario logueado.
+- **Consistencia Visual**: Todas las vistas del módulo (`index`, `show`, `edit`) se refactorizaron para seguir el estándar de diseño de "secciones y badges" introducido en Permisos.
+- **Integridad post-eliminación**: Implementación de índices únicos parciales en PostgreSQL para permitir el re-registro de usuarios previamente borrados (SoftDelete).
+- **Calidad y Verificación**:
+    - Suite `UserManagementTest` (CRUD base).
+    - Suite `AuthorizationVulnerabilityTest` (Seguridad y bloqueos).
 
 ---
 
