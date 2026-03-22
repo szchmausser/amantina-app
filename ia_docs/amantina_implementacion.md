@@ -1467,3 +1467,36 @@ Este sub-hito completa la infraestructura de control de acceso permitiendo la ge
 - **Navegación Mejorada**: Se añadieron enlaces directos a la gestión de roles y permisos en la barra lateral.
 - **Roles Múltiples**: Soporte completo para asignar varios roles a un mismo usuario desde los formularios de creación y edición.
 - Cobertura de tests completa para todos los escenarios de acceso y gestión de roles/permisos.
+
+---
+
+### Hito 5 — Estructura Académica (Base Jerárquica)
+
+**Contexto**: Definición de la jerarquía que organiza la vida escolar: Años Escolares, Lapsos, Grados y Secciones.
+
+#### Archivos involucrados
+
+| Archivo | Acción | Motivo |
+|---------|--------|--------|
+| `app/Models/AcademicYear.php` | Crear | Entidad raíz del ciclo escolar |
+| `app/Models/SchoolTerm.php` | Crear | División temporal (Lapsos) |
+| `app/Models/Grade.php` | Crear | Grados académicos (1ero a 5to) |
+| `app/Models/Section.php` | Crear | Grupos específicos de alumnos |
+| `app/Http/Controllers/Admin/*` | Crear | Controladores para gestión administrativa |
+| `app/Http/Requests/Admin/*` | Crear | Validaciones jerárquicas y de unicidad |
+| `database/seeders/AcademicYearSeeder.php` | Crear | Estructura base para desarrollo |
+
+#### Pasos de Implementación
+
+1.  **Modelos y Migraciones**: Se crearon las 4 entidades base con `SoftDeletes`. Se implementó la denormalización de `academic_year_id` en la tabla `sections` para optimizar consultas de filtrado por año sin múltiples joins.
+2.  **Lógica de Negocio**: 
+    - Se implementó un "único año activo" a nivel de controlador (`AcademicYearController`), asegurando que al activar uno, los demás se desactiven automáticamente.
+    - Se definieron relaciones Eloquent completas (HasMany, BelongsTo) para navegar la jerarquía.
+3.  **Seguridad (Permissions)**: Se agregaron 16 nuevos permisos al `RoleAndPermissionSeeder` cubriendo el CRUD de cada una de las 4 nuevas entidades, asignados por defecto al rol `admin`.
+4.  **Backend (Controllers & Requests)**: Se implementaron controladores que manejan el filtrado por `academic_year_id` y `grade_id` mediante query strings, facilitando la navegación recursiva en el frontend.
+
+#### ENTREGA
+- Estructura académica completa en base de datos.
+- Seeder operativo que genera el año actual con 3 lapsos, 5 grados y 2 secciones por grado.
+- API/Controllers listos para ser consumidos por Inertia.
+- Validaciones robustas que impiden solapamientos y mantienen la integridad referencial.

@@ -2,7 +2,7 @@
 
 ## Especificaciones del Sistema
 
-**Versión 6.1** (Refinamiento de Autorización y Consistencia UI)
+**Versión 6.2** (Estructura Académica e Identidad Visual Consistente)
 
 _Sistema de registro, seguimiento y reporte de horas prácticas acumuladas en la asignatura Socioproductiva._
 
@@ -16,7 +16,19 @@ El sistema no es un gestor escolar general. Está deliberadamente acotado a una 
 
 > **Fuera de alcance:** calificaciones formales de otras materias, comunicación entre usuarios, planificación de actividades futuras, gestión de representantes como sistema independiente, y cualquier funcionalidad propia de un sistema de gestión escolar completo.
 
-### 2. Roles y Autenticación
+### 2. Identidad Visual y Excelencia en UI
+
+El sistema no solo debe ser funcional, sino que debe proyectar una imagen de software premium y moderno. Se han establecido los siguientes pilares de diseño que deben respetarse en todos los módulos:
+
+- **Estructura Basada en Cards**: La información se organiza en tarjetas claras, con cabeceras que contienen la acción principal (ej: editar) y el contexto (ej: Año Académico 2025).
+- **Consistencia de Elementos**: El uso de badges para estados, íconos de Lucide para clarificar acciones, y tipografías consistentes (Inter/Outfit) es obligatorio.
+- **Micro-interacciones**: Se deben incluir transiciones suaves y estados de carga (skeletons) para mejorar la percepción de velocidad.
+- **Paletas de Color Curadas**: Se evitan los colores básicos, usando en su lugar paletas HSL armoniosas y respetando el modo oscuro del sistema.
+- **Navegación Intuitiva**: Menús laterales con indicadores claros de la sección activa y migas de pan (breadcrumbs) precisas.
+
+---
+
+### 3. Roles y Autenticación
 
 El sistema maneja cuatro roles: Administrador, Profesor, Alumno y Representante. Estos roles no son categorías arbitrarias, sino que reflejan los cuatro tipos de actores reales que interactúan con la información del sistema, cada uno con necesidades y responsabilidades distintas.
 
@@ -75,7 +87,7 @@ La decisión de fijar el contexto para toda la sesión, en lugar de permitir cam
 > 1.  **Backend (Middleware + Gates/Policies):** Todas las acciones de escritura (`store`, `update`, `delete`) en el panel administrativo están protegidas por `Gate::authorize`.
 > 2.  **Frontend (Conditional Rendering):** La interfaz de usuario oculta proactivamente enlaces de navegación (Sidebar) y botones de acción (Editar, Borrar) para usuarios que no poseen el permiso correspondiente, evitando intentos de acceso fallidos y mejorando la UX.
 
-### 3. Gestión de Usuarios
+### 4. Gestión de Usuarios
 
 La tabla `users` es la entidad central de autenticación del sistema. Se decidió mantener una única tabla para todos los tipos de usuario en lugar de tablas separadas por rol (Usuario, Profesor, Alumno), porque la diferencia de datos entre roles es mínima: solo dos campos son exclusivos de alumnos transferidos (`institution_origin` e `is_transfer`). Crear tablas separadas solo para sostener estos dos campos introduciría JOINs innecesarios en consultas frecuentes sin ningún beneficio arquitectónico real. La integridad de que esos campos solo apliquen a alumnos se garantiza por código. Los campos `phone` y `address` son datos de contacto personal presentes en todos los usuarios, aunque su obligatoriedad en el momento del registro depende de quién cree la cuenta, como se detalla en la sección 3.1.
 
@@ -141,7 +153,7 @@ La arquitectura de la entidad está conformada por:
 
 > **Consideración de Seguridad Crítica (Futuro Hito 2):** Debido a que la tabla `institution` almacena los identificadores globales de la aplicación, **esta información es altamente crítica**. Para el Hito 2, esta sección de Datos Institucionales deberá ser restringida estrictamente a través de `Spatie Permissions`, asegurando que su visualización y edición solo pueda ser realizada por usuarios con rol de `Administrador`. No abordar esto genera una vulnerabilidad organizativa grave.
 
-### 4. Representantes
+### 5. Representantes
 
 La incorporación del rol de representante responde a una solicitud directa del cliente: los representantes deben poder consultar en el sistema el historial y estado de horas de sus representados. Es un actor de solo lectura cuya única capacidad es ver la información de su representado, sin poder modificar nada.
 
@@ -172,7 +184,7 @@ Es un catálogo configurable de tipos de parentesco (Padre, Madre, Tutor legal, 
 
 Un profesor activo puede ser simultáneamente representante de un estudiante. Este caso es real: uno de los directivos de la institucion es a la vez representante de un estudiante. El sistema lo resuelve permitiendo que un usuario tenga ambos roles asignados en Spatie, y gestionando el contexto de sesión al momento del login mediante el parámetro `context` descrito en la sección de autenticación, el cual permitira a ese mismo usuario loguearse como desee en el momento, como administrador, como profesor o como representante, en el caso de que tenga asignados esos roles.
 
-### 5. Información de Salud del Estudiante
+### 6. Información de Salud del Estudiante
 
 La información de salud se incorporó porque los estudiantes realizan actividades físicas en campo, y el profesor necesita conocer condiciones médicas relevantes para asignar actividades acordes a cada alumno. No es para eximir al estudiante de cumplir sus horas, sino para garantizar que las actividades asignadas no atenten contra su condición médica.
 
@@ -197,7 +209,7 @@ Los archivos de soporte médico (certificados, informes médicos, etc.) se adjun
 
 Solo administradores y profesores pueden registrar y editar esta información. La restricción existe porque es un proceso formal que requiere verificación de documentación física en la institución. Un representante o estudiante no puede cargar esta información por cuenta propia.
 
-### 6. Estructura Académica
+### 7. Estructura Académica
 
 La jerarquía académica del sistema refleja la organización real de la institución educativa. No se inventó una estructura arbitraria, sino que se modeló exactamente como la institución organiza a sus estudiantes y profesores. Entender esta jerarquía es fundamental para entender cómo fluyen los datos en todo el sistema.
 
@@ -284,7 +296,7 @@ Sin embargo, una sección puede tener más de un
 profesor asignado (sin restricción en ese sentido).
 ```
 
-### 7. Jornadas de Campo
+### 8. Jornadas de Campo
 
 Las jornadas son el evento central del sistema. Todo gira alrededor de ellas: la asistencia se registra en jornadas, las horas se acreditan a partir de jornadas, los reportes se construyen sobre jornadas. Una jornada es una actividad de campo realizada en una fecha y lugar específicos, liderada por un profesor responsable.
 
@@ -310,7 +322,7 @@ El nombre `field_sessions` fue definido para evitar el conflicto con la tabla `s
 
 Esta es una regla de negocio crítica: solo el profesor responsable de una jornada (`user_id` en `field_sessions`) o un administrador puede editar sus registros. Un profesor puede ver las jornadas de otros profesores pero no modificarlas. Esta regla existe para mantener la integridad de los datos: cada profesor es responsable de la veracidad de lo que registró, y no debe poder alterar lo que otro profesor registró.
 
-### 8. Registro de Asistencia y Horas
+### 9. Registro de Asistencia y Horas
 
 El registro de asistencia y horas es el núcleo funcional del sistema. Aquí es donde se determina cuántas horas acumula cada estudiante. El modelo se estructuró en dos niveles de granularidad para cubrir tanto profesores con registros detallados como profesores con registros más generales.
 
@@ -357,7 +369,7 @@ Los archivos de evidencia (fotos, videos, documentos) de cada subactividad se ad
 | Jornada cancelada | Ningún estudiante acumula horas. La sesión queda con `status=cancelled`| Sí (motivo de cancelación) |
 | Alumno no asistió | `attended=false`. No se procesan subactividades. | No |
 
-### 9. Horas Externas
+### 10. Horas Externas
 
 Las horas externas existen para cubrir un caso real e importante: estudiantes que cursaron parte de su bachillerato en otra institución educativa y necesitan que esas horas de Socioproductiva sean reconocidas. Por ejemplo, un alumno que cursó 1ro a 4to en otra institución y llega al 5to año con 400 horas ya acumuladas.
 
@@ -370,7 +382,7 @@ Solo un administrador puede cargar horas externas porque es un proceso formal qu
 | `admin_id` (FK -> usuario admin) | El administrador que cargó las horas. Ambos apuntan a `users` pero con roles distintos. Permite trazabilidad de quién autorizó la acreditación. |
 | `institution_name` (VARCHAR) | Nombre de la institución de origen. Junto al documento adjunto, sustenta la validez de las horas. |
 
-### 10. Cálculo de Horas Acumuladas
+### 11. Cálculo de Horas Acumuladas
 
 El cálculo del acumulado de horas de un estudiante es la consulta más crítica del sistema. Debe ser preciso, eficiente y siempre actualizado. La desnormalización selectiva de `academic_year_id` en `attendances` fue motivada principalmente por optimizar este cálculo específico.
 
@@ -398,7 +410,7 @@ Horas restantes:
 
 La vista del estudiante al loguearse muestra permanentemente: horas acumuladas en el año activo, horas acumuladas por lapso dentro del año activo, horas acumuladas en años anteriores, total histórico acumulado y horas restantes para completar el cupo. Esta información es el propósito final del sistema y debe ser siempre visible y precisa.
 
-### 11. Configuración del Sistema
+### 12. Configuración del Sistema
 
 El módulo de configuración gestiona todos los catálogos y parámetros que definen el comportamiento del sistema. Solo los administradores tienen acceso a este módulo.
 
@@ -414,7 +426,7 @@ El módulo de configuración gestiona todos los catálogos y parámetros que def
 | Condiciones de salud | `health_conditions` | CRUD con activación/desactivación. Catálogo de condiciones médicas conocidas. |
 | **Datos Institucionales (Nuevo)** | `institution` | Datos de la sede institucional (`name`, `address`, `email`, `phone`, `code`). **(Hito 1 / RBAC Hito 2)** |
 
-### 12. Reportes y Estadísticas
+### 13. Reportes y Estadísticas
 
 Los reportes son generados automáticamente en esta primera fase, sin configuración por parte del usuario. La decisión de empezar con reportes predefinidos en lugar de reportes dinámicos es de alcance: los reportes dinámicos requieren una capa de UI significativamente más compleja y no son necesarios para la funcionalidad core del sistema.
 
@@ -431,7 +443,7 @@ Todos los reportes pueden segmentarse por lapso además de por año escolar, gra
 
 > **Fase 2 (fuera de alcance actual):** Reportes dinámicos con filtros configurables por el usuario.
 
-### 13. Modelo de Datos
+### 14. Modelo de Datos
 
 El modelo de datos fue definido iterativamente y cada decisión tiene un razonamiento detallado en las secciones anteriores. A continuación se presenta la estructura final de cada tabla con sus campos y la justificación de los más relevantes.
 
@@ -659,7 +671,7 @@ student_health_records -> users (recibido por)
 users -> [media: foto de perfil vía Spatie]
 ```
 
-### 14. Stack Tecnológico
+### 15. Stack Tecnológico
 
 El stack fue seleccionado priorizando tres criterios: madurez del ecosistema, coherencia entre capas y capacidad de operar en entornos sin conexión a internet, ya que el sistema será desplegado inicialmente en una red local sin acceso externo. Cada decisión tecnológica tiene su argumento a continuación.
 

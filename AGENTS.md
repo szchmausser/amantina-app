@@ -64,6 +64,7 @@ Los comandos para ejecutar el proyecto son:
 - Los tests deben usar el framework por defecto de Laravel (PHPUnit). Se prefieren los Feature Tests sobre los Unit Tests para asegurar la integración completa con Inertia y la base de datos.
 - Cada funcionalidad debe tener al menos un test.
 - Se deben usar datos de prueba que simulen datos reales. No usar datos reales en los tests.
+- **Base de datos de pruebas separada:** Los tests usan la base de datos `amantina_app_testing` (PostgreSQL), distinta de la de desarrollo (`amantina_app`), para no afectar los datos reales. Crear la BD de pruebas una vez con: `psql -U postgres -c "CREATE DATABASE amantina_app_testing;"` (o desde pgAdmin). Las credenciales (host, usuario, contraseña) se toman del `.env`.
 
 ### 6. Convenciones de Git
 

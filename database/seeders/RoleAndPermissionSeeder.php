@@ -31,6 +31,22 @@ class RoleAndPermissionSeeder extends Seeder
             'permissions.create',
             'permissions.edit',
             'permissions.delete',
+            'academic_years.view',
+            'academic_years.create',
+            'academic_years.edit',
+            'academic_years.delete',
+            'school_terms.view',
+            'school_terms.create',
+            'school_terms.edit',
+            'school_terms.delete',
+            'grades.view',
+            'grades.create',
+            'grades.edit',
+            'grades.delete',
+            'sections.view',
+            'sections.create',
+            'sections.edit',
+            'sections.delete',
         ];
 
         foreach ($permissions as $permission) {

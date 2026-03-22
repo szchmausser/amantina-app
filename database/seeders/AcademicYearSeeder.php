@@ -1,0 +1,75 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\AcademicYear;
+use App\Models\Grade;
+use App\Models\SchoolTerm;
+use App\Models\Section;
+use Illuminate\Database\Seeder;
+
+class AcademicYearSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $year = AcademicYear::create([
+            'name' => '2024-2025',
+            'start_date' => '2024-09-01',
+            'end_date' => '2025-07-15',
+            'is_active' => true,
+            'required_hours' => 600.00,
+        ]);
+
+        // Lapsos
+        SchoolTerm::create([
+            'academic_year_id' => $year->id,
+            'term_number' => 1,
+            'start_date' => '2024-09-15',
+            'end_date' => '2024-12-15',
+        ]);
+        SchoolTerm::create([
+            'academic_year_id' => $year->id,
+            'term_number' => 2,
+            'start_date' => '2025-01-07',
+            'end_date' => '2025-04-10',
+        ]);
+        SchoolTerm::create([
+            'academic_year_id' => $year->id,
+            'term_number' => 3,
+            'start_date' => '2025-04-25',
+            'end_date' => '2025-07-15',
+        ]);
+
+        // Grados y Secciones
+        $grades = [
+            ['name' => '1er Año', 'order' => 1],
+            ['name' => '2do Año', 'order' => 2],
+            ['name' => '3er Año', 'order' => 3],
+            ['name' => '4to Año', 'order' => 4],
+            ['name' => '5to Año', 'order' => 5],
+        ];
+
+        foreach ($grades as $gradeData) {
+            $grade = Grade::create([
+                'academic_year_id' => $year->id,
+                'name' => $gradeData['name'],
+                'order' => $gradeData['order'],
+            ]);
+
+            Section::create([
+                'academic_year_id' => $year->id,
+                'grade_id' => $grade->id,
+                'name' => 'A',
+            ]);
+
+            Section::create([
+                'academic_year_id' => $year->id,
+                'grade_id' => $grade->id,
+                'name' => 'B',
+            ]);
+        }
+    }
+}
