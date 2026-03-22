@@ -55,6 +55,8 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
     {
+        Gate::authorize('roles.edit');
+
         $role->syncPermissions($request->validated('permissions') ?? []);
 
         return redirect()->route('admin.roles.index')

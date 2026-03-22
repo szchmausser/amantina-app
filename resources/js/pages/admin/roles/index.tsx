@@ -1,9 +1,9 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Edit, Eye, Shield, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { index as roleIndex, edit as roleEdit, show as roleShow } from '@/routes/admin/roles';
+import { edit as roleEdit, show as roleShow } from '@/routes/admin/roles';
 import type { BreadcrumbItem } from '@/types';
 
 interface Permission {
@@ -41,6 +41,9 @@ function groupPermissions(permissions: Permission[]): Record<string, string[]> {
 }
 
 export default function RolesIndex({ roles }: Props) {
+    const { auth } = usePage<any>().props;
+    const hasPermission = (p: string) => auth.permissions.includes(p);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gestión de Roles" />
@@ -53,12 +56,14 @@ export default function RolesIndex({ roles }: Props) {
                             Visualiza los roles del sistema y gestiona sus permisos asignados.
                         </p>
                     </div>
-                    <Button variant="outline" asChild>
-                        <Link href="/admin/permissions">
-                            <ShieldCheck className="mr-2 h-4 w-4" />
-                            Ver Permisos
-                        </Link>
-                    </Button>
+                    {hasPermission('permissions.view') && (
+                        <Button variant="outline" asChild>
+                            <Link href="/admin/permissions">
+                                <ShieldCheck className="mr-2 h-4 w-4" />
+                                Ver Permisos
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 <div className="space-y-4">
@@ -87,18 +92,22 @@ export default function RolesIndex({ roles }: Props) {
                                         </Badge>
                                     </div>
                                     <div className="flex gap-1">
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                                            <Link href={roleShow(role.id).url}>
-                                                <Eye className="h-4 w-4 text-neutral-500" />
-                                                <span className="sr-only">Ver detalles</span>
-                                            </Link>
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                                            <Link href={roleEdit(role.id).url}>
-                                                <Edit className="h-4 w-4 text-neutral-500" />
-                                                <span className="sr-only">Editar permisos</span>
-                                            </Link>
-                                        </Button>
+                                        {hasPermission('roles.view') && (
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Ver detalles">
+                                                <Link href={roleShow(role.id).url}>
+                                                    <Eye className="h-4 w-4 text-neutral-500" />
+                                                    <span className="sr-only">Ver detalles</span>
+                                                </Link>
+                                            </Button>
+                                        )}
+                                        {hasPermission('roles.edit') && (
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Editar permisos">
+                                                <Link href={roleEdit(role.id).url}>
+                                                    <Edit className="h-4 w-4 text-neutral-500" />
+                                                    <span className="sr-only">Editar permisos</span>
+                                                </Link>
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
 

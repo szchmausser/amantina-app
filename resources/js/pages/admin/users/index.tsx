@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Edit, Eye, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -69,6 +69,9 @@ export default function Index({ users, filters, availableRoles }: Props) {
         }
     };
 
+    const { auth } = usePage<any>().props;
+    const hasPermission = (p: string) => auth.permissions.includes(p);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gestión de Usuarios" />
@@ -81,12 +84,14 @@ export default function Index({ users, filters, availableRoles }: Props) {
                             Administra las cuentas de usuario, roles y permisos del sistema.
                         </p>
                     </div>
-                    <Button asChild>
-                        <Link href={userCreate().url}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nuevo Usuario
-                        </Link>
-                    </Button>
+                    {hasPermission('users.create') && (
+                        <Button asChild>
+                            <Link href={userCreate().url}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Nuevo Usuario
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -162,22 +167,26 @@ export default function Index({ users, filters, availableRoles }: Props) {
                                             </td>
                                             <td className="whitespace-nowrap px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2">
-                                                    <Button variant="ghost" size="icon" asChild>
+                                                    <Button variant="ghost" size="icon" asChild title="Ver detalles">
                                                         <Link href={userShow(user.id).url}>
                                                             <Eye className="h-4 w-4 text-neutral-500" />
                                                             <span className="sr-only">Ver detalles</span>
                                                         </Link>
                                                     </Button>
-                                                    <Button variant="ghost" size="icon" asChild>
-                                                        <Link href={userEdit(user.id).url}>
-                                                            <Edit className="h-4 w-4" />
-                                                            <span className="sr-only">Editar</span>
-                                                        </Link>
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30" onClick={() => handleDelete(user.id)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                        <span className="sr-only">Eliminar</span>
-                                                    </Button>
+                                                    {(hasPermission('users.edit') || auth.user.id === user.id) && (
+                                                        <Button variant="ghost" size="icon" asChild title="Editar">
+                                                            <Link href={userEdit(user.id).url}>
+                                                                <Edit className="h-4 w-4" />
+                                                                <span className="sr-only">Editar</span>
+                                                            </Link>
+                                                        </Button>
+                                                    )}
+                                                    {hasPermission('users.delete') && (
+                                                        <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30" onClick={() => handleDelete(user.id)} title="Eliminar">
+                                                            <Trash2 className="h-4 w-4" />
+                                                            <span className="sr-only">Eliminar</span>
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>

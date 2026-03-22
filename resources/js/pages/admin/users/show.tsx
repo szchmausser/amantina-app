@@ -1,5 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, ShieldCheck, User as UserIcon, BookOpen, Key } from 'lucide-react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { ArrowLeft, Edit, ShieldCheck, User as UserIcon, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
@@ -17,6 +17,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Show({ user }: Props) {
+    const { auth } = usePage<any>().props;
+    const hasPermission = (p: string) => auth.permissions?.includes(p);
+
     const roles = user.roles ? user.roles.map((r: any) => r.name) : [];
     const directPermissions = user.permissions ? user.permissions.map((p: any) => p.name) : [];
     
@@ -74,12 +77,14 @@ export default function Show({ user }: Props) {
                             </div>
                         </div>
                     </div>
-                    <Button asChild>
-                        <Link href={userEdit(user.id).url}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Editar Perfil
-                        </Link>
-                    </Button>
+                    {(hasPermission('users.edit') || auth.user.id === user.id) && (
+                        <Button asChild>
+                            <Link href={userEdit(user.id).url}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Editar Perfil
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 <div className="space-y-6">

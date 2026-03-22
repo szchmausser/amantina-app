@@ -66,6 +66,8 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request): RedirectResponse
     {
+        Gate::authorize('create', User::class);
+
         $roles = $request->input('roles', []);
         $isAlumno = in_array('alumno', (array) $roles);
 
@@ -118,6 +120,8 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
+        Gate::authorize('update', $user);
+
         $roles = $request->input('roles', []);
         $isAlumno = in_array('alumno', (array) $roles);
 

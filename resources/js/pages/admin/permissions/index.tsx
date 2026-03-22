@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Shield, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,9 @@ function groupPermissions(permissions: Permission[]): Record<string, Permission[
 }
 
 export default function PermissionsIndex({ permissions }: Props) {
+    const { auth } = usePage<any>().props;
+    const hasPermission = (p: string) => auth.permissions?.includes(p);
+    
     const groups = groupPermissions(permissions);
 
     return (
@@ -52,12 +55,14 @@ export default function PermissionsIndex({ permissions }: Props) {
                             Lista de todos los permisos registrados en el sistema y los roles que los poseen.
                         </p>
                     </div>
-                    <Button variant="outline" asChild>
-                        <Link href="/admin/roles">
-                            <Shield className="mr-2 h-4 w-4" />
-                            Ver Roles
-                        </Link>
-                    </Button>
+                    {hasPermission('roles.view') && (
+                        <Button variant="outline" asChild>
+                            <Link href="/admin/roles">
+                                <Shield className="mr-2 h-4 w-4" />
+                                Ver Roles
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 <div className="space-y-4">
