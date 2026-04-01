@@ -23,7 +23,7 @@ class SectionFactory extends Factory
             'academic_year_id' => function (array $attributes) {
                 return Grade::find($attributes['grade_id'])->academic_year_id;
             },
-            'name' => fake()->randomElement(['A', 'B', 'C', 'D']),
+            'name' => $this->faker->unique()->lexify('Section ???'),
         ];
     }
 }

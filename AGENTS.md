@@ -132,6 +132,9 @@ This project has domain-specific skills available. You MUST activate the relevan
 - `wayfinder-development` — Activates whenever referencing backend routes in frontend components. Use when importing from @/actions or @/routes, calling Laravel routes from TypeScript, or working with Wayfinder route functions.
 - `inertia-react-development` — Develops Inertia.js v2 React client-side applications. Activates when creating React pages, forms, or navigation; using <Link>, <Form>, useForm, or router; working with deferred props, prefetching, or polling; or when user mentions React with Inertia, React pages, React forms, or React navigation.
 - `tailwindcss-development` — Styles applications using Tailwind CSS v4 utilities. Activates when adding styles, restyling components, working with gradients, spacing, layout, flex, grid, responsive design, dark mode, colors, typography, or borders; or when the user mentions CSS, styling, classes, Tailwind, restyle, hero section, cards, buttons, or any visual/UI changes.
+- `fortify-development` — Laravel Fortify headless authentication backend development. Activate when implementing authentication features including login, registration, password reset, email verification, two-factor authentication (2FA/TOTP), profile updates, headless auth, authentication scaffolding, or auth guards in Laravel applications.
+- `medialibrary-development` — Build and work with spatie/laravel-medialibrary features including associating files with Eloquent models, defining media collections and conversions, generating responsive images, and retrieving media URLs and paths.
+- `laravel-permission-development` — Build and work with Spatie Laravel Permission features, including roles, permissions, middleware, policies, teams, and Blade directives.
 
 ## Conventions
 
@@ -222,7 +225,6 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Use appropriate PHP type hints for method parameters.
 
 <!-- Explicit Return Types and Method Params -->
-
 ```php
 protected function isAccessible(User $user, ?string $path = null): bool
 {
@@ -401,5 +403,20 @@ Wayfinder generates TypeScript functions for Laravel routes. Import from `@/acti
 - Always use existing Tailwind conventions; check project patterns before adding new ones.
 - IMPORTANT: Always use `search-docs` tool for version-specific Tailwind CSS documentation and updated code examples. Never rely on training data.
 - IMPORTANT: Activate `tailwindcss-development` every time you're working with a Tailwind CSS or styling-related task.
+
+=== laravel/fortify rules ===
+
+# Laravel Fortify
+
+- Fortify is a headless authentication backend that provides authentication routes and controllers for Laravel applications.
+- IMPORTANT: Always use the `search-docs` tool for detailed Laravel Fortify patterns and documentation.
+- IMPORTANT: Activate `developing-with-fortify` skill when working with Fortify authentication features.
+
+=== spatie/laravel-medialibrary rules ===
+
+## Media Library
+
+- `spatie/laravel-medialibrary` associates files with Eloquent models, with support for collections, conversions, and responsive images.
+- Always activate the `medialibrary-development` skill when working with media uploads, conversions, collections, responsive images, or any code that uses the `HasMedia` interface or `InteractsWithMedia` trait.
 
 </laravel-boost-guidelines>

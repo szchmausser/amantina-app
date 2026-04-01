@@ -18,13 +18,10 @@ class GradeFactory extends Factory
      */
     public function definition(): array
     {
-        $year = AcademicYear::factory()->create();
-        $order = 1;
-
         return [
-            'academic_year_id' => $year->id,
-            'name' => '1er Año',
-            'order' => $order,
+            'academic_year_id' => AcademicYear::factory(),
+            'name' => $this->faker->unique()->word() . ' Año',
+            'order' => $this->faker->unique()->numberBetween(1, 100),
         ];
     }
 }
