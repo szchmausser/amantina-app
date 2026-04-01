@@ -47,6 +47,14 @@ class RoleAndPermissionSeeder extends Seeder
             'sections.create',
             'sections.edit',
             'sections.delete',
+            'enrollments.view',
+            'enrollments.create',
+            'enrollments.edit',
+            'enrollments.delete',
+            'assignments.view',
+            'assignments.create',
+            'assignments.edit',
+            'assignments.delete',
         ];
 
         foreach ($permissions as $permission) {
@@ -69,7 +77,7 @@ class RoleAndPermissionSeeder extends Seeder
             }
 
             if ($roleName === 'profesor') {
-                $role->syncPermissions(['users.view']);
+                $role->syncPermissions(['users.view', 'enrollments.view', 'assignments.view']);
             }
         }
     }

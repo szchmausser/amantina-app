@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\Admin\AcademicYearController;
+use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Controllers\Admin\GradeController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SchoolTermController;
 use App\Http\Controllers\Admin\SectionController;
+use App\Http\Controllers\Admin\TeacherAssignmentController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -26,8 +28,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Academic Structure (show redirects to index/academic year)
         Route::resource('academic-years', AcademicYearController::class);
         Route::resource('grades', GradeController::class)->except(['show']);
-        Route::resource('sections', SectionController::class)->except(['show']);
+        Route::resource('sections', SectionController::class);
         Route::resource('school-terms', SchoolTermController::class)->except(['show']);
+
+        // Enrollments (promote routes BEFORE resource to avoid route conflicts)
+        Route::get('enrollments/promote', [EnrollmentController::class, 'showPromotionPanel'])->name('enrollments.promote');
+        Route::post('enrollments/promote', [EnrollmentController::class, 'promote'])->name('enrollments.promote.store');
+        Route::resource('enrollments', EnrollmentController::class)->except(['show', 'edit', 'update']);
+
+        // Teacher Assignments
+        Route::resource('teacher-assignments', TeacherAssignmentController::class)->except(['show', 'edit', 'update']);
     });
 });
 

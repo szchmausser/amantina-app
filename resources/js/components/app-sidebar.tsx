@@ -9,6 +9,8 @@ import {
     Shield,
     ShieldCheck,
     Users,
+    UserPlus,
+    BookUser,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -83,6 +85,22 @@ export function AppSidebar() {
             title: 'Grados y Secciones',
             href: gradesIndex().url,
             icon: GraduationCap,
+        });
+    }
+
+    if (auth.permissions?.includes('enrollments.view')) {
+        mainNavItems.push({
+            title: 'Inscripciones',
+            href: '/admin/enrollments',
+            icon: UserPlus,
+        });
+    }
+
+    if (auth.permissions?.includes('assignments.view')) {
+        mainNavItems.push({
+            title: 'Asignaciones Docentes',
+            href: '/admin/teacher-assignments',
+            icon: BookUser,
         });
     }
 

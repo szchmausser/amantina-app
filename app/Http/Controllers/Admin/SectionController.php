@@ -68,6 +68,25 @@ class SectionController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(Section $section): Response
+    {
+        Gate::authorize('sections.view');
+
+        $section->load([
+            'grade.academicYear',
+            'enrollments.student',
+            'teacherAssignments.teacher',
+        ]);
+
+        return Inertia::render('admin/sections/show', [
+            'section' => $section,
+            'academicYear' => $section->grade->academicYear,
+        ]);
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Section $section): Response

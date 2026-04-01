@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { formatDate } from '@/lib/utils';
 import { Clock, Edit, Plus, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -125,14 +126,14 @@ export default function SchoolTermsIndex({
                                             <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest font-mono">Inicio</p>
                                             <div className="flex items-center gap-2 font-mono">
                                                 <Clock className="h-3 w-3 text-neutral-400" />
-                                                <span className="text-sm font-semibold">{term.start_date}</span>
+                                                <span className="text-sm font-semibold">{formatDate(term.start_date)}</span>
                                             </div>
                                         </div>
                                         <div className="space-y-1 font-mono">
                                             <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Cierre</p>
                                             <div className="flex items-center gap-2">
                                                 <Clock className="h-3 w-3 text-neutral-400" />
-                                                <span className="text-sm font-semibold">{term.end_date}</span>
+                                                <span className="text-sm font-semibold">{formatDate(term.end_date)}</span>
                                             </div>
                                         </div>
                                     </div>

@@ -296,6 +296,65 @@ Sin embargo, una sección puede tener más de un
 profesor asignado (sin restricción en ese sentido).
 ```
 
+#### 6.7 Proceso de Inscripción y Asignación
+
+El proceso de inscripción de alumnos y asignación de profesores a secciones está diseñado para cubrir dos escenarios operativos reales del plantel, cada uno con su propio flujo:
+
+##### 6.7.1 Reglas de Negocio
+
+Las siguientes reglas son invariantes del sistema y deben ser validadas tanto en el backend (Form Requests) como reflejadas en el frontend (UI deshabilitada o mensajes de advertencia):
+
+| Regla | Descripción | Motivo |
+|-------|-------------|--------|
+| **RN-1: Solo año activo** | Las inscripciones y asignaciones únicamente se realizan contra el año escolar cuyo campo `is_active = true`. | Evita inscripciones accidentales en años pasados o futuros no configurados. |
+| **RN-2: Estructura previa obligatoria** | El año activo debe tener al menos un grado con al menos una sección configurados antes de permitir inscripciones. Si no se cumple, el sistema muestra un banner de advertencia con enlace a la gestión de grados y secciones. | Un administrador despistado podría activar un año sin haber configurado su estructura. El sistema debe guiarlo explícitamente. |
+| **RN-3: Unicidad por año** | Un alumno solo puede tener una inscripción activa por año escolar (índice único `user_id + academic_year_id`). | Refleja la realidad: un estudiante pertenece a una sola sección por año. |
+| **RN-4: Solo rol alumno en enrollments** | El campo `user_id` en `enrollments` debe corresponder a un usuario con el rol `alumno`. | Evita inscribir accidentalmente a profesores o representantes como estudiantes. |
+| **RN-5: Solo rol profesor en teacher_assignments** | El campo `user_id` en `teacher_assignments` debe corresponder a un usuario con el rol `profesor`. | Evita asignar a un alumno como docente responsable de una sección. |
+| **RN-6: Integridad jerárquica** | El `grade_id` debe pertenecer al `academic_year_id` indicado, y el `section_id` debe pertenecer al `grade_id` indicado. | Evita inconsistencias entre la estructura académica y las inscripciones. |
+
+##### 6.7.2 Flujo "Promoción Masiva" (Panel de Promoción)
+
+Este es el flujo principal y más frecuente. Se usa al inicio de cada año escolar para trasladar a los alumnos del año anterior al siguiente. Opera con un layout de **dos paneles** lado a lado:
+
+**Panel Izquierdo (Origen):** Muestra los alumnos inscritos en el año escolar anterior, filtrados por grado y sección. Permite selección múltiple mediante checkboxes.
+
+**Panel Derecho (Destino):** Muestra las secciones disponibles del año activo agrupadas por el grado sugerido. Cada sección se presenta como una tarjeta con un botón "Promover aquí" y un contador de alumnos ya inscritos.
+
+**Flujo operativo detallado:**
+
+1. **Selección de origen**: El administrador elige el año escolar anterior, un grado y una sección de origen. El sistema carga la lista de alumnos inscritos en esa combinación.
+
+2. **Selección de alumnos**: La lista presenta cada alumno con checkbox, nombre y cédula. Los alumnos que ya están inscritos en el año activo aparecen con un badge "Ya inscrito" y su checkbox está deshabilitado. Un botón "Seleccionar Todos" marca únicamente a los alumnos elegibles. Un contador muestra "X alumnos seleccionados".
+
+3. **Sugerencia inteligente de grado**: El panel derecho pre-carga las secciones del grado cuyo campo `order` sea igual a `order_del_grado_origen + 1` dentro del año activo. Ejemplo: si el origen es "1er Año" (`order: 1`), el destino sugiere "2do Año" (`order: 2`). Si ese grado no existe en el año activo (porque el administrador no lo ha creado), el panel muestra un selector de grado para elección manual. La sugerencia se señala con un badge visual "(Grado sugerido)".
+
+4. **Ejecución de la promoción**: Al hacer clic en "Promover aquí" en una sección destino, se presenta un diálogo de confirmación con un resumen: origen (grado/sección/año), destino (grado/sección/año), y cantidad de alumnos. Al confirmar, el backend crea un registro en `enrollments` por cada alumno seleccionado con los datos del destino. Los alumnos promovidos desaparecen del panel izquierdo y el contador de la sección destino se actualiza sin recargar la página.
+
+5. **Repetición**: El administrador puede seleccionar otro subconjunto de alumnos del mismo origen y promoverlos a una sección diferente (ej: parte a Sección A, parte a Sección B, resto a Sección C), cubriendo el escenario real de redistribución de alumnos entre secciones.
+
+> **Ejemplo operativo completo:** El adminstrador abre el Panel de Promoción. Selecciona como origen "2024-2025 → 1er Año → Sección A" (30 alumnos). Selecciona 10 alumnos y los promueve a "2do Año → Sección A". Selecciona otros 10 y los promueve a "2do Año → Sección B". Selecciona los 10 restantes y los promueve a "2do Año → Sección C". Luego cambia el origen a "1er Año → Sección B" y repite el proceso. Al finalizar, todos los alumnos del 1er año del año anterior están inscritos en el 2do año del año activo, distribuidos en las secciones correspondientes.
+
+##### 6.7.3 Flujo "Nuevo Ingreso" (Inscripción Individual)
+
+Este flujo es para alumnos que no estaban en el sistema el año anterior: nuevos ingresos, alumnos transferidos de otras instituciones, o cualquier alumno sin inscripción previa.
+
+Consiste en un formulario individual con:
+1. **Buscar Alumno**: Campo de búsqueda con autocompletado que filtra por nombre o cédula entre los usuarios con rol `alumno` que NO tengan inscripción en el año activo.
+2. **Grado**: Selector con los grados del año activo. No aplica sugerencia (no hay historial).
+3. **Sección**: Selector filtrado dinámicamente por el grado elegido.
+
+Este formulario no incluye sugerencia de grado porque, al tratarse de un nuevo ingreso, no existe historial académico previo en el sistema para inferir el grado correspondiente. El administrador asigna el grado basándose en la documentación administrativa externa del alumno.
+
+##### 6.7.4 Asignación de Profesores
+
+La asignación de profesores a secciones es un proceso más sencillo que la inscripción de alumnos, dado que la cantidad de profesores es significativamente menor. Se implementa como un formulario individual con:
+1. **Profesor**: Selector o búsqueda entre usuarios con rol `profesor`.
+2. **Grado**: Selector con grados del año activo.
+3. **Sección**: Selector filtrado por grado.
+
+Un profesor puede estar asignado a múltiples secciones en el mismo año. Una sección puede tener múltiples profesores asignados. Ambas situaciones son válidas operativamente.
+
 ### 8. Jornadas de Campo
 
 Las jornadas son el evento central del sistema. Todo gira alrededor de ellas: la asistencia se registra en jornadas, las horas se acreditan a partir de jornadas, los reportes se construyen sobre jornadas. Una jornada es una actividad de campo realizada en una fecha y lugar específicos, liderada por un profesor responsable.

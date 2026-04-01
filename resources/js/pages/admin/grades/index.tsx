@@ -131,13 +131,14 @@ export default function GradesIndex({ grades, academicYears, selectedYearId }: P
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {grade.sections?.map((section) => (
-                                                <Badge
-                                                    key={section.id}
-                                                    variant="secondary"
-                                                    className="px-2.5 py-1 text-xs transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-700"
-                                                >
-                                                    {section.name}
-                                                </Badge>
+                                                <Link key={section.id} href={`/admin/sections/${section.id}`}>
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="px-2.5 py-1 text-xs transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-700 cursor-pointer"
+                                                    >
+                                                        {section.name}
+                                                    </Badge>
+                                                </Link>
                                             ))}
                                             <Button
                                                 variant="outline"

@@ -31,6 +31,16 @@ class Grade extends Model
         return $this->hasMany(Section::class);
     }
 
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(Enrollment::class);
+    }
+
+    public function teacherAssignments(): HasMany
+    {
+        return $this->hasMany(TeacherAssignment::class);
+    }
+
     public function scopeOrdered(Builder $query): void
     {
         $query->orderBy('order');

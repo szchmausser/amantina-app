@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { formatDate } from '@/lib/utils';
 import {
     ArrowLeft,
     Calendar,
@@ -9,6 +10,7 @@ import {
     Layers,
     Plus,
     Settings,
+    Users,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -128,11 +130,18 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                         <CardHeader className="bg-neutral-50/50 pb-3 dark:bg-neutral-800/30">
                                             <div className="flex items-center justify-between">
                                                 <CardTitle className="text-base">{grade.name}</CardTitle>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                                                    <Link href={`/admin/grades/${grade.id}/edit`}>
-                                                        <Edit className="h-3 w-3" />
-                                                    </Link>
-                                                </Button>
+                                                <div className="flex items-center gap-1">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
+                                                        <Link href={`/admin/enrollments?grade_id=${grade.id}`} title="Ver Alumnos de este Grado">
+                                                            <Users className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500" asChild>
+                                                        <Link href={`/admin/grades/${grade.id}/edit`}>
+                                                            <Edit className="h-3.5 w-3.5" />
+                                                        </Link>
+                                                    </Button>
+                                                </div>
                                             </div>
                                             <CardDescription>Orden: {grade.order}</CardDescription>
                                         </CardHeader>
@@ -147,15 +156,30 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                                         <Badge
                                                             key={section.id}
                                                             variant="outline"
-                                                            className="flex items-center gap-1.5 px-2 py-1"
+                                                            className="flex items-center gap-1.5 px-2 py-1 pr-1"
                                                         >
-                                                            {section.name}
-                                                            <Link
-                                                                href={`/admin/sections/${section.id}/edit`}
-                                                                className="text-neutral-400 hover:text-neutral-600"
+                                                            <Link 
+                                                                href={`/admin/sections/${section.id}`}
+                                                                className="hover:text-blue-600 transition-colors"
                                                             >
-                                                                <Edit className="h-2.5 w-2.5" />
+                                                                {section.name}
                                                             </Link>
+                                                            <div className="flex items-center border-l pl-1.5 ml-0.5 gap-1">
+                                                                <Link
+                                                                    href={`/admin/enrollments?grade_id=${grade.id}&section_id=${section.id}`}
+                                                                    className="text-neutral-400 hover:text-blue-500"
+                                                                    title="Ver Alumnos"
+                                                                >
+                                                                    <Users className="h-2.5 w-2.5" />
+                                                                </Link>
+                                                                <Link
+                                                                    href={`/admin/sections/${section.id}/edit`}
+                                                                    className="text-neutral-400 hover:text-neutral-600"
+                                                                    title="Editar Sección"
+                                                                >
+                                                                    <Edit className="h-2.5 w-2.5" />
+                                                                </Link>
+                                                            </div>
                                                         </Badge>
                                                     ))}
                                                     <Button
@@ -232,10 +256,10 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-neutral-600 dark:text-neutral-400">
-                                                    {term.start_date}
+                                                    {formatDate(term.start_date)}
                                                 </td>
                                                 <td className="px-6 py-4 text-neutral-600 dark:text-neutral-400">
-                                                    {term.end_date}
+                                                    {formatDate(term.end_date)}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <Button variant="ghost" size="icon" asChild className="h-8 w-8">

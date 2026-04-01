@@ -2,22 +2,22 @@
 
 namespace App\Models;
 
-use Database\Factories\SectionFactory;
+use Database\Factories\TeacherAssignmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Section extends Model
+class TeacherAssignment extends Model
 {
-    /** @use HasFactory<SectionFactory> */
+    /** @use HasFactory<TeacherAssignmentFactory> */
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'academic_year_id',
         'grade_id',
-        'name',
+        'section_id',
+        'user_id',
     ];
 
     public function academicYear(): BelongsTo
@@ -30,13 +30,13 @@ class Section extends Model
         return $this->belongsTo(Grade::class);
     }
 
-    public function enrollments(): HasMany
+    public function section(): BelongsTo
     {
-        return $this->hasMany(Enrollment::class);
+        return $this->belongsTo(Section::class);
     }
 
-    public function teacherAssignments(): HasMany
+    public function teacher(): BelongsTo
     {
-        return $this->hasMany(TeacherAssignment::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 }
