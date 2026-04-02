@@ -39,30 +39,13 @@ class StoreTeacherAssignmentRequest extends FormRequest
                         $fail('El usuario seleccionado no tiene el rol de profesor.');
                     }
                 },
-                Rule::unique('teacher_assignments', 'user_id')
-                    ->where('academic_year_id', $this->academic_year_id)
-                    ->where('section_id', $this->section_id)
-                    ->whereNull('deleted_at'),
             ],
-            'grade_id' => [
-                'required',
-                'exists:grades,id',
-                function (string $attribute, mixed $value, \Closure $fail): void {
-                    $grade = Grade::find($value);
-                    if ($grade && (int) $grade->academic_year_id !== (int) $this->academic_year_id) {
-                        $fail('El grado seleccionado no pertenece al año escolar indicado.');
-                    }
-                },
+            'section_ids' => [
+                'present',
+                'array',
             ],
-            'section_id' => [
-                'required',
+            'section_ids.*' => [
                 'exists:sections,id',
-                function (string $attribute, mixed $value, \Closure $fail): void {
-                    $section = Section::find($value);
-                    if ($section && (int) $section->grade_id !== (int) $this->grade_id) {
-                        $fail('La sección seleccionada no pertenece al grado indicado.');
-                    }
-                },
             ],
         ];
     }

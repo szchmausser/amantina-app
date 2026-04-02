@@ -83,10 +83,21 @@ class EnrollmentController extends Controller
 
     public function store(StoreEnrollmentRequest $request): RedirectResponse
     {
-        Enrollment::create($request->validated());
+        $validated = $request->validated();
+
+        foreach ($validated['user_ids'] as $userId) {
+            Enrollment::create([
+                'user_id' => $userId,
+                'academic_year_id' => $validated['academic_year_id'],
+                'grade_id' => $validated['grade_id'],
+                'section_id' => $validated['section_id'],
+            ]);
+        }
+
+        $count = count($validated['user_ids']);
 
         return redirect()->route('admin.enrollments.index')
-            ->with('success', 'Alumno inscrito correctamente.');
+            ->with('success', "{$count} nuevo(s) alumno(s) inscrito(s) correctamente.");
     }
 
     public function showPromotionPanel(Request $request): Response

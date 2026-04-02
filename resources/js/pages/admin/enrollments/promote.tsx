@@ -210,15 +210,16 @@ export default function PromoteEnrollments({
                                         <Badge variant="secondary">{selectedStudents.length} / {eligibleStudents.length} seleccionados</Badge>
                                     </div>
                                     <div className="p-2">
-                                        {sourceEnrollments.map((enr) => (
+                                        {sourceEnrollments.map((enr, index) => (
                                             <label 
                                                 key={enr.id} 
-                                                className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                                                className={`flex items-center gap-2 p-3 rounded-lg transition-colors ${
                                                     enr.already_enrolled 
                                                     ? 'opacity-40 bg-neutral-100 dark:bg-neutral-900 pointer-events-none' 
                                                     : 'cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800'
                                                 }`}
                                             >
+                                                <span className="text-[10px] font-mono text-neutral-400 w-5 shrink-0 text-right">{index + 1}</span>
                                                 <Checkbox 
                                                     checked={selectedStudents.includes(enr.user_id)} 
                                                     onCheckedChange={() => toggleStudent(enr.user_id)}

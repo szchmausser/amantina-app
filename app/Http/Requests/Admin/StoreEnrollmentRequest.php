@@ -30,7 +30,12 @@ class StoreEnrollmentRequest extends FormRequest
                     }
                 },
             ],
-            'user_id' => [
+            'user_ids' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+            'user_ids.*' => [
                 'required',
                 'exists:users,id',
                 function (string $attribute, mixed $value, \Closure $fail): void {

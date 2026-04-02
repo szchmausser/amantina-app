@@ -1,16 +1,17 @@
-import { FormEvent, useState } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, UserSearch } from 'lucide-react';
+import { FormEvent, useMemo, useState } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { ArrowLeft, ArrowRight, Search, UserSearch } from 'lucide-react';
 import InputError from '@/components/input-error';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -52,30 +53,82 @@ export default function EnrollmentsCreate({ activeYear, availableStudents, grade
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Inscripciones', href: '/admin/enrollments' },
-        { title: 'Nuevo Ingreso', href: '#' },
+        { title: 'Nuevo Ingreso (Lote)', href: '#' },
     ];
 
-    const { data, setData, post, processing, errors } = useForm({
-        academic_year_id: activeYear.id,
-        user_id: '',
-        grade_id: '',
-        section_id: '',
-    });
+    const { errors } = usePage().props;
+    
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+    const [isProcessing, setIsProcessing] = useState(false);
+    
+    const [destGradeId, setDestGradeId] = useState<number | null>(null);
 
-    // Helper: Encontrar las secciones del grado seleccionado
-    const availableSections = grades.find((g) => g.id.toString() === data.grade_id)?.sections || [];
+    // Filtrado de alumnos en panel izquierdo
+    const filteredStudents = useMemo(() => {
+        if (!searchQuery) return availableStudents;
+        const q = searchQuery.toLowerCase();
+        return availableStudents.filter(s => 
+            s.name.toLowerCase().includes(q) || 
+            s.cedula.toLowerCase().includes(q)
+        );
+    }, [availableStudents, searchQuery]);
 
-    const submit = (e: FormEvent) => {
-        e.preventDefault();
-        post('/admin/enrollments');
+    const areAllFilteredSelected = filteredStudents.length > 0 && 
+        filteredStudents.every(s => selectedStudents.includes(s.id));
+
+    const toggleAll = () => {
+        if (areAllFilteredSelected) {
+            // Deseleccionar los que estan en la vista actual
+            const filteredIds = filteredStudents.map(s => s.id);
+            setSelectedStudents(selectedStudents.filter(id => !filteredIds.includes(id)));
+        } else {
+            // Seleccionar todos los de la vista junto a los que ya estaban
+            const newIds = [...selectedStudents];
+            filteredStudents.forEach(s => {
+                if (!newIds.includes(s.id)) newIds.push(s.id);
+            });
+            setSelectedStudents(newIds);
+        }
     };
+
+    const toggleStudent = (userId: number) => {
+        if (selectedStudents.includes(userId)) {
+            setSelectedStudents(selectedStudents.filter(id => id !== userId));
+        } else {
+            setSelectedStudents([...selectedStudents, userId]);
+        }
+    };
+
+    const enrollTo = (destSection: Section) => {
+        if (selectedStudents.length === 0) return;
+        
+        if (confirm(`¿Inscribir ${selectedStudents.length} alumnos de nuevo ingreso en ${destSection.name}?`)) {
+            router.post('/admin/enrollments', {
+                academic_year_id: activeYear.id,
+                user_ids: selectedStudents,
+                grade_id: destGradeId?.toString() || '',
+                section_id: destSection.id.toString(),
+            }, {
+                preserveScroll: true,
+                onStart: () => setIsProcessing(true),
+                onFinish: () => setIsProcessing(false),
+                onSuccess: () => {
+                    setSelectedStudents([]);
+                    setSearchQuery('');
+                },
+            });
+        }
+    };
+
+    const destSections = grades.find(g => g.id === destGradeId)?.sections || [];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Nuevo Ingreso | ${activeYear.name}`} />
 
-            <div className="mx-auto max-w-2xl p-4 lg:p-8 space-y-6">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-6 p-4 lg:p-8 h-[calc(100vh-4rem)] overflow-hidden">
+                <div className="flex items-center gap-4 shrink-0">
                     <Button variant="outline" size="icon" asChild>
                         <Link href="/admin/enrollments">
                             <ArrowLeft className="h-4 w-4" />
@@ -83,120 +136,164 @@ export default function EnrollmentsCreate({ activeYear, availableStudents, grade
                     </Button>
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            Nuevo Ingreso
+                            Nuevos Ingresos en Lote
                         </h1>
                         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                            Inscribe un alumno de forma individual en el año escolar activo ({activeYear.name}).
+                            Acumula e inscribe rápidamente alumnos al año escolar activo ({activeYear.name}).
                         </p>
                     </div>
                 </div>
 
-                <Card>
-                    <form onSubmit={submit}>
-                        <CardHeader>
-                            <CardTitle>Datos de la Inscripción</CardTitle>
-                            <CardDescription>
-                                Solo se muestran los alumnos que no están inscritos en el año activo.
-                            </CardDescription>
+                <div className="grid h-full grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
+                    {/* Panel Izquierdo: Alumnos Sin Inscripción */}
+                    <Card className="flex flex-col min-h-0 border-primary/20 bg-neutral-50/50 dark:bg-neutral-800/10">
+                        <CardHeader className="shrink-0 bg-neutral-100/50 dark:bg-neutral-800/50 border-b">
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm">1</span>
+                                Seleccionar/Acumular Alumnos
+                            </CardTitle>
+                            
+                            <div className="mt-4 relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                                <Input 
+                                    className="pl-9 bg-white dark:bg-neutral-900" 
+                                    placeholder="Buscar por cédula o nombre..." 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2 relative">
-                                <Label htmlFor="user_id">Alumno (Nombre - Cédula)</Label>
-                                <Select
-                                    value={data.user_id}
-                                    onValueChange={(v) => setData('user_id', v)}
-                                    disabled={processing}
+                        
+                        <CardContent className="flex-1 overflow-auto p-0">
+                            {availableStudents.length > 0 ? (
+                                <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
+                                    <div className="flex items-center justify-between p-3 bg-white dark:bg-neutral-900 sticky top-0 border-b z-10">
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox 
+                                                checked={areAllFilteredSelected} 
+                                                onCheckedChange={toggleAll}
+                                                disabled={filteredStudents.length === 0}
+                                            />
+                                            <span className="text-sm font-medium">Seleccionar de la lista</span>
+                                        </div>
+                                        {selectedStudents.length > 0 && (
+                                            <Badge variant="outline" className="border-primary text-primary">
+                                                {selectedStudents.length} acumulados
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    <div className="p-2">
+                                        {filteredStudents.length > 0 ? (
+                                            filteredStudents.map((s, index) => (
+                                                <label 
+                                                    key={s.id} 
+                                                    className="flex items-center gap-2 p-3 rounded-lg cursor-pointer transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                                >
+                                                    <span className="text-[10px] font-mono text-neutral-400 w-5 shrink-0 text-right">{index + 1}</span>
+                                                    <Checkbox 
+                                                        checked={selectedStudents.includes(s.id)} 
+                                                        onCheckedChange={() => toggleStudent(s.id)}
+                                                    />
+                                                    <div className="flex-1">
+                                                        <div className="font-medium text-sm">{s.name}</div>
+                                                        <div className="text-xs text-neutral-500 font-mono">{s.cedula}</div>
+                                                    </div>
+                                                </label>
+                                            ))
+                                        ) : (
+                                            <div className="p-8 text-center text-sm text-neutral-500">
+                                                No hay resultados para "{searchQuery}"
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex h-full flex-col items-center justify-center p-8 text-neutral-500 text-sm text-center">
+                                    <UserSearch className="h-10 w-10 mb-2 opacity-20" />
+                                    No hay alumnos pendientes por inscripción en el sistema.
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Panel Derecho: Destino */}
+                    <Card className="flex flex-col min-h-0 border-primary/20 bg-primary/5 dark:bg-primary/5">
+                        <CardHeader className="shrink-0 bg-primary/10 border-b border-primary/10">
+                            <CardTitle className="text-lg flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">2</span>
+                                    Destino ({activeYear.name})
+                                </div>
+                            </CardTitle>
+                            
+                            <div className="mt-4">
+                                <Label className="text-xs text-neutral-600 dark:text-neutral-400">Grado Destino (Activo)</Label>
+                                <Select 
+                                    value={destGradeId?.toString() || ''} 
+                                    onValueChange={(v) => setDestGradeId(Number(v))}
                                 >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Seleccione un alumno" />
+                                    <SelectTrigger className="w-full bg-white dark:bg-neutral-900 mt-1">
+                                        <SelectValue placeholder="Seleccione grado destino..." />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {availableStudents.map((s) => (
-                                            <SelectItem key={s.id} value={s.id.toString()}>
-                                                {s.name} - {s.cedula}
+                                        {grades.map(g => (
+                                            <SelectItem key={g.id} value={g.id.toString()}>
+                                                {g.name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <InputError message={errors.user_id} />
                             </div>
+                        </CardHeader>
 
-                            <div className="grid gap-6 md:grid-cols-2">
-                                <div className="space-y-2">
-                                    <Label htmlFor="grade_id">Grado</Label>
-                                    <Select
-                                        value={data.grade_id}
-                                        onValueChange={(v) => {
-                                            setData('grade_id', v);
-                                            setData('section_id', ''); // Reset section
-                                        }}
-                                        disabled={processing}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Seleccione un grado" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {grades.map((g) => (
-                                                <SelectItem key={g.id} value={g.id.toString()}>
-                                                    {g.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.grade_id} />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="section_id">Sección</Label>
-                                    <Select
-                                        value={data.section_id}
-                                        onValueChange={(v) => setData('section_id', v)}
-                                        disabled={processing || !data.grade_id || availableSections.length === 0}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Seleccione una sección" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {availableSections.map((s) => (
-                                                <SelectItem key={s.id} value={s.id.toString()}>
-                                                    {s.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.section_id} />
-                                </div>
-                            </div>
-
-                            {availableStudents.length === 0 && (
-                                <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
-                                    <div className="flex gap-3">
-                                        <UserSearch className="h-5 w-5 text-neutral-400" />
-                                        <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                                            No hay alumnos disponibles para inscribir. Todos los alumnos registrados ya tienen una inscripción activa este año, o aún no se han registrado alumnos en el sistema.
-                                        </div>
+                        <CardContent className="flex-1 overflow-auto p-4 lg:p-6">
+                            <div className="flex flex-col items-center justify-center h-full">
+                                {selectedStudents.length === 0 ? (
+                                    <div className="text-center space-y-3">
+                                        <ArrowRight className="h-12 w-12 mx-auto text-primary/30" strokeWidth={1} />
+                                        <p className="text-sm text-neutral-500 max-w-[200px]">
+                                            Acumula alumnos de nuevo ingreso en el panel izquierdo.
+                                        </p>
                                     </div>
-                                </div>
-                            )}
-                        </CardContent>
-
-                        <CardFooter className="flex justify-end gap-2 bg-neutral-50/50 py-4 dark:bg-neutral-900/50">
-                            <Button variant="outline" asChild disabled={processing}>
-                                <Link href="/admin/enrollments">Cancelar</Link>
-                            </Button>
-                            <Button type="submit" disabled={processing || availableStudents.length === 0}>
-                                {processing ? (
-                                    'Inscribiendo...'
+                                ) : !destGradeId ? (
+                                    <div className="text-center text-sm text-amber-600 dark:text-amber-500">
+                                        Selecciona un grado destino arriba.
+                                    </div>
                                 ) : (
-                                    <>
-                                        <Save className="mr-2 h-4 w-4" />
-                                        Inscribir Alumno
-                                    </>
+                                    <div className="w-full space-y-4">
+                                        <div className="text-center mb-6">
+                                            <Badge variant="outline" className="px-4 py-1 text-base bg-white dark:bg-neutral-900 shadow-sm border-primary/20">
+                                                Inscribir {selectedStudents.length} alumnos
+                                            </Badge>
+                                        </div>
+                                        
+                                        <div className="grid gap-3 sm:grid-cols-2">
+                                            {destSections.length > 0 ? (
+                                                destSections.map(section => (
+                                                    <Button 
+                                                        key={section.id} 
+                                                        variant="default"
+                                                        className="h-auto py-4 flex flex-col items-center gap-1 shadow-md hover:scale-105 transition-transform"
+                                                        onClick={() => enrollTo(section)}
+                                                        disabled={isProcessing}
+                                                    >
+                                                        <span className="font-bold text-lg">{section.name}</span>
+                                                        <span className="text-xs opacity-80 font-normal">Hacer clic para inscribir</span>
+                                                    </Button>
+                                                ))
+                                            ) : (
+                                                <div className="col-span-full text-center p-4 border border-dashed border-red-200 bg-red-50 text-red-600 rounded-lg dark:bg-red-950/30 dark:border-red-900">
+                                                    No hay secciones configuradas para este grado.
+                                                </div>
+                                            )}
+                                        </div>
+                                        <InputError message={errors?.user_ids || errors?.grade_id || errors?.section_id} className="text-center mt-4" />
+                                    </div>
                                 )}
-                            </Button>
-                        </CardFooter>
-                    </form>
-                </Card>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </AppLayout>
     );

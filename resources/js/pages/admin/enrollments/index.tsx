@@ -119,7 +119,7 @@ export default function EnrollmentsIndex({
         return (
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="Inscripciones" />
-                <div className="mx-auto max-w-5xl p-4 lg:p-8 space-y-6">
+            <div className="p-4 lg:p-8 space-y-6">
                     <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-6 dark:border-yellow-900/50 dark:bg-yellow-900/20">
                         <div className="flex gap-4">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/50">
@@ -149,7 +149,7 @@ export default function EnrollmentsIndex({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Inscripciones | ${activeYear.name}`} />
 
-            <div className="mx-auto max-w-5xl p-4 lg:p-8 space-y-6">
+            <div className="p-4 lg:p-8 space-y-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
@@ -255,6 +255,7 @@ export default function EnrollmentsIndex({
                         <table className="w-full text-left text-sm">
                             <thead className="bg-neutral-50 dark:bg-neutral-800/50">
                                 <tr>
+                                    <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300 w-12">#</th>
                                     <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300">Alumno</th>
                                     <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300">Cédula</th>
                                     <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300">Grado</th>
@@ -263,8 +264,11 @@ export default function EnrollmentsIndex({
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-sidebar-border/70">
-                                {enrollments.map((enr) => (
+                                {enrollments.map((enr, index) => (
                                     <tr key={enr.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30">
+                                        <td className="px-6 py-4 font-mono text-xs text-neutral-400">
+                                            {index + 1}
+                                        </td>
                                         <td className="px-6 py-4 font-medium text-neutral-900 dark:text-neutral-100">
                                             {enr.student.name}
                                         </td>
