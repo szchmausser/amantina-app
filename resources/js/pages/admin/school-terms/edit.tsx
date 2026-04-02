@@ -14,6 +14,9 @@ import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
+import { dashboard } from '@/routes';
+import { index as academicYearsIndex, show as academicYearsShow } from '@/routes/admin/academic-years';
+import { store as schoolTermsStore, update as schoolTermsUpdate } from '@/routes/admin/school-terms';
 
 interface AcademicYear {
     id: number;
@@ -42,22 +45,22 @@ export default function SchoolTermEdit({ schoolTerm, academicYears }: Props) {
     const { data, setData, post, put, processing, errors } = useForm({
         academic_year_id: schoolTerm?.academic_year_id || (defaultYearId ? parseInt(defaultYearId) : academicYears[0]?.id),
         term_number: schoolTerm?.term_number || 1,
-        start_date: schoolTerm?.start_date || '',
-        end_date: schoolTerm?.end_date || '',
+        start_date: schoolTerm?.start_date ? schoolTerm.start_date.substring(0, 10) : '',
+        end_date: schoolTerm?.end_date ? schoolTerm.end_date.substring(0, 10) : '',
     });
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Años Escolares', href: '/admin/academic-years' },
+        { title: 'Dashboard', href: dashboard() },
+        { title: 'Años Escolares', href: academicYearsIndex().url },
         { title: isEditing ? 'Editar Lapso' : 'Nuevo Lapso', href: '#' },
     ];
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isEditing) {
-            put(`/admin/school-terms/${schoolTerm.id}`);
+            put(schoolTermsUpdate(schoolTerm.id).url);
         } else {
-            post('/admin/school-terms');
+            post(schoolTermsStore().url);
         }
     };
 
@@ -69,7 +72,7 @@ export default function SchoolTermEdit({ schoolTerm, academicYears }: Props) {
                 <div className="mx-auto max-w-2xl px-4 py-4">
                     <div className="mb-6">
                         <Button variant="ghost" size="sm" asChild className="-ml-2 mb-2 h-8">
-                            <Link href={`/admin/academic-years/${data.academic_year_id}`}>
+                            <Link href={academicYearsShow(data.academic_year_id).url}>
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver al año académico
                             </Link>
@@ -167,7 +170,7 @@ export default function SchoolTermEdit({ schoolTerm, academicYears }: Props) {
 
                         <div className="flex items-center justify-end gap-3 border-t pt-6">
                             <Button variant="outline" asChild disabled={processing} className="h-10">
-                                <Link href={`/admin/academic-years/${data.academic_year_id}`}>Cancelar</Link>
+                                <Link href={academicYearsShow(data.academic_year_id || 0).url}>Cancelar</Link>
                             </Button>
                             <Button type="submit" disabled={processing} className="h-10 px-8">
                                 {processing ? (

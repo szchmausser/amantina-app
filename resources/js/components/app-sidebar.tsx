@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
     FolderGit2,
+    LayoutDashboard,
     LayoutGrid,
     Users,
 } from 'lucide-react';
@@ -19,6 +20,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as academicInfoIndex } from '@/routes/admin/academic-info';
 import { index as userIndex } from '@/routes/admin/users';
 import type { NavItem, SharedData } from '@/types';
 
@@ -38,13 +40,22 @@ const footerNavItems: NavItem[] = [
 export function AppSidebar() {
     const { auth } = usePage<SharedData>().props;
 
-    const mainNavItems: NavItem[] = [
-        {
+    const mainNavItems: NavItem[] = [];
+
+    if (auth.permissions?.includes('academic_info.view')) {
+        mainNavItems.push({
+            title: 'Información Académica',
+            href: academicInfoIndex().url,
+            icon: LayoutDashboard,
+        });
+    } else {
+        // Only show default dashboard if user can't see the new one
+        mainNavItems.push({
             title: 'Dashboard',
             href: dashboard(),
             icon: LayoutGrid,
-        },
-    ];
+        });
+    }
 
     if (auth.permissions?.includes('users.view')) {
         mainNavItems.push({
@@ -60,7 +71,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={auth.permissions?.includes('academic_info.view') ? academicInfoIndex().url : dashboard()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

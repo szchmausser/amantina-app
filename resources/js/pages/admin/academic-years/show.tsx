@@ -20,7 +20,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem, SharedData } from '@/types';
-import { route } from '@/lib/ziggy';
+import { dashboard } from '@/routes';
+import { index as academicYearsIndex, edit as academicYearsEdit } from '@/routes/admin/academic-years';
+import { index as enrollmentsIndex } from '@/routes/admin/enrollments';
+import { create as gradesCreate, edit as gradesEdit } from '@/routes/admin/grades';
+import { create as schoolTermsCreate, edit as schoolTermsEdit } from '@/routes/admin/school-terms';
+import { show as sectionsShow, create as sectionsCreate, edit as sectionsEdit } from '@/routes/admin/sections';
 
 interface Section {
     id: number;
@@ -61,8 +66,8 @@ export default function AcademicYearShow({ academicYear }: Props) {
     const hasPermission = (p: string) => auth.permissions?.includes(p);
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Años Escolares', href: '/admin/academic-years' },
+        { title: 'Dashboard', href: dashboard() },
+        { title: 'Años Escolares', href: academicYearsIndex().url },
         { title: academicYear.name, href: '#' },
     ];
 
@@ -76,7 +81,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                         <div>
                             <div className="flex items-center gap-2">
                                 <Link
-                                    href={route('admin.academic-years.index')}
+                                    href={academicYearsIndex().url}
                                     className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
                                 >
                                     <ChevronLeft className="h-5 w-5" />
@@ -91,7 +96,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                         </div>
                         {hasPermission('academic_years.edit') && (
                             <Button variant="outline" asChild>
-                                <Link href={route('admin.academic-years.edit', academicYear.id)}>
+                                <Link href={academicYearsEdit(academicYear.id).url}>
                                     <Edit className="mr-2 h-4 w-4" />
                                     Modificar Ciclo
                                 </Link>
@@ -120,7 +125,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-semibold">Organización del Plantel</h2>
                             <Button size="sm" asChild>
-                                <Link href={`/admin/grades/create?academic_year_id=${academicYear.id}`}>
+                                <Link href={gradesCreate({ query: { academic_year_id: academicYear.id } }).url}>
                                     <Plus className="mr-2 h-4 w-4" />
                                     Nuevo Grado
                                 </Link>
@@ -136,12 +141,12 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                                 <CardTitle className="text-base">{grade.name}</CardTitle>
                                                 <div className="flex items-center gap-1">
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
-                                                        <Link href={`/admin/enrollments?grade_id=${grade.id}`} title="Ver Alumnos de este Grado">
+                                                        <Link href={enrollmentsIndex({ query: { grade_id: grade.id } }).url} title="Ver Alumnos de este Grado">
                                                             <Users className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500" asChild>
-                                                        <Link href={`/admin/grades/${grade.id}/edit`}>
+                                                        <Link href={gradesEdit(grade.id).url}>
                                                             <Edit className="h-3.5 w-3.5" />
                                                         </Link>
                                                     </Button>
@@ -163,21 +168,21 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                                             className="flex items-center gap-1.5 px-2 py-1 pr-1"
                                                         >
                                                             <Link 
-                                                                href={`/admin/sections/${section.id}`}
+                                                                href={sectionsShow(section.id).url}
                                                                 className="hover:text-blue-600 transition-colors"
                                                             >
                                                                 {section.name}
                                                             </Link>
                                                             <div className="flex items-center border-l pl-1.5 ml-0.5 gap-1">
                                                                 <Link
-                                                                    href={`/admin/enrollments?grade_id=${grade.id}&section_id=${section.id}`}
+                                                                    href={enrollmentsIndex({ query: { grade_id: grade.id, section_id: section.id } }).url}
                                                                     className="text-neutral-400 hover:text-blue-500"
                                                                     title="Ver Alumnos"
                                                                 >
                                                                     <Users className="h-2.5 w-2.5" />
                                                                 </Link>
                                                                 <Link
-                                                                    href={`/admin/sections/${section.id}/edit`}
+                                                                    href={sectionsEdit(section.id).url}
                                                                     className="text-neutral-400 hover:text-neutral-600"
                                                                     title="Editar Sección"
                                                                 >
@@ -193,7 +198,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                                         asChild
                                                     >
                                                         <Link
-                                                            href={`/admin/sections/create?grade_id=${grade.id}&academic_year_id=${academicYear.id}`}
+                                                            href={sectionsCreate({ query: { grade_id: grade.id, academic_year_id: academicYear.id } }).url}
                                                         >
                                                             <Plus className="mr-1 h-2.5 w-2.5" />
                                                             Añadir
@@ -220,7 +225,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-semibold">Calendario de Lapsos</h2>
                             <Button size="sm" asChild>
-                                <Link href={`/admin/school-terms/create?academic_year_id=${academicYear.id}`}>
+                                <Link href={schoolTermsCreate({ query: { academic_year_id: academicYear.id } }).url}>
                                     <Plus className="mr-2 h-4 w-4" />
                                     Nuevo Lapso
                                 </Link>
@@ -267,7 +272,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                                                        <Link href={`/admin/school-terms/${term.id}/edit`}>
+                                                        <Link href={schoolTermsEdit(term.id).url}>
                                                             <Edit className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
@@ -300,7 +305,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                         <p className="text-xs text-neutral-500">{academicYear.name}</p>
                                     </div>
                                     <Button variant="ghost" size="sm" asChild>
-                                        <Link href={`/admin/academic-years/${academicYear.id}/edit`}>Editar</Link>
+                                        <Link href={academicYearsEdit(academicYear.id).url}>Editar</Link>
                                     </Button>
                                 </div>
                                 <div className="flex items-center justify-between rounded-lg border p-4">
