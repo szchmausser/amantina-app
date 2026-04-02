@@ -1,8 +1,9 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { formatDate } from '@/lib/utils';
 import {
     ArrowLeft,
     Calendar,
+    ChevronLeft,
     ChevronRight,
     Clock,
     Edit,
@@ -17,7 +18,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem } from '@/types';
+import SettingsLayout from '@/layouts/settings/layout';
+import type { BreadcrumbItem, SharedData } from '@/types';
+import { route } from '@/lib/ziggy';
 
 interface Section {
     id: number;
@@ -45,6 +48,8 @@ interface AcademicYear {
     required_hours: number;
     school_terms: SchoolTerm[];
     grades: Grade[];
+    school_terms_count: number;
+    grades_count: number;
 }
 
 interface Props {
@@ -52,6 +57,9 @@ interface Props {
 }
 
 export default function AcademicYearShow({ academicYear }: Props) {
+    const { auth } = usePage<SharedData>().props;
+    const hasPermission = (p: string) => auth.permissions?.includes(p);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Años Escolares', href: '/admin/academic-years' },
@@ -62,38 +70,34 @@ export default function AcademicYearShow({ academicYear }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Año Escolar: ${academicYear.name}`} />
 
-            <div className="flex h-full flex-1 flex-col gap-6 p-4">
-                {/* Header Section */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" asChild className="-ml-2">
-                            <Link href="/admin/academic-years">
-                                <ArrowLeft className="h-4 w-4" />
-                            </Link>
-                        </Button>
+            <SettingsLayout>
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <div className="flex items-center gap-2">
-                                <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                                    {academicYear.name}
+                                <Link
+                                    href={route('admin.academic-years.index')}
+                                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300"
+                                >
+                                    <ChevronLeft className="h-5 w-5" />
+                                </Link>
+                                <h1 className="text-2xl font-bold tracking-tight">
+                                    Año Escolar: {academicYear.name}
                                 </h1>
-                                {academicYear.is_active && (
-                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400">
-                                        Activo
-                                    </Badge>
-                                )}
                             </div>
-                            <p className="text-sm text-neutral-500">
-                                Meta Institucional: {academicYear.required_hours} horas de servicio.
+                            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                                Configura los lapsos, grados y secciones para este ciclo.
                             </p>
                         </div>
+                        {hasPermission('academic_years.edit') && (
+                            <Button variant="outline" asChild>
+                                <Link href={route('admin.academic-years.edit', academicYear.id)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Modificar Ciclo
+                                </Link>
+                            </Button>
+                        )}
                     </div>
-                    <Button variant="outline" asChild>
-                        <Link href={`/admin/academic-years/${academicYear.id}/edit`}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Modificar Ciclo
-                        </Link>
-                    </Button>
-                </div>
 
                 <Tabs defaultValue="structure" className="w-full">
                     <TabsList className="mb-4">
@@ -314,7 +318,8 @@ export default function AcademicYearShow({ academicYear }: Props) {
                         </Card>
                     </TabsContent>
                 </Tabs>
-            </div>
+                </div>
+            </SettingsLayout>
         </AppLayout>
     );
 }

@@ -64,7 +64,7 @@ class TeacherAssignmentControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->get(route('admin.teacher-assignments.index'));
 
-        $response->assertStatus(200);
+        $response->assertRedirect(route('admin.teacher-assignments.create'));
     }
 
     #[Test]
@@ -74,11 +74,10 @@ class TeacherAssignmentControllerTest extends TestCase
             ->post(route('admin.teacher-assignments.store'), [
                 'academic_year_id' => $this->activeYear->id,
                 'user_id' => $this->teacher->id,
-                'grade_id' => $this->grade1->id,
-                'section_id' => $this->sectionA->id,
+                'section_ids' => [$this->sectionA->id],
             ]);
 
-        $response->assertRedirect(route('admin.teacher-assignments.index'));
+        $response->assertRedirect(route('admin.teacher-assignments.create'));
         $this->assertDatabaseHas('teacher_assignments', [
             'user_id' => $this->teacher->id,
             'section_id' => $this->sectionA->id,
@@ -100,10 +99,10 @@ class TeacherAssignmentControllerTest extends TestCase
                 'academic_year_id' => $this->activeYear->id,
                 'user_id' => $this->teacher->id,
                 'grade_id' => $this->grade1->id,
-                'section_id' => $this->sectionB->id,
+                'section_ids' => [$this->sectionA->id, $this->sectionB->id],
             ]);
 
-        $response->assertRedirect(route('admin.teacher-assignments.index'));
+        $response->assertRedirect(route('admin.teacher-assignments.create'));
         $this->assertDatabaseCount('teacher_assignments', 2);
     }
 
@@ -118,7 +117,7 @@ class TeacherAssignmentControllerTest extends TestCase
                 'academic_year_id' => $this->activeYear->id,
                 'user_id' => $student->id,
                 'grade_id' => $this->grade1->id,
-                'section_id' => $this->sectionA->id,
+                'section_ids' => [$this->sectionA->id],
             ]);
 
         $response->assertSessionHasErrors(['user_id']);
@@ -139,33 +138,24 @@ class TeacherAssignmentControllerTest extends TestCase
             ->post(route('admin.teacher-assignments.store'), [
                 'academic_year_id' => $this->activeYear->id,
                 'user_id' => $this->teacher->id,
-                'grade_id' => $this->grade1->id,
-                'section_id' => $this->sectionA->id,
+                'section_ids' => [$this->sectionA->id],
             ]);
 
-        $response->assertSessionHasErrors(['user_id']); // Unique composite rule fails
+        // In the new controller, this doesn't fail but succeeds (it's a sync)
+        $response->assertRedirect(route('admin.teacher-assignments.create'));
         $this->assertDatabaseCount('teacher_assignments', 1);
     }
 
     #[Test]
-    public function hierarchical_integrity_is_enforced()
+    public function teacher_assignment_requires_valid_sections()
     {
-        $grade2 = Grade::factory()->create([
-            'academic_year_id' => $this->activeYear->id,
-        ]);
-        $sectionForGrade2 = Section::factory()->create([
-            'grade_id' => $grade2->id,
-            'academic_year_id' => $this->activeYear->id,
-        ]);
-
         $response = $this->actingAs($this->admin)
             ->post(route('admin.teacher-assignments.store'), [
                 'academic_year_id' => $this->activeYear->id,
                 'user_id' => $this->teacher->id,
-                'grade_id' => $this->grade1->id, // Mismatch!
-                'section_id' => $sectionForGrade2->id,
+                'section_ids' => [999], // Non-existent
             ]);
 
-        $response->assertSessionHasErrors(['section_id']);
+        $response->assertSessionHasErrors(['section_ids.0']);
     }
 }

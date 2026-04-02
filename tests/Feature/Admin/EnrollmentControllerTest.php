@@ -66,7 +66,7 @@ class EnrollmentControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post(route('admin.enrollments.store'), [
                 'academic_year_id' => $this->activeYear->id,
-                'user_id' => $this->student->id,
+                'user_ids' => [$this->student->id],
                 'grade_id' => $this->grade1->id,
                 'section_id' => $this->sectionA->id,
             ]);
@@ -90,7 +90,7 @@ class EnrollmentControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post(route('admin.enrollments.store'), [
                 'academic_year_id' => $inactiveYear->id,
-                'user_id' => $this->student->id,
+                'user_ids' => [$this->student->id],
                 'grade_id' => $inactiveGrade->id,
                 'section_id' => $inactiveSection->id,
             ]);
@@ -108,12 +108,12 @@ class EnrollmentControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post(route('admin.enrollments.store'), [
                 'academic_year_id' => $this->activeYear->id,
-                'user_id' => $teacher->id,
+                'user_ids' => [$teacher->id],
                 'grade_id' => $this->grade1->id,
                 'section_id' => $this->sectionA->id,
             ]);
 
-        $response->assertSessionHasErrors(['user_id']);
+        $response->assertSessionHasErrors(['user_ids.0']);
         $this->assertDatabaseEmpty('enrollments');
     }
 
@@ -132,7 +132,7 @@ class EnrollmentControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post(route('admin.enrollments.store'), [
                 'academic_year_id' => $this->activeYear->id,
-                'user_id' => $this->student->id,
+                'user_ids' => [$this->student->id],
                 'grade_id' => $this->grade1->id, // Mismatch!
                 'section_id' => $sectionB->id,
             ]);
@@ -159,12 +159,12 @@ class EnrollmentControllerTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post(route('admin.enrollments.store'), [
                 'academic_year_id' => $this->activeYear->id,
-                'user_id' => $this->student->id,
+                'user_ids' => [$this->student->id],
                 'grade_id' => $this->grade1->id,
                 'section_id' => $sectionB->id,
             ]);
 
-        $response->assertSessionHasErrors(['user_id']); // Unique rule fails
+        $response->assertSessionHasErrors(['user_ids.0']); // Unique rule fails
         $this->assertDatabaseCount('enrollments', 1);
     }
 
