@@ -8,6 +8,8 @@ import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
+import { dashboard } from '@/routes';
+import { index as academicYearsIndex, store as academicYearsStore, update as academicYearsUpdate } from '@/routes/admin/academic-years';
 
 interface AcademicYear {
     id: number;
@@ -34,17 +36,17 @@ export default function AcademicYearEdit({ academicYear }: Props) {
     });
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Años Escolares', href: '/admin/academic-years' },
+        { title: 'Dashboard', href: dashboard() },
+        { title: 'Años Escolares', href: academicYearsIndex().url },
         { title: isEditing ? 'Editar' : 'Nuevo', href: '#' },
     ];
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isEditing) {
-            put(`/admin/academic-years/${academicYear.id}`);
+            put(academicYearsUpdate(academicYear.id).url);
         } else {
-            post('/admin/academic-years');
+            post(academicYearsStore().url);
         }
     };
 
@@ -56,7 +58,7 @@ export default function AcademicYearEdit({ academicYear }: Props) {
                 <div className="mx-auto max-w-2xl px-4 py-4">
                     <div className="mb-6">
                         <Button variant="ghost" size="sm" asChild className="-ml-2 mb-2 h-8">
-                            <Link href="/admin/academic-years">
+                            <Link href={academicYearsIndex().url}>
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver al listado
                             </Link>
@@ -161,7 +163,7 @@ export default function AcademicYearEdit({ academicYear }: Props) {
 
                         <div className="flex items-center justify-end gap-3 border-t pt-6">
                             <Button variant="outline" asChild disabled={processing} className="h-10">
-                                <Link href="/admin/academic-years">Cancelar</Link>
+                                <Link href={academicYearsIndex().url}>Cancelar</Link>
                             </Button>
                             <Button type="submit" disabled={processing} className="h-10 px-8">
                                 {processing ? (

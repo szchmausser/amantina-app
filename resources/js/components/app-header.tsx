@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search, Users } from 'lucide-react';
+import { BookOpen, Folder, LayoutDashboard, LayoutGrid, Menu, Search, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -33,6 +33,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
+import { index as academicInfoIndex } from '@/routes/admin/academic-info';
 import { index as userIndex } from '@/routes/admin/users';
 import type { BreadcrumbItem, NavItem, SharedData } from '@/types';
 
@@ -61,13 +62,15 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
 
-    const mainNavItems: NavItem[] = [
-        {
-            title: 'Dashboard',
-            href: dashboard(),
-            icon: LayoutGrid,
-        },
-    ];
+    const mainNavItems: NavItem[] = [];
+
+    if (auth.permissions?.includes('academic_info.view')) {
+        mainNavItems.push({
+            title: 'Información Académica',
+            href: academicInfoIndex().url,
+            icon: LayoutDashboard,
+        });
+    }
 
     if (auth.permissions?.includes('users.view')) {
         mainNavItems.push({
@@ -143,7 +146,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     </div>
 
                     <Link
-                        href={dashboard()}
+                        href={auth.permissions?.includes('academic_info.view') ? academicInfoIndex().url : dashboard()}
                         prefetch
                         className="flex items-center space-x-2"
                     >
@@ -191,7 +194,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 size="icon"
                                 className="group h-9 w-9 cursor-pointer"
                             >
-                                <Search className="!size-5 opacity-80 group-hover:opacity-100" />
+                                <Search className="size-5! opacity-80 group-hover:opacity-100" />
                             </Button>
                             <div className="ml-1 hidden gap-1 lg:flex">
                                 {rightNavItems.map((item) => (

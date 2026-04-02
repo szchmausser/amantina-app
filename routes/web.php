@@ -38,6 +38,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Teacher Assignments
         Route::resource('teacher-assignments', TeacherAssignmentController::class)->except(['show', 'edit', 'update']);
+
+        // Academic Info Dashboard
+        Route::get('academic-info', [\App\Http\Controllers\Admin\AcademicStructureOverviewController::class, 'index'])->name('academic-info.index');
     });
 });
 
