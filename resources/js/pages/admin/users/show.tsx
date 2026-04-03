@@ -10,8 +10,10 @@ import {
     Trash2,
     UserPlus,
 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import {
     index as userIndex,
@@ -31,6 +33,7 @@ interface Props {
         permissions: any[];
         representatives: any[];
         represented_students: any[];
+        avatar_url?: string | null;
     };
     relationshipTypes: any[];
     availableRepresentatives: any[];
@@ -49,6 +52,7 @@ export default function Show({
 }: Props) {
     const { auth } = usePage<any>().props;
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const getInitials = useInitials();
 
     const hasPermission = (p: string) => auth.permissions?.includes(p);
 
@@ -94,7 +98,7 @@ export default function Show({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Usuario: ${user.name}`} />
 
-            <div className="mx-auto max-w-4xl p-4 lg:p-8">
+            <div className="p-4 lg:p-8">
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <Button
@@ -109,9 +113,21 @@ export default function Show({
                             </Link>
                         </Button>
                         <div className="flex items-center gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                <UserIcon className="h-6 w-6 text-neutral-500" />
-                            </div>
+                            {(user as any).avatar_url ? (
+                                <Avatar className="h-12 w-12">
+                                    <AvatarImage
+                                        src={(user as any).avatar_url}
+                                        alt={user.name}
+                                    />
+                                    <AvatarFallback>
+                                        {getInitials(user.name)}
+                                    </AvatarFallback>
+                                </Avatar>
+                            ) : (
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+                                    <UserIcon className="h-6 w-6 text-neutral-500" />
+                                </div>
+                            )}
                             <div>
                                 <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                                     {user.name}

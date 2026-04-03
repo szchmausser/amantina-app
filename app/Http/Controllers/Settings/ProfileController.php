@@ -22,6 +22,7 @@ class ProfileController extends Controller
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'avatar_url' => $request->user()->avatar_url,
         ]);
     }
 
@@ -56,5 +57,40 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    /**
+     * Update the user's avatar.
+     */
+    public function updateAvatar(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'mimes:jpeg,png,gif,webp', 'max:2048'],
+        ]);
+
+        $user = $request->user();
+
+        if ($user->getFirstMedia('avatar')) {
+            $user->getFirstMedia('avatar')->delete();
+        }
+
+        $user->addMediaFromRequest('avatar')
+            ->toMediaCollection('avatar');
+
+        return back()->with('success', 'Avatar actualizado correctamente.');
+    }
+
+    /**
+     * Remove the user's avatar.
+     */
+    public function removeAvatar(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->getFirstMedia('avatar')) {
+            $user->getFirstMedia('avatar')->delete();
+        }
+
+        return back()->with('success', 'Avatar eliminado correctamente.');
     }
 }

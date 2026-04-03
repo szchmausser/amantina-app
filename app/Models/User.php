@@ -13,6 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements HasMedia
@@ -47,6 +48,10 @@ class User extends Authenticatable implements HasMedia
         'two_factor_secret',
         'two_factor_recovery_codes',
         'remember_token',
+    ];
+
+    protected $appends = [
+        'avatar_url',
     ];
 
     /**
@@ -93,5 +98,24 @@ class User extends Authenticatable implements HasMedia
         return $this->belongsToMany(User::class, 'student_representatives', 'representative_id', 'student_id')
             ->withPivot('relationship_type_id')
             ->withTimestamps();
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+            ->registerMediaConversions(function (Media $media) {
+                $this->addMediaConversion('thumb')
+                    ->width(150)
+                    ->height(150)
+                    ->fit('cover', 150, 150);
+            });
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->getFirstMediaUrl('avatar', 'thumb')
+            ?: $this->getFirstMediaUrl('avatar');
     }
 }
