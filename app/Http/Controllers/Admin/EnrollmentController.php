@@ -173,19 +173,85 @@ class EnrollmentController extends Controller
     {
         $validated = $request->validated();
 
+        // Eliminar duplicados del array de user_ids
+        $validated['user_ids'] = array_unique($validated['user_ids']);
+
+        // Detectar alumnos que ya están inscritos y recopilar información detallada
+        $skippedDetails = [];
+        $eligibleUserIds = [];
+
         foreach ($validated['user_ids'] as $userId) {
-            Enrollment::create([
-                'user_id' => $userId,
-                'academic_year_id' => $validated['academic_year_id'],
-                'grade_id' => $validated['grade_id'],
-                'section_id' => $validated['section_id'],
-            ]);
+            $existingEnrollment = Enrollment::withTrashed()
+                ->where('user_id', $userId)
+                ->where('academic_year_id', $validated['academic_year_id'])
+                ->first();
+
+            if ($existingEnrollment && !$existingEnrollment->trashed()) {
+                // El alumno tiene un enrollment activo
+                $existingEnrollment->load(['student', 'grade', 'section']);
+                $skippedDetails[] = [
+                    'name' => $existingEnrollment->student->name,
+                    'cedula' => $existingEnrollment->student->cedula,
+                    'grade' => $existingEnrollment->grade->name,
+                    'section' => $existingEnrollment->section->name,
+                ];
+            } else {
+                $eligibleUserIds[] = $userId;
+            }
         }
 
-        $count = count($validated['user_ids']);
+        // Crear o restaurar inscripciones para alumnos elegibles
+        foreach ($eligibleUserIds as $userId) {
+            $trashedEnrollment = Enrollment::onlyTrashed()
+                ->where('user_id', $userId)
+                ->where('academic_year_id', $validated['academic_year_id'])
+                ->first();
+
+            if ($trashedEnrollment) {
+                // Restaurar y actualizar el enrollment eliminado
+                $trashedEnrollment->restore();
+                $trashedEnrollment->update([
+                    'grade_id' => $validated['grade_id'],
+                    'section_id' => $validated['section_id'],
+                ]);
+            } else {
+                // Crear nuevo enrollment
+                Enrollment::create([
+                    'user_id' => $userId,
+                    'academic_year_id' => $validated['academic_year_id'],
+                    'grade_id' => $validated['grade_id'],
+                    'section_id' => $validated['section_id'],
+                ]);
+            }
+        }
+
+        $count = count($eligibleUserIds);
+        $skippedCount = count($skippedDetails);
+
+        // Construir mensaje de éxito
+        if ($count > 0) {
+            $message = "{$count} alumno(s) promovido(s) correctamente.";
+        } else {
+            $message = "No se promovió ningún alumno.";
+        }
+
+        // Si hay alumnos omitidos, agregar advertencia detallada
+        if ($skippedCount > 0) {
+            $warningMessage = "ATENCIÓN: {$skippedCount} alumno(s) fueron omitidos porque ya están inscritos en el año escolar {$validated['academic_year_id']}:\n\n";
+            
+            foreach ($skippedDetails as $detail) {
+                $warningMessage .= "• {$detail['name']} (CI: {$detail['cedula']}) - Inscrito en {$detail['grade']} - Sección {$detail['section']}\n";
+            }
+            
+            $warningMessage .= "\nSi necesita cambiar su inscripción, primero debe eliminar la inscripción actual desde el panel de Inscripciones.";
+
+            return redirect()->back()
+                ->with('success', $message)
+                ->with('warning', $warningMessage);
+        }
 
         return redirect()->back()
-            ->with('success', "{$count} alumno(s) promovido(s) correctamente.");
+            ->with('success', $message);
     }
 
     public function destroy(Enrollment $enrollment): RedirectResponse

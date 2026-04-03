@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
@@ -26,6 +26,16 @@ export default function AppSidebarLayout({
                             <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                             <AlertTitle>Éxito</AlertTitle>
                             <AlertDescription>{flash.success}</AlertDescription>
+                        </Alert>
+                    </div>
+                )}
+
+                {flash.warning && (
+                    <div className="px-4 pt-4 sm:px-6">
+                        <Alert variant="default" className="border-amber-500/50 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-200">
+                            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            <AlertTitle>Advertencia</AlertTitle>
+                            <AlertDescription className="whitespace-pre-line">{flash.warning}</AlertDescription>
                         </Alert>
                     </div>
                 )}

@@ -36,27 +36,33 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 
 ## Resumen de Hitos
 
-| Hito | Título                       | Enfoque Principal                         |
-| ---- | ---------------------------- | ----------------------------------------- |
-| 0    | Instalacion y esqueleto base | Setup inicial, auth base, Spatie          |
-| 1    | Usuarios: base del sistema   | Tabla users definitiva y seeder admin     |
-| 2    | Roles técnicos (Spatie)      | Definición de roles base para Auth        |
-| 3    | Autenticacion personalizada  | Login con contexto y multi-rol            |
-| 4    | CRUD de usuarios y RBAC      | Gestión integral y Seguridad Blindada     | ✅ |
-| 5    | Estructura academica         | Años, lapsos, grados y secciones          |
-| 6    | Inscripciones y asignaciones | Vínculo académico y lógica de secciones   |
-| 7    | Representantes y RBAC final  | Vínculo familiar y Policies de relación   |
-| 8    | Informacion de salud         | Condiciones médicas y soportes            |
-| 9    | Catalogos de configuracion   | Actividades y ubicaciones                 |
-| 10   | Jornadas de campo            | Registro central de actividades           |
-| 11   | Asistencia y subactividades  | Acreditación de horas y evidencias        |
-| 12   | Horas externas               | Acreditación para transferidos            |
-| 13   | Acumulados y dashboards      | Progreso visual y KPIs                    |
-| 14   | Reportes en PDF              | Generación de certificados y listados     |
-| 15   | Revision y estabilizacion    | QA final y seeders demo                   |
+| Hito | Título                       | Enfoque Principal                          | Estado |
+| ---- | ---------------------------- | ------------------------------------------ | ------ |
+| 0    | Instalacion y esqueleto base | Setup inicial, auth base, Spatie           | ✅     |
+| 1    | Usuarios: base del sistema   | Tabla users definitiva y seeder admin      | ✅     |
+| 2    | Roles técnicos (Spatie)      | Definición de roles base para Auth         | ✅     |
+| 3    | Autenticacion personalizada  | Login con contexto y multi-rol             | ✅     |
+| 4    | CRUD de usuarios y RBAC      | Gestión integral y Seguridad Blindada      | ✅     |
+| 5    | Estructura academica         | Años, lapsos, grados y secciones           | ✅     |
+| 6    | Inscripciones y asignaciones | Vínculo académico y lógica de secciones    | ✅     |
+| 7    | Representantes               | Vínculo familiar (asignación desde perfil) | ✅     |
+| 8    | Información de salud         | Condiciones médicas y soportes             | 🔲     |
+| 9    | Catálogos de configuración   | Actividades y ubicaciones                  | 🔲     |
+| 10   | Jornadas de campo            | Registro central de actividades            | 🔲     |
+| 11   | Asistencia y subactividades  | Acreditación de horas y evidencias         | 🔲     |
+| 12   | Horas externas               | Acreditación para transferidos             | 🔲     |
+| 13   | Acumulados y dashboards      | Progreso visual y KPIs                     | 🔲     |
+| 14   | Reportes en PDF              | Generación de certificados y listados      | 🔲     |
+| 15   | Revisión y estabilización    | QA final y seeders demo                    | 🔲     |
 
 > [!NOTE]
 > Este plan dicta la planificación general del proyecto. Los detalles de cada hito se desarrollan en las secciones siguientes.
+
+> **Nota de progreso (2026-04-03):**
+>
+> - Hitos 0-7 completados
+> - Hito 7 simplificado: solo asignación de representantes desde perfil de estudiante (RBAC completo diferido)
+> - Próximos hitos pendientes: 8-15
 
 ---
 
@@ -443,7 +449,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             <div className="flex flex-col lg:flex-row lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav
-                        className="flex flex-col space-x-0 space-y-1"
+                        className="flex flex-col space-y-1 space-x-0"
                         aria-label="Settings"
                     >
                         {sidebarNavItems.map((item, index) => (
@@ -655,7 +661,7 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
                                         leave="transition ease-in-out"
                                         leaveTo="opacity-0"
                                     >
-                                        <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+                                        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                             <Check className="h-4 w-4" />
                                             Guardado correctamente
                                         </p>
@@ -1069,7 +1075,7 @@ export default function Register() {
                             </Button>
                         </div>
 
-                        <div className="text-muted-foreground text-center text-sm">
+                        <div className="text-center text-sm text-muted-foreground">
                             ¿Ya tienes cuenta?{' '}
                             <TextLink href={login()} tabIndex={12}>
                                 Iniciar sesión
@@ -1312,6 +1318,7 @@ php artisan test
 Se definen los 4 roles básicos del sistema para permitir la lógica de "Login con Contexto". La autenticación no se basa en permisos individuales en este punto, sino en la pertenencia a un rol y su jerarquía de prioridad.
 
 **Roles base:**
+
 - `admin` (Jerarquía 1 - Máxima)
 - `profesor` (Jerarquía 2)
 - `alumno` (Jerarquía 3)
@@ -1320,8 +1327,10 @@ Se definen los 4 roles básicos del sistema para permitir la lógica de "Login c
 > **Regla de Negocio (Login)**: Si un usuario posee múltiples roles y no especifica un `context` al loguearse, el sistema asignará automáticamente el rol de mayor jerarquía disponible según la lista anterior.
 
 ### [v] Hito 3 — Autenticación Personalizada (Login con Contexto)
+
 **Estado:** Finalizado ✅
 **Logros:**
+
 - **Login en Español**: Interfaz traducida íntegramente (`auth/login.tsx`).
 - **Selector de Contexto**: Soporte para parámetro `context` opcional.
 - **Jerarquía de Roles**: Implementación de prioridad automática (`admin` > `profesor` > `alumno` > `representante`).
@@ -1336,11 +1345,13 @@ Se definen los 4 roles básicos del sistema para permitir la lógica de "Login c
 ---
 
 ### [v] Hito 4 — CRUD de Usuarios y Seguridad Blindada
+
 **Estado:** Finalizado ✅
 
 Este hito transformó la gestión básica de usuarios en un sistema robusto, multi-rol y altamente seguro, sentando las bases para el control administrativo de la institución.
 
 **Logros:**
+
 - **Soporte Multi-rol**: Migración exitosa a `syncRoles()` permitiendo que un usuario posea múltiples identidades (ej: Profesor + Representante).
 - **CRUD Administrativo**: Se implementó la creación y edición de usuarios con limpieza automática de campos condicionales (`is_transfer`, `institution_origin`).
 - **Vista de Detalles (Show)**: Se creó una ficha de usuario de solo lectura para consulta rápida sin riesgo de edición accidental.
@@ -1387,18 +1398,18 @@ Este hito transformó la gestión básica de usuarios en un sistema robusto, mul
 
 - **admin**: Posee todos los permisos.
 - **profesor**:
-  - `users:create` (solo estudiantes).
-  - `users:view-any` (solo estudiantes de su sección).
-  - `users:edit-any` (solo estudiantes de su sección).
-  - `institution:view`.
+    - `users:create` (solo estudiantes).
+    - `users:view-any` (solo estudiantes de su sección).
+    - `users:edit-any` (solo estudiantes de su sección).
+    - `institution:view`.
 - **alumno**:
-  - `users:view-any` (sus docentes y su representante).
-  - `users:view-self`.
-  - `institution:view`.
+    - `users:view-any` (sus docentes y su representante).
+    - `users:view-self`.
+    - `institution:view`.
 - **representante**:
-  - `users:view-any` (su representado).
-  - `users:edit-any` (su representado - datos limitados).
-  - `institution:view`.
+    - `users:view-any` (su representado).
+    - `users:edit-any` (su representado - datos limitados).
+    - `institution:view`.
 
 #### 2. Implementación de Policies de Relación
 
@@ -1438,19 +1449,19 @@ Este sub-hito completa la infraestructura de control de acceso permitiendo la ge
 
 #### Archivos involucrados
 
-| Archivo | Acción | Motivo |
-|---------|--------|--------|
-| `app/Http/Controllers/Admin/RoleController.php` | Crear | Listado y asignación de permisos a roles |
-| `app/Http/Controllers/Admin/PermissionController.php` | Crear | Listado informativo de permisos y roles |
-| `app/Http/Requests/Admin/UpdateRoleRequest.php` | Crear | Validación de sincronización de permisos |
-| `resources/js/pages/admin/roles/index.tsx` | Crear | UI de listado de roles con permisos agrupados |
-| `resources/js/pages/admin/roles/edit.tsx` | Crear | UI de edición de permisos por rol |
-| `resources/js/pages/admin/permissions/index.tsx` | Crear | UI informativa de matriz de permisos |
-| `resources/js/pages/admin/users/edit.tsx` | Modificar | Sección de permisos directos para el usuario |
-| `tests/Feature/Admin/RoleManagementTest.php` | Crear | Tests de CRUD restringido de roles |
-| `tests/Feature/Admin/PermissionBasedAccessTest.php` | Crear | Tests de herencia y permisos directos |
-| `resources/js/pages/admin/users/show.tsx` | Crear | Vista de solo lectura de detalles del usuario |
-| `tests/Feature/Admin/UserShowTest.php` | Crear | Tests de acceso a la vista de detalles |
+| Archivo                                               | Acción    | Motivo                                        |
+| ----------------------------------------------------- | --------- | --------------------------------------------- |
+| `app/Http/Controllers/Admin/RoleController.php`       | Crear     | Listado y asignación de permisos a roles      |
+| `app/Http/Controllers/Admin/PermissionController.php` | Crear     | Listado informativo de permisos y roles       |
+| `app/Http/Requests/Admin/UpdateRoleRequest.php`       | Crear     | Validación de sincronización de permisos      |
+| `resources/js/pages/admin/roles/index.tsx`            | Crear     | UI de listado de roles con permisos agrupados |
+| `resources/js/pages/admin/roles/edit.tsx`             | Crear     | UI de edición de permisos por rol             |
+| `resources/js/pages/admin/permissions/index.tsx`      | Crear     | UI informativa de matriz de permisos          |
+| `resources/js/pages/admin/users/edit.tsx`             | Modificar | Sección de permisos directos para el usuario  |
+| `tests/Feature/Admin/RoleManagementTest.php`          | Crear     | Tests de CRUD restringido de roles            |
+| `tests/Feature/Admin/PermissionBasedAccessTest.php`   | Crear     | Tests de herencia y permisos directos         |
+| `resources/js/pages/admin/users/show.tsx`             | Crear     | Vista de solo lectura de detalles del usuario |
+| `tests/Feature/Admin/UserShowTest.php`                | Crear     | Tests de acceso a la vista de detalles        |
 
 #### Pasos de Implementación
 
@@ -1459,6 +1470,7 @@ Este sub-hito completa la infraestructura de control de acceso permitiendo la ge
 3. **Persistencia**: Se habilitó la carga expansiva (`load('roles.permissions', 'permissions')`) para que la UI pueda discernir entre permisos heredados del rol (deshabilitados en edición de usuario) y permisos directos.
 
 #### ENTREGA
+
 - Panel de Roles donde se pueden editar los permisos de `admin`, `profesor`, etc.
 - Panel de Permisos para ver qué roles tienen acceso a qué funcionalidades.
 - Sección "Permisos Directos" en la edición de cada usuario.
@@ -1476,26 +1488,27 @@ Este sub-hito completa la infraestructura de control de acceso permitiendo la ge
 
 #### Archivos involucrados
 
-| Archivo | Acción | Motivo |
-|---------|--------|--------|
-| `app/Models/AcademicYear.php` | Crear | Entidad raíz del ciclo escolar |
-| `app/Models/SchoolTerm.php` | Crear | División temporal (Lapsos) |
-| `app/Models/Grade.php` | Crear | Grados académicos (1ero a 5to) |
-| `app/Models/Section.php` | Crear | Grupos específicos de alumnos |
-| `app/Http/Controllers/Admin/*` | Crear | Controladores para gestión administrativa |
-| `app/Http/Requests/Admin/*` | Crear | Validaciones jerárquicas y de unicidad |
-| `database/seeders/AcademicYearSeeder.php` | Crear | Estructura base para desarrollo |
+| Archivo                                   | Acción | Motivo                                    |
+| ----------------------------------------- | ------ | ----------------------------------------- |
+| `app/Models/AcademicYear.php`             | Crear  | Entidad raíz del ciclo escolar            |
+| `app/Models/SchoolTerm.php`               | Crear  | División temporal (Lapsos)                |
+| `app/Models/Grade.php`                    | Crear  | Grados académicos (1ero a 5to)            |
+| `app/Models/Section.php`                  | Crear  | Grupos específicos de alumnos             |
+| `app/Http/Controllers/Admin/*`            | Crear  | Controladores para gestión administrativa |
+| `app/Http/Requests/Admin/*`               | Crear  | Validaciones jerárquicas y de unicidad    |
+| `database/seeders/AcademicYearSeeder.php` | Crear  | Estructura base para desarrollo           |
 
 #### Pasos de Implementación
 
 1.  **Modelos y Migraciones**: Se crearon las 4 entidades base con `SoftDeletes`. Se implementó la denormalización de `academic_year_id` en la tabla `sections` para optimizar consultas de filtrado por año sin múltiples joins.
-2.  **Lógica de Negocio**: 
+2.  **Lógica de Negocio**:
     - Se implementó un "único año activo" a nivel de controlador (`AcademicYearController`), asegurando que al activar uno, los demás se desactiven automáticamente.
     - Se definieron relaciones Eloquent completas (HasMany, BelongsTo) para navegar la jerarquía.
 3.  **Seguridad (Permissions)**: Se agregaron 16 nuevos permisos al `RoleAndPermissionSeeder` cubriendo el CRUD de cada una de las 4 nuevas entidades, asignados por defecto al rol `admin`.
 4.  **Backend (Controllers & Requests)**: Se implementaron controladores que manejan el filtrado por `academic_year_id` y `grade_id` mediante query strings, facilitando la navegación recursiva en el frontend.
 
 #### ENTREGA
+
 - Estructura académica completa en base de datos.
 - Seeder operativo que genera el año actual con 3 lapsos, 5 grados y 2 secciones por grado.
 - API/Controllers listos para ser consumidos por Inertia.

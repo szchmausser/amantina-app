@@ -2,9 +2,14 @@
 
 ## Especificaciones del Sistema
 
-**Versión 6.2** (Estructura Académica e Identidad Visual Consistente)
+**Versión 6.3** (Hitos 0-7 Completados)
 
 _Sistema de registro, seguimiento y reporte de horas prácticas acumuladas en la asignatura Socioproductiva._
+
+> **Estado de implementación (2026-04-03):**
+>
+> - ✅ Hitos 0-7 completados (Usuarios, Auth, RBAC, Estructura Académica, Inscripciones, Representantes)
+> - 📋 Hitos 8-15 pendientes (Salud, Catálogos, Jornadas, Asistencia, Horas, Reportes)
 
 ---
 
@@ -62,28 +67,29 @@ La decisión de fijar el contexto para toda la sesión, en lugar de permitir cam
 
 #### 2.3 Matriz de Permisos
 
-| Acción                                  | Alumno     | Representante     | Profesor        | Administrador |
-| --------------------------------------- | ---------- | ----------------- | --------------- | ------------- |
-| Ver propio perfil y horas               | Sí         | Sí (representado) | Sí              | Sí            |
-| Ver perfil y horas de otros alumnos     | No         | No                | Sí              | Sí            |
-| Editar datos propios (email, tel, foto) | Sí         | Sí                | Sí              | Sí            |
-| Editar datos académicos del alumno      | No         | No                | Sí              | Sí            |
-| Crear y editar profesores               | No         | No                | No              | Sí            |
-| Crear jornadas                          | No         | No                | Sí              | Sí            |
-| Editar jornada propia                   | No         | No                | Sí              | Sí            |
-| Ver jornada ajena                       | No         | No                | Sí              | Sí            |
-| Editar jornada ajena                    | No         | No                | No              | Sí            |
-| Cargar horas externas                   | No         | No                | No              | Sí            |
-| Ver propias novedades                   | Sí         | Sí (representado) | Sí              | Sí            |
-| Ver novedades de otros alumnos          | No         | No                | Sí              | Sí            |
-| Ver información de salud propia         | Sí         | Sí (representado) | Sí              | Sí            |
-| Registrar información de salud          | No         | No                | Sí (a su cargo) | Sí            |
-| Generar reportes                        | No         | No                | Parcial         | Sí            |
-| Gestión de configuración / Institución    | No         | No                | No              | Sí            |
-| Gestión de Roles y Permisos             | No         | No                | No              | Sí            |
+| Acción                                  | Alumno | Representante     | Profesor        | Administrador |
+| --------------------------------------- | ------ | ----------------- | --------------- | ------------- |
+| Ver propio perfil y horas               | Sí     | Sí (representado) | Sí              | Sí            |
+| Ver perfil y horas de otros alumnos     | No     | No                | Sí              | Sí            |
+| Editar datos propios (email, tel, foto) | Sí     | Sí                | Sí              | Sí            |
+| Editar datos académicos del alumno      | No     | No                | Sí              | Sí            |
+| Crear y editar profesores               | No     | No                | No              | Sí            |
+| Crear jornadas                          | No     | No                | Sí              | Sí            |
+| Editar jornada propia                   | No     | No                | Sí              | Sí            |
+| Ver jornada ajena                       | No     | No                | Sí              | Sí            |
+| Editar jornada ajena                    | No     | No                | No              | Sí            |
+| Cargar horas externas                   | No     | No                | No              | Sí            |
+| Ver propias novedades                   | Sí     | Sí (representado) | Sí              | Sí            |
+| Ver novedades de otros alumnos          | No     | No                | Sí              | Sí            |
+| Ver información de salud propia         | Sí     | Sí (representado) | Sí              | Sí            |
+| Registrar información de salud          | No     | No                | Sí (a su cargo) | Sí            |
+| Generar reportes                        | No     | No                | Parcial         | Sí            |
+| Gestión de configuración / Institución  | No     | No                | No              | Sí            |
+| Gestión de Roles y Permisos             | No     | No                | No              | Sí            |
 
 > [!IMPORTANT]
 > A partir de la Versión 6.1, la seguridad se ha reforzado con una **doble capa de validación**:
+>
 > 1.  **Backend (Middleware + Gates/Policies):** Todas las acciones de escritura (`store`, `update`, `delete`) en el panel administrativo están protegidas por `Gate::authorize`.
 > 2.  **Frontend (Conditional Rendering):** La interfaz de usuario oculta proactivamente enlaces de navegación (Sidebar) y botones de acción (Editar, Borrar) para usuarios que no poseen el permiso correspondiente, evitando intentos de acceso fallidos y mejorando la UX.
 
@@ -99,22 +105,22 @@ El sistema diferencia estrictamente entre el autoregistro público y la gestión
 
 Este canal es **exclusivo para alumnos**. Los roles de profesor, administrador y representante se gestionan internamente para prevenir el acceso no autorizado de personal no verificado.
 
-| Campo | Regla | Razón de Negocio |
-| :--- | :--- | :--- |
-| **Rol por defecto** | `alumno` | El sistema está diseñado centrífugaMENTE alrededor del alumno; cualquier acceso externo inicial se presume como tal. |
-| **Datos Personales** | **Obligatorios** | Al ser un autoregistro, el usuario conoce sus datos. Exigirlos desde el inicio **evita la existencia de "perfiles fantasma"** que requerirían labor administrativa posterior para completarlos. El alumno es responsable de la integridad de su ficha de contacto inicial. |
-| **Estado inicial** | `is_active = true` | Permite la usabilidad inmediata del sistema tras el registro. |
-| **Transferencias** | Lógica condicionada | Si `is_transfer` es `true`, la `institution_origin` es obligatoria. Si es `false`, el sistema **automatiza** el nombre de la institución local desde la tabla `institution` para reducir errores de digitación y simplificar el flujo. |
+| Campo                | Regla               | Razón de Negocio                                                                                                                                                                                                                                                           |
+| :------------------- | :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rol por defecto**  | `alumno`            | El sistema está diseñado centrífugaMENTE alrededor del alumno; cualquier acceso externo inicial se presume como tal.                                                                                                                                                       |
+| **Datos Personales** | **Obligatorios**    | Al ser un autoregistro, el usuario conoce sus datos. Exigirlos desde el inicio **evita la existencia de "perfiles fantasma"** que requerirían labor administrativa posterior para completarlos. El alumno es responsable de la integridad de su ficha de contacto inicial. |
+| **Estado inicial**   | `is_active = true`  | Permite la usabilidad inmediata del sistema tras el registro.                                                                                                                                                                                                              |
+| **Transferencias**   | Lógica condicionada | Si `is_transfer` es `true`, la `institution_origin` es obligatoria. Si es `false`, el sistema **automatiza** el nombre de la institución local desde la tabla `institution` para reducir errores de digitación y simplificar el flujo.                                     |
 
 ##### 3.1.2 — Registro Administrativo (`/admin/users/create`)
 
 Permite al Administrador (o Profesor con permisos) crear usuarios con cualquier rol, adaptándose a la realidad operativa del plantel.
 
-| Rol a Crear | Reglas de Validación | Justificación Operativa |
-| :--- | :--- | :--- |
-| **Alumno** | **Flexibilidad total** (Nullables) | Es común que al momento de la inscripción académica la institución no disponga de todos los datos personales (teléfono, dirección) del estudiante. El admin puede crear la ficha básica para **facilitar la carga rápida** y el alumno tiene la responsabilidad de completarla al loguearse. |
-| **Docente / Admin** | **Datos Obligatorios** | Debido a su alto nivel de responsabilidad y contacto con menores, **no deben existir perfiles de personal institucional sin datos verificados**. La institución debe garantizar que sabe cómo contactar a su personal de forma inmediata. |
-| **Representante** | **Datos Obligatorios** | Similar a los docentes, se requiere información de contacto completa para el seguimiento de los representados. La responsabilidad legal del representante exige trazabilidad absoluta desde su creación. |
+| Rol a Crear         | Reglas de Validación               | Justificación Operativa                                                                                                                                                                                                                                                                      |
+| :------------------ | :--------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Alumno**          | **Flexibilidad total** (Nullables) | Es común que al momento de la inscripción académica la institución no disponga de todos los datos personales (teléfono, dirección) del estudiante. El admin puede crear la ficha básica para **facilitar la carga rápida** y el alumno tiene la responsabilidad de completarla al loguearse. |
+| **Docente / Admin** | **Datos Obligatorios**             | Debido a su alto nivel de responsabilidad y contacto con menores, **no deben existir perfiles de personal institucional sin datos verificados**. La institución debe garantizar que sabe cómo contactar a su personal de forma inmediata.                                                    |
+| **Representante**   | **Datos Obligatorios**             | Similar a los docentes, se requiere información de contacto completa para el seguimiento de los representados. La responsabilidad legal del representante exige trazabilidad absoluta desde su creación.                                                                                     |
 
 > [!NOTE]
 > Esta arquitectura de registro asegura que la base de datos mantenga integridad referencial y de datos sin sacrificar la agilidad administrativa necesaria durante los periodos de inscripción escolar.
@@ -228,19 +234,19 @@ Jerarquía académica:
 
 Cada año escolar es un registro independiente con sus propias fechas y su propio cupo de horas requeridas. El cupo no es global porque puede variar entre promociones: una generación puede tener un cupo de 500 horas y la siguiente de 600, según las políticas institucionales vigentes en cada periodo.
 
-| Campo | Razón de existir |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `name` (VARCHAR) | Almacenado explícitamente (no calculado) para evitar formateo en cada consulta y permitir flexibilidad si la convención de nombre cambia. |
-| `is_active` (BOOLEAN) | Indica cuál es el año escolar vigente institucionalmente. Solo uno puede estar activo a la vez, gestionado por código. |
-| `required_hours` (DECIMAL) | Cupo de horas requeridas para esta promoción. Configurable por año porque puede variar entre generaciones. |
+| Campo                      | Razón de existir                                                                                                                          |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `name` (VARCHAR)           | Almacenado explícitamente (no calculado) para evitar formateo en cada consulta y permitir flexibilidad si la convención de nombre cambia. |
+| `is_active` (BOOLEAN)      | Indica cuál es el año escolar vigente institucionalmente. Solo uno puede estar activo a la vez, gestionado por código.                    |
+| `required_hours` (DECIMAL) | Cupo de horas requeridas para esta promoción. Configurable por año porque puede variar entre generaciones.                                |
 
 #### 6.2 Tabla `school_terms` (Lapsos)
 
 La institución divide cada año escolar en 3 lapsos. Esta segmentación es necesaria porque los reportes y estadísticas deben poder consultarse por lapso: cuántas jornadas hubo en el primer lapso, cuántas horas acumuló un estudiante en el segundo, etc. Sin esta tabla, no existiría forma de segmentar temporalmente la información dentro de un año escolar.
 
-| Campo | Razón de existir |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `term_number` (TINYINT) | Asignado automáticamente por el backend contando los lapsos existentes del año escolar. Evita errores de numeración manual. No puede superar 3. |
+| Campo                     | Razón de existir                                                                                                                                                             |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `term_number` (TINYINT)   | Asignado automáticamente por el backend contando los lapsos existentes del año escolar. Evita errores de numeración manual. No puede superar 3.                              |
 | `start_date` / `end_date` | Permiten asignación automática del lapso a cada jornada. Al crear una sesión, el backend compara `start_datetime` contra estas fechas para determinar a qué lapso pertenece. |
 
 > Los lapsos deben ser configurados por el administrador **ANTES** de que los profesores comiencen a registrar jornadas. Si no existen lapsos configurados para el año escolar activo, el sistema retornará error al intentar crear una jornada.
@@ -249,8 +255,8 @@ La institución divide cada año escolar en 3 lapsos. Esta segmentación es nece
 
 Los grados no son un catálogo global reutilizable. Cada año escolar tiene sus propios registros de grado. Esto permite que en el futuro la institución pueda tener configuraciones distintas por año si lo requiere, y garantiza que cada grado esté inequívocamente asociado a un periodo académico específico.
 
-| Campo | Razón de existir |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Campo             | Razón de existir                                                                                                                                                                       |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `order` (TINYINT) | El ordenamiento correcto de grados no puede derivarse del nombre si este es texto libre. Este campo garantiza que '1er año' siempre aparezca antes que '2do año' en cualquier listado. |
 
 #### 6.4 Tabla `sections`
@@ -271,10 +277,10 @@ Registra en qué sección está inscrito cada estudiante durante cada año escol
 
 Si un estudiante reprueba, tendrá dos registros en `enrollments` con el mismo `grade_id` pero diferente `academic_year_id`. Esto es correcto y esperado: refleja que el estudiante cursó el mismo grado en dos periodos distintos.
 
-| Campo | Razón de existir |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Campo                         | Razón de existir                                                                                                        |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `academic_year_id` (desnorm.) | Evita navegar enrollment -> section -> grade -> academic_year en consultas como 'todos los estudiantes del año activo'. |
-| `grade_id` (desnorm.) | Evita el mismo JOIN para consultas como 'todos los estudiantes de 3er año'. |
+| `grade_id` (desnorm.)         | Evita el mismo JOIN para consultas como 'todos los estudiantes de 3er año'.                                             |
 
 ```text
 Índice único: user_id + academic_year_id
@@ -304,14 +310,14 @@ El proceso de inscripción de alumnos y asignación de profesores a secciones es
 
 Las siguientes reglas son invariantes del sistema y deben ser validadas tanto en el backend (Form Requests) como reflejadas en el frontend (UI deshabilitada o mensajes de advertencia):
 
-| Regla | Descripción | Motivo |
-|-------|-------------|--------|
-| **RN-1: Solo año activo** | Las inscripciones y asignaciones únicamente se realizan contra el año escolar cuyo campo `is_active = true`. | Evita inscripciones accidentales en años pasados o futuros no configurados. |
-| **RN-2: Estructura previa obligatoria** | El año activo debe tener al menos un grado con al menos una sección configurados antes de permitir inscripciones. Si no se cumple, el sistema muestra un banner de advertencia con enlace a la gestión de grados y secciones. | Un administrador despistado podría activar un año sin haber configurado su estructura. El sistema debe guiarlo explícitamente. |
-| **RN-3: Unicidad por año** | Un alumno solo puede tener una inscripción activa por año escolar (índice único `user_id + academic_year_id`). | Refleja la realidad: un estudiante pertenece a una sola sección por año. |
-| **RN-4: Solo rol alumno en enrollments** | El campo `user_id` en `enrollments` debe corresponder a un usuario con el rol `alumno`. | Evita inscribir accidentalmente a profesores o representantes como estudiantes. |
-| **RN-5: Solo rol profesor en teacher_assignments** | El campo `user_id` en `teacher_assignments` debe corresponder a un usuario con el rol `profesor`. | Evita asignar a un alumno como docente responsable de una sección. |
-| **RN-6: Integridad jerárquica** | El `grade_id` debe pertenecer al `academic_year_id` indicado, y el `section_id` debe pertenecer al `grade_id` indicado. | Evita inconsistencias entre la estructura académica y las inscripciones. |
+| Regla                                              | Descripción                                                                                                                                                                                                                   | Motivo                                                                                                                         |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **RN-1: Solo año activo**                          | Las inscripciones y asignaciones únicamente se realizan contra el año escolar cuyo campo `is_active = true`.                                                                                                                  | Evita inscripciones accidentales en años pasados o futuros no configurados.                                                    |
+| **RN-2: Estructura previa obligatoria**            | El año activo debe tener al menos un grado con al menos una sección configurados antes de permitir inscripciones. Si no se cumple, el sistema muestra un banner de advertencia con enlace a la gestión de grados y secciones. | Un administrador despistado podría activar un año sin haber configurado su estructura. El sistema debe guiarlo explícitamente. |
+| **RN-3: Unicidad por año**                         | Un alumno solo puede tener una inscripción activa por año escolar (índice único `user_id + academic_year_id`).                                                                                                                | Refleja la realidad: un estudiante pertenece a una sola sección por año.                                                       |
+| **RN-4: Solo rol alumno en enrollments**           | El campo `user_id` en `enrollments` debe corresponder a un usuario con el rol `alumno`.                                                                                                                                       | Evita inscribir accidentalmente a profesores o representantes como estudiantes.                                                |
+| **RN-5: Solo rol profesor en teacher_assignments** | El campo `user_id` en `teacher_assignments` debe corresponder a un usuario con el rol `profesor`.                                                                                                                             | Evita asignar a un alumno como docente responsable de una sección.                                                             |
+| **RN-6: Integridad jerárquica**                    | El `grade_id` debe pertenecer al `academic_year_id` indicado, y el `section_id` debe pertenecer al `grade_id` indicado.                                                                                                       | Evita inconsistencias entre la estructura académica y las inscripciones.                                                       |
 
 ##### 6.7.2 Flujo "Promoción Masiva" (Panel de Promoción)
 
@@ -340,6 +346,7 @@ Este es el flujo principal y más frecuente. Se usa al inicio de cada año escol
 Este flujo es para alumnos que no estaban en el sistema el año anterior: nuevos ingresos, alumnos transferidos de otras instituciones, o cualquier alumno sin inscripción previa.
 
 Consiste en un formulario individual con:
+
 1. **Buscar Alumno**: Campo de búsqueda con autocompletado que filtra por nombre o cédula entre los usuarios con rol `alumno` que NO tengan inscripción en el año activo.
 2. **Grado**: Selector con los grados del año activo. No aplica sugerencia (no hay historial).
 3. **Sección**: Selector filtrado dinámicamente por el grado elegido.
@@ -349,6 +356,7 @@ Este formulario no incluye sugerencia de grado porque, al tratarse de un nuevo i
 ##### 6.7.4 Asignación de Profesores
 
 La asignación de profesores a secciones es un proceso más sencillo que la inscripción de alumnos, dado que la cantidad de profesores es significativamente menor. Se implementa como un formulario individual con:
+
 1. **Profesor**: Selector o búsqueda entre usuarios con rol `profesor`.
 2. **Grado**: Selector con grados del año activo.
 3. **Sección**: Selector filtrado por grado.
@@ -363,17 +371,17 @@ Las jornadas son el evento central del sistema. Todo gira alrededor de ellas: la
 
 El nombre `field_sessions` fue definido para evitar el conflicto con la tabla `sessions` que Laravel reserva para el manejo de sesiones HTTP. Las alternativas evaluadas fueron: `workdays` (descartada por connotación de oficina), `field_days` (descartada por ambigua) y `work_sessions` (descartada por similar motivo a workdays). `field_sessions` es el nombre que mejor describe el concepto: sesiones de trabajo de campo.
 
-| Campo | Razón de existir |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `academic_year_id` (desnorm.) | Consultas por año escolar son las más frecuentes del sistema. Sin este campo habría que navegar session -> attendance -> enrollment -> academic_year en cada reporte. |
-| `school_term_id` | Indica a qué lapso pertenece la jornada. Se asigna automáticamente comparando `start_datetime` contra las fechas de los lapsos del año escolar. |
-| `user_id` (profesor responsable) | Define quién creó y es dueño de la jornada. Solo este profesor (o un admin) puede editarla. Es la base de la regla de propiedad. |
-| `activity_category_id` (nullable) | Categoría general opcional de la jornada. Es nullable porque el profesor puede preferir categorizar a nivel individual en cada subactividad. |
-| `location_id` (nullable) | La jornada puede realizarse en la institución o en un lugar externo. Es nullable porque no siempre se registra la ubicación. |
-| `start_datetime` / `end_datetime` | Reemplazan el concepto de 'turno' (mañana, tarde). La fecha y hora exacta de inicio y fin es más precisa y útil que una etiqueta. |
-| `base_hours` (DECIMAL) | Calculado automáticamente desde la diferencia entre start y end datetime. Sirve como referencia de horas acreditables planificadas y como tope de validación al acreditar horas a estudiantes. Se almacena explícitamente para evitar recalcularlo en cada consulta. |
-| `status` (ENUM: realized, cancelled) | Una jornada cancelada debe existir en el sistema con su motivo documentado, aunque no acredite horas a nadie. Sin este campo una jornada cancelada simplemente desaparecería. |
-| `cancellation_reason` (TEXT nullable) | Obligatorio si status = cancelled. Documenta el motivo de la cancelación como antecedente. |
+| Campo                                 | Razón de existir                                                                                                                                                                                                                                                     |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `academic_year_id` (desnorm.)         | Consultas por año escolar son las más frecuentes del sistema. Sin este campo habría que navegar session -> attendance -> enrollment -> academic_year en cada reporte.                                                                                                |
+| `school_term_id`                      | Indica a qué lapso pertenece la jornada. Se asigna automáticamente comparando `start_datetime` contra las fechas de los lapsos del año escolar.                                                                                                                      |
+| `user_id` (profesor responsable)      | Define quién creó y es dueño de la jornada. Solo este profesor (o un admin) puede editarla. Es la base de la regla de propiedad.                                                                                                                                     |
+| `activity_category_id` (nullable)     | Categoría general opcional de la jornada. Es nullable porque el profesor puede preferir categorizar a nivel individual en cada subactividad.                                                                                                                         |
+| `location_id` (nullable)              | La jornada puede realizarse en la institución o en un lugar externo. Es nullable porque no siempre se registra la ubicación.                                                                                                                                         |
+| `start_datetime` / `end_datetime`     | Reemplazan el concepto de 'turno' (mañana, tarde). La fecha y hora exacta de inicio y fin es más precisa y útil que una etiqueta.                                                                                                                                    |
+| `base_hours` (DECIMAL)                | Calculado automáticamente desde la diferencia entre start y end datetime. Sirve como referencia de horas acreditables planificadas y como tope de validación al acreditar horas a estudiantes. Se almacena explícitamente para evitar recalcularlo en cada consulta. |
+| `status` (ENUM: realized, cancelled)  | Una jornada cancelada debe existir en el sistema con su motivo documentado, aunque no acredite horas a nadie. Sin este campo una jornada cancelada simplemente desaparecería.                                                                                        |
+| `cancellation_reason` (TEXT nullable) | Obligatorio si status = cancelled. Documenta el motivo de la cancelación como antecedente.                                                                                                                                                                           |
 
 > La tabla `shifts` (turnos) fue evaluada y descartada. Inicialmente se consideró para categorizar jornadas como mañana/tarde/noche, pero resultó redundante e incluso contradictoria: si la jornada tiene `start_datetime` y `end_datetime`, el turno se puede inferir. Mantenerla generaría inconsistencias si el turno no coincide con el horario registrado.
 
@@ -389,11 +397,11 @@ El registro de asistencia y horas es el núcleo funcional del sistema. Aquí es 
 
 Registra si un estudiante asistió o no a una jornada, y permite agregar notas generales sobre su desempeño. Las horas acreditadas **NO** se almacenan en esta tabla: son la suma de las horas de todas sus subactividades en `attendance_activities`. Esta decisión separa claramente la asistencia (hecho binario) de las horas (resultado de actividades).
 
-| Campo | Razón de existir |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Campo                         | Razón de existir                                                                                                                                                                                                                                                                                   |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `academic_year_id` (desnorm.) | El cálculo de horas acumuladas por estudiante en un año escolar es la consulta más frecuente del sistema. Con este campo: `SELECT SUM(aa.hours) FROM attendance_activities aa JOIN attendances a ON aa.attendance_id = a.id WHERE a.user_id = X AND a.academic_year_id = Y AND a.attended = true`. |
-| `attended` (BOOLEAN) | Si es false, no se acreditan horas independientemente de lo que haya en `attendance_activities`. |
-| `notes` (TEXT nullable) | Novedades o incidencias generales del estudiante en la jornada. Sirve como antecedente para justificar variaciones en las horas acreditadas. |
+| `attended` (BOOLEAN)          | Si es false, no se acreditan horas independientemente de lo que haya en `attendance_activities`.                                                                                                                                                                                                   |
+| `notes` (TEXT nullable)       | Novedades o incidencias generales del estudiante en la jornada. Sirve como antecedente para justificar variaciones en las horas acreditadas.                                                                                                                                                       |
 
 ```text
 Índice único: session_id + user_id
@@ -407,12 +415,12 @@ Esta tabla existe para soportar diferentes niveles de granularidad en el registr
 
 Un caso concreto que motivó esta tabla: en una jornada de 4 horas, un estudiante pudo haber dedicado 1 hora a desmalezamiento, 1 hora a limpieza, 1 hora a siembra y 1 hora a riego. Sin esta tabla, solo se podría categorizar la jornada con una sola actividad general, perdiendo el detalle.
 
-| Campo | Razón de existir |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `attendance_id` (FK) | Vincula la subactividad con el registro de asistencia del estudiante específico en la jornada específica. |
-| `activity_category_id` (FK) | Categoriza la subactividad. Permite reportes y estadísticas por tipo de actividad. |
-| `hours` (DECIMAL) | Horas dedicadas a esta subactividad específica. La suma de todos los registros con el mismo `attendance_id` es el total acreditado al estudiante en esa jornada. |
-| `notes` (TEXT nullable) | Observaciones específicas de esta subactividad. Más granular que las notas del `attendance`. |
+| Campo                       | Razón de existir                                                                                                                                                 |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `attendance_id` (FK)        | Vincula la subactividad con el registro de asistencia del estudiante específico en la jornada específica.                                                        |
+| `activity_category_id` (FK) | Categoriza la subactividad. Permite reportes y estadísticas por tipo de actividad.                                                                               |
+| `hours` (DECIMAL)           | Horas dedicadas a esta subactividad específica. La suma de todos los registros con el mismo `attendance_id` es el total acreditado al estudiante en esa jornada. |
+| `notes` (TEXT nullable)     | Observaciones específicas de esta subactividad. Más granular que las notas del `attendance`.                                                                     |
 
 Los archivos de evidencia (fotos, videos, documentos) de cada subactividad se adjuntan mediante Spatie Laravel Media Library en el modelo `AttendanceActivity`. Esto permite vincular evidencia específica a cada actividad realizada, no solo a la jornada en general.
 
@@ -420,13 +428,13 @@ Los archivos de evidencia (fotos, videos, documentos) de cada subactividad se ad
 
 #### 8.3 Escenarios de Acreditación
 
-| Escenario | Resultado | Requiere novedad |
-| ---------------------------------- | -------------------------------------------------------------------- | -------------------------- |
-| Alumno asistió y trabajó normalmente | Se acreditan las horas de sus subactividades | No |
-| Alumno asistió pero no trabajó | Horas acreditadas = 0 (`attendance_activities` vacía o con 0) | Sí, obligatoria |
-| Alumno con desempeño excepcional | Horas superiores a `base_hours`. Sistema alerta, no bloquea | Sí, justificatoria |
-| Jornada cancelada | Ningún estudiante acumula horas. La sesión queda con `status=cancelled`| Sí (motivo de cancelación) |
-| Alumno no asistió | `attended=false`. No se procesan subactividades. | No |
+| Escenario                            | Resultado                                                               | Requiere novedad           |
+| ------------------------------------ | ----------------------------------------------------------------------- | -------------------------- |
+| Alumno asistió y trabajó normalmente | Se acreditan las horas de sus subactividades                            | No                         |
+| Alumno asistió pero no trabajó       | Horas acreditadas = 0 (`attendance_activities` vacía o con 0)           | Sí, obligatoria            |
+| Alumno con desempeño excepcional     | Horas superiores a `base_hours`. Sistema alerta, no bloquea             | Sí, justificatoria         |
+| Jornada cancelada                    | Ningún estudiante acumula horas. La sesión queda con `status=cancelled` | Sí (motivo de cancelación) |
+| Alumno no asistió                    | `attended=false`. No se procesan subactividades.                        | No                         |
 
 ### 10. Horas Externas
 
@@ -434,12 +442,12 @@ Las horas externas existen para cubrir un caso real e importante: estudiantes qu
 
 Solo un administrador puede cargar horas externas porque es un proceso formal que requiere verificación de documentación. El administrador adjunta el documento de respaldo mediante Spatie Media Library y las horas se suman directamente al acumulado del estudiante sin flujo adicional de validación, dado que quien las carga ya posee el rol de mayor confianza en el sistema.
 
-| Campo | Razón de existir |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `academic_year_id` (FK) | Necesario por diseño, no solo desnormalización. Las horas externas no se originan de una jornada del sistema, por lo que es la única forma de saber a qué periodo académico imputarlas. |
-| `user_id` (FK -> estudiante) | El estudiante beneficiado por las horas. |
-| `admin_id` (FK -> usuario admin) | El administrador que cargó las horas. Ambos apuntan a `users` pero con roles distintos. Permite trazabilidad de quién autorizó la acreditación. |
-| `institution_name` (VARCHAR) | Nombre de la institución de origen. Junto al documento adjunto, sustenta la validez de las horas. |
+| Campo                            | Razón de existir                                                                                                                                                                        |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `academic_year_id` (FK)          | Necesario por diseño, no solo desnormalización. Las horas externas no se originan de una jornada del sistema, por lo que es la única forma de saber a qué periodo académico imputarlas. |
+| `user_id` (FK -> estudiante)     | El estudiante beneficiado por las horas.                                                                                                                                                |
+| `admin_id` (FK -> usuario admin) | El administrador que cargó las horas. Ambos apuntan a `users` pero con roles distintos. Permite trazabilidad de quién autorizó la acreditación.                                         |
+| `institution_name` (VARCHAR)     | Nombre de la institución de origen. Junto al documento adjunto, sustenta la validez de las horas.                                                                                       |
 
 ### 11. Cálculo de Horas Acumuladas
 
@@ -473,17 +481,17 @@ La vista del estudiante al loguearse muestra permanentemente: horas acumuladas e
 
 El módulo de configuración gestiona todos los catálogos y parámetros que definen el comportamiento del sistema. Solo los administradores tienen acceso a este módulo.
 
-| Entidad configurable | Tabla | Observación |
-| ---------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------- |
-| Años escolares | `academic_years` | CRUD + activación del año vigente. El cupo de horas se configura aquí. |
-| Lapsos | `school_terms` | Hasta 3 por año escolar. Número asignado automáticamente. Validación de no solapamiento. |
-| Grados | `grades` | Por año escolar. Con campo `order` para ordenamiento correcto. |
-| Secciones | `sections` | Por grado. Nombre único dentro del mismo grado y año escolar. |
-| Categorías de actividad | `activity_categories` | CRUD con activación/desactivación. Desactivar no elimina el histórico. |
-| Ubicaciones | `locations` | CRUD. Nombre y dirección. Opcional en jornadas. |
-| Tipos de parentesco | `relationship_types` | CRUD con activación/desactivación. Para vincular representantes a estudiantes. |
-| Condiciones de salud | `health_conditions` | CRUD con activación/desactivación. Catálogo de condiciones médicas conocidas. |
-| **Datos Institucionales (Nuevo)** | `institution` | Datos de la sede institucional (`name`, `address`, `email`, `phone`, `code`). **(Hito 1 / RBAC Hito 2)** |
+| Entidad configurable              | Tabla                 | Observación                                                                                              |
+| --------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------- |
+| Años escolares                    | `academic_years`      | CRUD + activación del año vigente. El cupo de horas se configura aquí.                                   |
+| Lapsos                            | `school_terms`        | Hasta 3 por año escolar. Número asignado automáticamente. Validación de no solapamiento.                 |
+| Grados                            | `grades`              | Por año escolar. Con campo `order` para ordenamiento correcto.                                           |
+| Secciones                         | `sections`            | Por grado. Nombre único dentro del mismo grado y año escolar.                                            |
+| Categorías de actividad           | `activity_categories` | CRUD con activación/desactivación. Desactivar no elimina el histórico.                                   |
+| Ubicaciones                       | `locations`           | CRUD. Nombre y dirección. Opcional en jornadas.                                                          |
+| Tipos de parentesco               | `relationship_types`  | CRUD con activación/desactivación. Para vincular representantes a estudiantes.                           |
+| Condiciones de salud              | `health_conditions`   | CRUD con activación/desactivación. Catálogo de condiciones médicas conocidas.                            |
+| **Datos Institucionales (Nuevo)** | `institution`         | Datos de la sede institucional (`name`, `address`, `email`, `phone`, `code`). **(Hito 1 / RBAC Hito 2)** |
 
 ### 13. Reportes y Estadísticas
 
@@ -491,14 +499,14 @@ Los reportes son generados automáticamente en esta primera fase, sin configurac
 
 Todos los reportes pueden segmentarse por lapso además de por año escolar, gracias a la tabla `school_terms` y la FK `school_term_id` en `field_sessions`. Esto fue un requerimiento explícito del cliente: la información debe poder consultarse y reportarse por lapso de forma independiente.
 
-| Reporte | Segmentación | Destinatario |
-| --------------------------------------- | ---------------------- | --------------------------------- |
-| Resumen de horas del estudiante | Año escolar / Lapso | Estudiante, Profesor, Admin |
-| Asistencia por jornada | Por jornada específica | Profesor, Admin |
-| Historial completo de horas en PDF | Año escolar / Lapso | Profesor, Admin |
-| Horas por grado y sección | Año escolar / Lapso | Admin |
-| Novedades e incidencias | Por periodo / Lapso | Admin |
-| Analítica de cumplimiento | Año escolar / Lapso | Admin |
+| Reporte                            | Segmentación           | Destinatario                |
+| ---------------------------------- | ---------------------- | --------------------------- |
+| Resumen de horas del estudiante    | Año escolar / Lapso    | Estudiante, Profesor, Admin |
+| Asistencia por jornada             | Por jornada específica | Profesor, Admin             |
+| Historial completo de horas en PDF | Año escolar / Lapso    | Profesor, Admin             |
+| Horas por grado y sección          | Año escolar / Lapso    | Admin                       |
+| Novedades e incidencias            | Por periodo / Lapso    | Admin                       |
+| Analítica de cumplimiento          | Año escolar / Lapso    | Admin                       |
 
 > **Fase 2 (fuera de alcance actual):** Reportes dinámicos con filtros configurables por el usuario.
 
@@ -508,23 +516,23 @@ El modelo de datos fue definido iterativamente y cada decisión tiene un razonam
 
 #### 13.1 Convenciones Generales
 
-| Convención | Descripción |
-| ------------------------ | --------------------------------------------------------------------------------------- |
-| Framework | Laravel (PHP) |
-| Nomenclatura | snake_case, plural, en inglés |
-| Soft deletes | `deleted_at` en todas las tablas. Ningún dato se elimina físicamente. |
-| Timestamps | `created_at` y `updated_at` en todas las tablas, gestionados por Laravel. |
-| Gestión de archivos | Spatie Laravel Media Library. Tabla media polimórfica centralizada. |
-| Roles y permisos | Spatie Laravel Permissions. Soporta múltiples roles por usuario. |
-| Desnormalización | Aplicada selectivamente en campos estables de alta frecuencia de consulta. |
+| Convención          | Descripción                                                                |
+| ------------------- | -------------------------------------------------------------------------- |
+| Framework           | Laravel (PHP)                                                              |
+| Nomenclatura        | snake_case, plural, en inglés                                              |
+| Soft deletes        | `deleted_at` en todas las tablas. Ningún dato se elimina físicamente.      |
+| Timestamps          | `created_at` y `updated_at` en todas las tablas, gestionados por Laravel.  |
+| Gestión de archivos | Spatie Laravel Media Library. Tabla media polimórfica centralizada.        |
+| Roles y permisos    | Spatie Laravel Permissions. Soporta múltiples roles por usuario.           |
+| Desnormalización    | Aplicada selectivamente en campos estables de alta frecuencia de consulta. |
 
 #### 13.2 Tablas con Archivos Adjuntos (Spatie Media Library)
 
-| Modelo | Propósito del adjunto |
-| ----------------------------- | -------------------------------------------------------------------------------- |
-| `User` | Foto de perfil del usuario |
-| `AttendanceActivity` | Evidencias fotográficas/video de cada subactividad realizada |
-| `ExternalHour` | Documento de respaldo de horas externas de otra institución |
+| Modelo                | Propósito del adjunto                                               |
+| --------------------- | ------------------------------------------------------------------- |
+| `User`                | Foto de perfil del usuario                                          |
+| `AttendanceActivity`  | Evidencias fotográficas/video de cada subactividad realizada        |
+| `ExternalHour`        | Documento de respaldo de horas externas de otra institución         |
 | `StudentHealthRecord` | Soportes médicos que respaldan la condición de salud del estudiante |
 
 #### 13.3 Estructura de Tablas
@@ -736,19 +744,19 @@ El stack fue seleccionado priorizando tres criterios: madurez del ecosistema, co
 
 #### 14.1 Tabla Resumen
 
-| Capa | Tecnología | Observación |
-| --------------------------- | ------------------------------------- | ----------------------------------------------------------------------- |
-| Backend | Laravel 12 | Framework principal |
-| Autenticación | Laravel Fortify vía starter kit | Incluido en Laravel 12, extendido con parámetro context |
-| Roles y permisos | Spatie Laravel Permissions | Soporta múltiples roles por usuario |
-| Archivos adjuntos | Spatie Laravel Media Library | Tabla media polimórfica centralizada |
-| Bridge frontend | Inertia.js | Incluido en starter kit, elimina API REST separada |
-| UI | React 19 + TypeScript | Stack oficial del starter kit de Laravel 12 |
-| Componentes | shadcn/ui | Componentes copiados al proyecto, sin dependencia externa en runtime |
-| Estilos | Tailwind CSS 4 | Configuración directa en CSS, sin tailwind.config.js |
-| Base de datos | PostgreSQL | BOOLEAN nativo, mejor concurrencia, licencia libre |
-| Almacenamiento de archivos | Disco local del servidor | Sin S3 ni proveedores externos en fase inicial |
-| Dependencias frontend | Instaladas vía npm, sin CDN | Requerido para operación offline |
+| Capa                       | Tecnología                      | Observación                                                          |
+| -------------------------- | ------------------------------- | -------------------------------------------------------------------- |
+| Backend                    | Laravel 12                      | Framework principal                                                  |
+| Autenticación              | Laravel Fortify vía starter kit | Incluido en Laravel 12, extendido con parámetro context              |
+| Roles y permisos           | Spatie Laravel Permissions      | Soporta múltiples roles por usuario                                  |
+| Archivos adjuntos          | Spatie Laravel Media Library    | Tabla media polimórfica centralizada                                 |
+| Bridge frontend            | Inertia.js                      | Incluido en starter kit, elimina API REST separada                   |
+| UI                         | React 19 + TypeScript           | Stack oficial del starter kit de Laravel 12                          |
+| Componentes                | shadcn/ui                       | Componentes copiados al proyecto, sin dependencia externa en runtime |
+| Estilos                    | Tailwind CSS 4                  | Configuración directa en CSS, sin tailwind.config.js                 |
+| Base de datos              | PostgreSQL                      | BOOLEAN nativo, mejor concurrencia, licencia libre                   |
+| Almacenamiento de archivos | Disco local del servidor        | Sin S3 ni proveedores externos en fase inicial                       |
+| Dependencias frontend      | Instaladas vía npm, sin CDN     | Requerido para operación offline                                     |
 
 #### 14.2 Argumentación por Capa
 
@@ -763,6 +771,6 @@ El stack fue seleccionado priorizando tres criterios: madurez del ecosistema, co
 - **PostgreSQL**: Elegido sobre MySQL por BOOLEAN nativo, JSON avanzado, mejor concurrencia y licencia libre. Eloquent ORM abstrae las diferencias entre motores, por lo que el código de la aplicación es independiente del motor subyacente.
 - **Almacenamiento local y operación offline**: En la fase inicial el sistema opera en red local sin internet. El almacenamiento usa el driver local de Laravel. Spatie Media Library soporta múltiples drivers, por lo que migrar a S3 en el futuro es un cambio de configuración, no de código. Todas las dependencias frontend se instalan vía npm sin recursos externos por CDN.
 
-***
+---
 
-*(Nota: La Sección 15 sobre el Plan de Desarrollo se encuentra cubierta y mejorada en el archivo amantina_implementacion_v5.md para evitar redundancia).*
+_(Nota: La Sección 15 sobre el Plan de Desarrollo se encuentra cubierta y mejorada en el archivo amantina_implementacion_v5.md para evitar redundancia)._

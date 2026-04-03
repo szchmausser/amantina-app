@@ -58,15 +58,7 @@ class PromoteEnrollmentsRequest extends FormRequest
                     if (! $user || ! $user->hasRole('alumno')) {
                         $fail("El usuario con ID {$value} no tiene el rol de alumno.");
                     }
-
-                    $alreadyEnrolled = Enrollment::where('user_id', $value)
-                        ->where('academic_year_id', $this->academic_year_id)
-                        ->whereNull('deleted_at')
-                        ->exists();
-
-                    if ($alreadyEnrolled) {
-                        $fail("El alumno \"{$user->name}\" ya se encuentra inscrito en el año escolar seleccionado.");
-                    }
+                    // Note: Already-enrolled check removed - handled in controller with warning message
                 },
             ],
         ];

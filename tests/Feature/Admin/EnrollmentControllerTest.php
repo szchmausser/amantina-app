@@ -188,4 +188,62 @@ class EnrollmentControllerTest extends TestCase
         $response->assertSessionHas('success');
         $this->assertDatabaseCount('enrollments', 2);
     }
+
+    #[Test]
+    public function promote_silently_skips_already_enrolled_students()
+    {
+        // Create a student already enrolled in the active year
+        Enrollment::factory()->create([
+            'user_id' => $this->student->id,
+            'academic_year_id' => $this->activeYear->id,
+            'grade_id' => $this->grade1->id,
+            'section_id' => $this->sectionA->id,
+        ]);
+
+        // Create a second student not yet enrolled
+        $student2 = User::factory()->create();
+        $student2->assignRole('alumno');
+
+        // Create a different section for promotion
+        $sectionB = Section::factory()->create([
+            'grade_id' => $this->grade1->id,
+            'academic_year_id' => $this->activeYear->id,
+        ]);
+
+        // Attempt to promote both students
+        $response = $this->actingAs($this->admin)
+            ->post(route('admin.enrollments.promote.store'), [
+                'academic_year_id' => $this->activeYear->id,
+                'grade_id' => $this->grade1->id,
+                'section_id' => $sectionB->id,
+                'user_ids' => [
+                    $this->student->id,
+                    $student2->id,
+                ],
+            ]);
+
+        // Should succeed with success message for the one enrolled
+        $response->assertSessionHas('success', '1 alumno(s) promovido(s) correctamente.');
+
+        // Should have warning message about the skipped student
+        $response->assertSessionHas('warning');
+        $warningMessage = session('warning');
+
+        // Verify warning contains detailed information
+        $this->assertStringContainsString('ATENCIÓN:', $warningMessage);
+        $this->assertStringContainsString('1 alumno(s) fueron omitidos', $warningMessage);
+        $this->assertStringContainsString($this->student->name, $warningMessage);
+        $this->assertStringContainsString($this->student->cedula, $warningMessage);
+        $this->assertStringContainsString($this->grade1->name, $warningMessage);
+        $this->assertStringContainsString($this->sectionA->name, $warningMessage);
+        $this->assertStringContainsString('Si necesita cambiar su inscripción', $warningMessage);
+        $this->assertStringContainsString('eliminar la inscripción actual', $warningMessage);
+
+        // Only one new enrollment should be created (student2)
+        $this->assertDatabaseCount('enrollments', 2);
+        $this->assertDatabaseHas('enrollments', [
+            'user_id' => $student2->id,
+            'section_id' => $sectionB->id,
+        ]);
+    }
 }

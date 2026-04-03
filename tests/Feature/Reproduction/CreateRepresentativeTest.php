@@ -30,7 +30,7 @@ class CreateRepresentativeTest extends TestCase
             'cedula' => 'V-99999999',
             'name' => 'Test Representante',
             'email' => 'representante@test.com',
-            'role' => 'representante',
+            'roles' => ['representante'], // Array de roles, no string singular
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'phone' => '04121234567',

@@ -9,6 +9,7 @@ export type SharedData = PageProps & {
         message?: string;
         success?: string;
         error?: string;
+        warning?: string;
     };
 };
 
