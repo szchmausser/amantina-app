@@ -41,11 +41,17 @@ class UserController extends Controller
             $query->role($request->input('role'));
         }
 
-        $users = $query->latest()->paginate(10)->withQueryString();
+        $perPage = $request->integer('per_page', 5);
+        // Validar que per_page esté en los valores permitidos
+        if (! in_array($perPage, [5, 15, 25, 50, 100])) {
+            $perPage = 5;
+        }
+
+        $users = $query->latest()->paginate($perPage)->withQueryString();
 
         return Inertia::render('admin/users/index', [
             'users' => $users,
-            'filters' => $request->only(['search', 'role']),
+            'filters' => $request->only(['search', 'role', 'per_page']),
             'availableRoles' => Role::all()->pluck('name'),
         ]);
     }

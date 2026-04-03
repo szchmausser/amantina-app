@@ -49,6 +49,7 @@ interface Props {
     filters: {
         search?: string;
         role?: string;
+        per_page?: number;
     };
     availableRoles: string[];
 }
@@ -67,6 +68,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Index({ users, filters, availableRoles }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [role, setRole] = useState(filters.role || 'all');
+    const [perPage, setPerPage] = useState(filters.per_page || 5);
     const [isSearching, setIsSearching] = useState(false);
 
     // Trackear si es la primera carga para evitar ejecución inmediata
@@ -88,6 +90,7 @@ export default function Index({ users, filters, availableRoles }: Props) {
             {
                 search: debouncedSearch || undefined,
                 role: role === 'all' ? undefined : role,
+                per_page: perPage,
             },
             {
                 preserveState: true,
@@ -96,13 +99,17 @@ export default function Index({ users, filters, availableRoles }: Props) {
             },
         );
         setIsSearching(true);
-    }, [debouncedSearch, role]);
+    }, [debouncedSearch, role, perPage]);
 
     const handleRoleChange = (value: string) => {
         setRole(value);
         router.get(
             userIndex().url,
-            { search, role: value === 'all' ? undefined : value },
+            { 
+                search, 
+                role: value === 'all' ? undefined : value,
+                per_page: perPage,
+            },
             { preserveState: true, replace: true },
         );
     };
@@ -116,12 +123,13 @@ export default function Index({ users, filters, availableRoles }: Props) {
     const handleClearFilters = () => {
         setSearch('');
         setRole('all');
+        setPerPage(5);
     };
 
     const { auth } = usePage<any>().props;
     const hasPermission = (p: string) => auth.permissions.includes(p);
 
-    const hasFilters = Boolean(search || role !== 'all');
+    const hasFilters = Boolean(search || role !== 'all' || perPage !== 5);
 
     // Preparar paginación para el componente
     const pagination: PaginationInfo | undefined =
@@ -138,6 +146,7 @@ export default function Index({ users, filters, availableRoles }: Props) {
     const tableColumns = (
         <>
             <DataTableHead>
+                <DataTableTH className="w-16">#</DataTableTH>
                 <DataTableTH className="w-32">Cédula</DataTableTH>
                 <DataTableTH>Nombre</DataTableTH>
                 <DataTableTH>Email</DataTableTH>
@@ -145,8 +154,13 @@ export default function Index({ users, filters, availableRoles }: Props) {
                 <DataTableTH className="w-24 text-right">Acciones</DataTableTH>
             </DataTableHead>
             <DataTableBody>
-                {users.data.map((user) => (
+                {users.data.map((user, index) => (
                     <DataTableTR key={user.id}>
+                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                            {(users.current_page - 1) * users.data.length +
+                                index +
+                                1}
+                        </DataTableTD>
                         <DataTableTD className="font-mono text-neutral-500">
                             {user.cedula}
                         </DataTableTD>
@@ -283,6 +297,19 @@ export default function Index({ users, filters, availableRoles }: Props) {
                     data={users.data}
                     columns={tableColumns}
                     pagination={pagination}
+                    onPageChange={(page, url) => {
+                        router.get(url, {
+                            search: search || undefined,
+                            role: role === 'all' ? undefined : role,
+                            per_page: perPage,
+                        }, {
+                            preserveState: true,
+                            replace: true,
+                        })
+                    }}
+                    perPage={perPage}
+                    onPerPageChange={setPerPage}
+                    perPageOptions={[5, 15, 25, 50, 100]}
                     emptyMessage="No se encontraron usuarios que coincidan con los criterios de búsqueda."
                 />
             </div>

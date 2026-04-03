@@ -9,6 +9,13 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
 export interface PaginationLink {
@@ -22,12 +29,17 @@ export interface PaginationInfo {
     total: number
     current_page: number
     last_page: number
+    per_page?: number
 }
 
 interface DataTableProps<T> {
     data: T[]
     columns: React.ReactNode
     pagination?: PaginationInfo
+    onPageChange?: (page: number, url: string) => void  // Callback para navegación
+    perPage?: number  // Cantidad actual de registros por página
+    onPerPageChange?: (perPage: number) => void  // Callback para cambio de registros por página
+    perPageOptions?: number[]  // Opciones disponibles (ej: [7, 15, 25, 50, 100])
     searchable?: boolean
     searchPlaceholder?: string
     searchValue?: string
@@ -84,93 +96,187 @@ function DataTableSearch<T>({
 
 function DataTablePagination({
     pagination,
+    onPageChange,
+    perPage,
+    onPerPageChange,
+    perPageOptions = [5, 15, 25, 50, 100],
 }: {
     pagination?: PaginationInfo
+    onPageChange?: (page: number, url: string) => void
+    perPage?: number
+    onPerPageChange?: (perPage: number) => void
+    perPageOptions?: number[]
 }) {
     if (!pagination || pagination.last_page <= 1) return null
 
     const { links, current_page, last_page, total } = pagination
 
-    // Filtrar links válidos (con URL)
-    const validLinks = links.filter(link => link.url !== null || !link.url)
-    const firstLink = links[0]
-    const prevLink = links[current_page - 2]
-    const nextLink = links[current_page]
-    const lastLink = links[links.length - 1]
+    // Extraer número de página de una URL
+    const extractPageFromUrl = (url: string | null): number | null => {
+        if (!url) return null
+        const match = url.match(/[?&]page=(\d+)/)
+        return match ? parseInt(match[1], 10) : 1 // Si no hay parámetro page, es página 1
+    }
+
+    // Construir URL para una página específica
+    const buildUrlForPage = (pageNum: number): string | null => {
+        // Buscar cualquier link válido para usar como base
+        const baseLink = links.find(l => l.url !== null)
+        if (!baseLink?.url) return null
+
+        const url = new URL(baseLink.url, window.location.origin)
+        if (pageNum === 1) {
+            url.searchParams.delete('page')
+        } else {
+            url.searchParams.set('page', pageNum.toString())
+        }
+        return url.pathname + url.search
+    }
+
+    // Navegar a una página
+    const navigateToPage = (pageNum: number) => {
+        const url = buildUrlForPage(pageNum)
+        if (url && onPageChange) {
+            onPageChange(pageNum, url)
+        }
+    }
+
+    // Encontrar URLs para navegación
+    const firstUrl = current_page > 1 ? buildUrlForPage(1) : null
+    const prevUrl = current_page > 1 ? buildUrlForPage(current_page - 1) : null
+    const nextUrl = current_page < last_page ? buildUrlForPage(current_page + 1) : null
+    const lastUrl = current_page < last_page ? buildUrlForPage(last_page) : null
+
+    // Páginas visibles (mostrar alrededor de la página actual)
+    const getVisiblePages = (): number[] => {
+        const pages: number[] = []
+        const start = Math.max(1, current_page - 2)
+        const end = Math.min(last_page, current_page + 2)
+        for (let i = start; i <= end; i++) {
+            pages.push(i)
+        }
+        return pages
+    }
+
+    const visiblePages = getVisiblePages()
 
     return (
         <div className="flex items-center justify-between px-4 py-3">
-            <div className="text-sm text-neutral-500">
-                Página {current_page} de {last_page} ({total} resultados)
-            </div>
-            <div className="flex items-center gap-1">
-                {/* Botón primera página */}
-                {firstLink?.url ? (
-                    <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                        <a href={firstLink.url || undefined}>
-                            <ChevronsLeft className="h-4 w-4" />
-                        </a>
-                    </Button>
-                ) : (
-                    <Button variant="ghost" size="icon" disabled className="h-8 w-8">
-                        <ChevronsLeft className="h-4 w-4" />
-                    </Button>
+            {/* Info de resultados y selector de registros por página */}
+            <div className="flex items-center gap-4">
+                <div className="text-sm text-neutral-500">
+                    Página {current_page} de {last_page} ({total} resultados)
+                </div>
+                
+                {/* Selector de registros por página */}
+                {onPerPageChange && perPageOptions.length > 0 && (
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-neutral-500">Mostrar:</span>
+                        <Select
+                            value={perPage?.toString() || perPageOptions[0].toString()}
+                            onValueChange={(val) => onPerPageChange(parseInt(val, 10))}
+                        >
+                            <SelectTrigger className="h-8 w-20 text-xs">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent side="top">
+                                {perPageOptions.map((option) => (
+                                    <SelectItem
+                                        key={option}
+                                        value={option.toString()}
+                                        className="text-xs"
+                                    >
+                                        {option}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 )}
+            </div>
+
+            {/* Controles de paginación */}
+            <div className="flex items-center gap-2">
+                {/* Selector de página rápido */}
+                <div className="flex items-center gap-2 mr-4">
+                    <span className="text-xs text-neutral-500">Ir a:</span>
+                    <Select
+                        value={current_page.toString()}
+                        onValueChange={(val) => navigateToPage(parseInt(val, 10))}
+                    >
+                        <SelectTrigger className="h-8 w-20 text-xs">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent side="top" align="center">
+                            {Array.from({ length: last_page }, (_, i) => i + 1).map((page) => (
+                                <SelectItem
+                                    key={page}
+                                    value={page.toString()}
+                                    className="text-xs"
+                                >
+                                    {page}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Botón primera página */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={!firstUrl}
+                    onClick={() => firstUrl && navigateToPage(1)}
+                >
+                    <ChevronsLeft className="h-4 w-4" />
+                </Button>
 
                 {/* Botón página anterior */}
-                {prevLink?.url ? (
-                    <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                        <a href={prevLink.url || undefined}>
-                            <ChevronLeft className="h-4 w-4" />
-                        </a>
-                    </Button>
-                ) : (
-                    <Button variant="ghost" size="icon" disabled className="h-8 w-8">
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={!prevUrl}
+                    onClick={() => prevUrl && navigateToPage(current_page - 1)}
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
 
-                {/* Números de página (limitado a 5 máximo) */}
-                {links
-                    .filter((_, i) => i > 0 && i < links.length - 1)
-                    .slice(Math.max(0, current_page - 3), Math.min(links.length - 2, current_page + 1))
-                    .map((link) => (
-                        <Button
-                            key={link.label}
-                            variant={link.active ? "default" : "ghost"}
-                            size="icon"
-                            className="h-8 w-8"
-                            disabled={!link.url}
-                        >
-                            <span dangerouslySetInnerHTML={{ __html: link.label }} />
-                        </Button>
-                    ))}
+                {/* Números de página visibles */}
+                {visiblePages.map((page) => (
+                    <Button
+                        key={page}
+                        variant={page === current_page ? "default" : "ghost"}
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => navigateToPage(page)}
+                    >
+                        {page}
+                    </Button>
+                ))}
 
                 {/* Botón página siguiente */}
-                {nextLink?.url ? (
-                    <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                        <a href={nextLink.url || undefined}>
-                            <ChevronRight className="h-4 w-4" />
-                        </a>
-                    </Button>
-                ) : (
-                    <Button variant="ghost" size="icon" disabled className="h-8 w-8">
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={!nextUrl}
+                    onClick={() => nextUrl && navigateToPage(current_page + 1)}
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
 
                 {/* Botón última página */}
-                {lastLink?.url ? (
-                    <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                        <a href={lastLink.url || undefined}>
-                            <ChevronsRight className="h-4 w-4" />
-                        </a>
-                    </Button>
-                ) : (
-                    <Button variant="ghost" size="icon" disabled className="h-8 w-8">
-                        <ChevronsRight className="h-4 w-4" />
-                    </Button>
-                )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={!lastUrl}
+                    onClick={() => lastUrl && navigateToPage(last_page)}
+                >
+                    <ChevronsRight className="h-4 w-4" />
+                </Button>
             </div>
         </div>
     )
@@ -224,6 +330,10 @@ export function DataTable<T>({
     data,
     columns,
     pagination,
+    onPageChange,
+    perPage,
+    onPerPageChange,
+    perPageOptions,
     searchable = false,
     searchPlaceholder,
     searchValue,
@@ -264,7 +374,13 @@ export function DataTable<T>({
                 emptyMessage={emptyMessage}
             />
 
-            <DataTablePagination pagination={pagination} />
+            <DataTablePagination 
+                pagination={pagination} 
+                onPageChange={onPageChange}
+                perPage={perPage}
+                onPerPageChange={onPerPageChange}
+                perPageOptions={perPageOptions}
+            />
         </div>
     )
 }

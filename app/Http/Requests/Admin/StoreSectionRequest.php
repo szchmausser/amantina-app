@@ -34,10 +34,20 @@ class StoreSectionRequest extends FormRequest
                 'required',
                 'string',
                 'max:10',
+                'regex:/^[A-Z]+$/', // Solo letras mayúsculas
                 Rule::unique('sections', 'name')
                     ->where('academic_year_id', $this->academic_year_id)
-                    ->where('grade_id', $this->grade_id),
+                    ->where('grade_id', $this->grade_id)
+                    ->whereNull('deleted_at'),
             ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.regex' => 'El nombre de la sección debe contener solo letras mayúsculas (A, B, C, etc.).',
+            'name.unique' => 'Ya existe una sección con este nombre para el grado y año escolar seleccionados.',
         ];
     }
 }
