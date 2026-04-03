@@ -20,7 +20,7 @@ class GradeFactory extends Factory
     {
         return [
             'academic_year_id' => AcademicYear::factory(),
-            'name' => $this->faker->unique()->word() . ' Año',
+            'name' => $this->faker->unique()->word().' Año',
             'order' => $this->faker->unique()->numberBetween(1, 100),
         ];
     }

@@ -28,7 +28,7 @@ class GradeControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $year = AcademicYear::factory()->create(['is_active' => true]);
         Grade::factory()->count(3)->create(['academic_year_id' => $year->id]);
 
@@ -45,7 +45,7 @@ class GradeControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $year = AcademicYear::factory()->create();
 
         $response = $this->actingAs($admin)->post(route('admin.grades.store'), [
@@ -66,7 +66,7 @@ class GradeControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $year = AcademicYear::factory()->create();
         Grade::factory()->create([
             'academic_year_id' => $year->id,
@@ -86,10 +86,10 @@ class GradeControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $year1 = AcademicYear::factory()->create();
         $year2 = AcademicYear::factory()->create();
-        
+
         Grade::factory()->create([
             'academic_year_id' => $year1->id,
             'name' => '1er Año',
@@ -112,7 +112,7 @@ class GradeControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $grade = Grade::factory()->create();
 
         $response = $this->actingAs($admin)->put(route('admin.grades.update', $grade), [
@@ -133,7 +133,7 @@ class GradeControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $grade = Grade::factory()->create();
 
         $response = $this->actingAs($admin)->delete(route('admin.grades.destroy', $grade));

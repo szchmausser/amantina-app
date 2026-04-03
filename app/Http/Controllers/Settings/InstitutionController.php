@@ -34,7 +34,7 @@ class InstitutionController extends Controller
             'code' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $institution = Institution::first() ?? new Institution();
+        $institution = Institution::first() ?? new Institution;
         $institution->fill($validated);
         $institution->save();
 

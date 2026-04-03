@@ -29,17 +29,17 @@ class SectionControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $year = AcademicYear::factory()->create(['is_active' => true]);
         $grade = Grade::factory()->create(['academic_year_id' => $year->id]);
         Section::factory()->count(3)->create([
             'academic_year_id' => $year->id,
-            'grade_id' => $grade->id
+            'grade_id' => $grade->id,
         ]);
 
         $response = $this->actingAs($admin)->get(route('admin.sections.index', [
             'academic_year_id' => $year->id,
-            'grade_id' => $grade->id
+            'grade_id' => $grade->id,
         ]));
 
         $response->assertStatus(200);
@@ -53,7 +53,7 @@ class SectionControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $year = AcademicYear::factory()->create();
         $grade = Grade::factory()->create(['academic_year_id' => $year->id]);
 
@@ -65,9 +65,9 @@ class SectionControllerTest extends TestCase
 
         $response->assertRedirect(route('admin.sections.index', [
             'academic_year_id' => $year->id,
-            'grade_id' => $grade->id
+            'grade_id' => $grade->id,
         ]));
-        
+
         $this->assertDatabaseHas('sections', [
             'academic_year_id' => $year->id,
             'grade_id' => $grade->id,
@@ -79,7 +79,7 @@ class SectionControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $year1 = AcademicYear::factory()->create();
         $year2 = AcademicYear::factory()->create();
         $gradeFromYear1 = Grade::factory()->create(['academic_year_id' => $year1->id]);
@@ -98,7 +98,7 @@ class SectionControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $section = Section::factory()->create();
 
         $response = $this->actingAs($admin)->put(route('admin.sections.update', $section), [
@@ -109,9 +109,9 @@ class SectionControllerTest extends TestCase
 
         $response->assertRedirect(route('admin.sections.index', [
             'academic_year_id' => $section->academic_year_id,
-            'grade_id' => $section->grade_id
+            'grade_id' => $section->grade_id,
         ]));
-        
+
         $this->assertDatabaseHas('sections', [
             'id' => $section->id,
             'name' => 'Sec Mod',
@@ -122,14 +122,14 @@ class SectionControllerTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
-        
+
         $section = Section::factory()->create();
 
         $response = $this->actingAs($admin)->delete(route('admin.sections.destroy', $section));
 
         $response->assertRedirect(route('admin.sections.index', [
             'academic_year_id' => $section->academic_year_id,
-            'grade_id' => $section->grade_id
+            'grade_id' => $section->grade_id,
         ]));
         $this->assertSoftDeleted('sections', ['id' => $section->id]);
     }

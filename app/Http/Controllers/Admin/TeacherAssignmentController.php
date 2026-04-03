@@ -30,7 +30,7 @@ class TeacherAssignmentController extends Controller
         $activeYear = AcademicYear::active()
             ->with(['grades.sections' => function ($query) {
                 $query->withCount('enrollments')
-                      ->with(['teacherAssignments.teacher:id,name']);
+                    ->with(['teacherAssignments.teacher:id,name']);
             }])
             ->first();
 
@@ -64,7 +64,7 @@ class TeacherAssignmentController extends Controller
         $toDelete = array_diff($currentSectionIds, $newSectionIds);
         $toAdd = array_diff($newSectionIds, $currentSectionIds);
 
-        if (!empty($toDelete)) {
+        if (! empty($toDelete)) {
             TeacherAssignment::where('user_id', $teacherId)
                 ->where('academic_year_id', $academicYearId)
                 ->whereIn('section_id', $toDelete)

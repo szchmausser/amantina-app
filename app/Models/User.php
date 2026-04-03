@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -72,5 +73,25 @@ class User extends Authenticatable implements HasMedia
     public function teacherAssignments(): HasMany
     {
         return $this->hasMany(TeacherAssignment::class);
+    }
+
+    /**
+     * Get the representatives for the student.
+     */
+    public function representatives(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'student_representatives', 'student_id', 'representative_id')
+            ->withPivot('relationship_type_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the students represented by the user.
+     */
+    public function representedStudents(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'student_representatives', 'representative_id', 'student_id')
+            ->withPivot('relationship_type_id')
+            ->withTimestamps();
     }
 }

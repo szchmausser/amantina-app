@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\AcademicStructureOverviewController;
 use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Controllers\Admin\GradeController;
 use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\RepresentativeController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SchoolTermController;
 use App\Http\Controllers\Admin\SectionController;
@@ -40,7 +42,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('teacher-assignments', TeacherAssignmentController::class)->except(['show', 'edit', 'update']);
 
         // Academic Info Dashboard
-        Route::get('academic-info', [\App\Http\Controllers\Admin\AcademicStructureOverviewController::class, 'index'])->name('academic-info.index');
+        Route::get('academic-info', [AcademicStructureOverviewController::class, 'index'])->name('academic-info.index');
+
+        // Student Representatives
+        Route::post('student-representatives', [RepresentativeController::class, 'store'])->name('student-representatives.store');
+        Route::delete('student-representatives/{student_representative}', [RepresentativeController::class, 'destroy'])->name('student-representatives.destroy');
     });
 });
 

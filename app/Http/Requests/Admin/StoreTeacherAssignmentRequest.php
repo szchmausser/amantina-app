@@ -3,11 +3,8 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\AcademicYear;
-use App\Models\Grade;
-use App\Models\Section;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreTeacherAssignmentRequest extends FormRequest
 {

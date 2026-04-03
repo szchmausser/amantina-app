@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Models\RelationshipType;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -96,8 +97,51 @@ class UserController extends Controller
     {
         Gate::authorize('view', $user);
 
+        $representativeRole = Role::where('name', 'representante')->first();
+
+        $user->load([
+            'roles.permissions',
+            'permissions',
+            'representedStudents',
+        ]);
+
+        $representatives = \DB::table('student_representatives')
+            ->join('users as reps', 'reps.id', '=', 'student_representatives.representative_id')
+            ->leftJoin('relationship_types', 'relationship_types.id', '=', 'student_representatives.relationship_type_id')
+            ->where('student_representatives.student_id', $user->id)
+            ->whereNull('student_representatives.deleted_at')
+            ->select([
+                'reps.id',
+                'reps.name',
+                'reps.cedula',
+                'reps.phone',
+                'student_representatives.id as pivot_id',
+                'student_representatives.relationship_type_id',
+                'relationship_types.name as pivot_relationship_type_name',
+            ])
+            ->get()
+            ->map(function ($rep) {
+                return (object) [
+                    'id' => $rep->id,
+                    'name' => $rep->name,
+                    'cedula' => $rep->cedula,
+                    'phone' => $rep->phone,
+                    'pivot' => (object) [
+                        'id' => $rep->pivot_id,
+                        'relationship_type_id' => $rep->relationship_type_id,
+                        'relationship_type_name' => $rep->pivot_relationship_type_name,
+                    ],
+                ];
+            });
+
+        $user->setRelation('representatives', $representatives);
+
         return Inertia::render('admin/users/show', [
-            'user' => $user->load(['roles.permissions', 'permissions']),
+            'user' => $user,
+            'relationshipTypes' => RelationshipType::where('is_active', true)->get(),
+            'availableRepresentatives' => $representativeRole
+                ? User::role('representante')->get(['id', 'name', 'cedula'])
+                : [],
         ]);
     }
 
