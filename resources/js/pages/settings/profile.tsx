@@ -11,6 +11,7 @@ import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
+import { UserAvatar } from '@/components/user-avatar';
 import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -23,9 +24,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Profile({
     mustVerifyEmail,
     status,
+    avatar_url,
 }: {
     mustVerifyEmail: boolean;
     status?: string;
+    avatar_url?: string | null;
 }) {
     const { auth } = usePage().props;
 
@@ -42,6 +45,15 @@ export default function Profile({
                         title="Profile information"
                         description="Update your name and email address"
                     />
+
+                    <div className="flex justify-center pb-4">
+                        <UserAvatar
+                            name={auth.user.name}
+                            avatarUrl={avatar_url ?? undefined}
+                            avatarUpdateUrl="/settings/profile/avatar"
+                            avatarRemoveUrl="/settings/profile/avatar"
+                        />
+                    </div>
 
                     <Form
                         {...ProfileController.update.form()}
