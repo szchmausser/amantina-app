@@ -1,7 +1,9 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Shield, ShieldCheck } from 'lucide-react';
+import { ChevronDown, ChevronRight, Shield, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -26,7 +28,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Permisos', href: '/admin/permissions' },
 ];
 
-function groupPermissions(permissions: Permission[]): Record<string, Permission[]> {
+function groupPermissions(
+    permissions: Permission[],
+): Record<string, Permission[]> {
     const groups: Record<string, Permission[]> = {};
     permissions.forEach((p) => {
         const module = p.name.split('.')[0];
@@ -41,72 +45,127 @@ function groupPermissions(permissions: Permission[]): Record<string, Permission[
 export default function PermissionsIndex({ permissions }: Props) {
     const { auth } = usePage<any>().props;
     const hasPermission = (p: string) => auth.permissions?.includes(p);
-    
+
     const groups = groupPermissions(permissions);
+    const [openModules, setOpenModules] = useState<Set<string>>(new Set());
+
+    const toggleModule = (module: string) => {
+        setOpenModules((prev) => {
+            const next = new Set(prev);
+            if (next.has(module)) {
+                next.delete(module);
+            } else {
+                next.add(module);
+            }
+            return next;
+        });
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Permisos del Sistema" />
 
             <SettingsLayout>
-                <div className="space-y-6 text-neutral-900 dark:text-neutral-100">
+                <div className="flex flex-col gap-6">
+                    {/* Header */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight">Permisos</h1>
+                            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                                Permisos del Sistema
+                            </h1>
                             <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                                Lista de todos los permisos registrados en el sistema y los roles que los poseen.
+                                Lista de todos los permisos registrados en el
+                                sistema y los roles que los poseen.
                             </p>
                         </div>
                         {hasPermission('roles.view') && (
                             <Button variant="outline" asChild>
-                                <Link href="/admin/roles">
-                                    <Shield className="mr-2 h-4 w-4" />
-                                    Ver Roles
-                                </Link>
+                                <Link href="/admin/roles">Ver Roles</Link>
                             </Button>
                         )}
                     </div>
 
-                    <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
-                        {Object.entries(groups).map(([module, modulePerms]) => (
-                            <div
-                                key={module}
-                                className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-white dark:bg-neutral-900/50 shadow-sm"
-                            >
-                                <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50 border-b">
-                                    <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
-                                        <ShieldCheck className="h-4 w-4" />
-                                        {module}
-                                        <Badge variant="secondary" className="text-xs">
-                                            {modulePerms.length}
-                                        </Badge>
-                                    </h2>
-                                </div>
-                                <div className="divide-y divide-sidebar-border/70">
-                                    {modulePerms.map((perm) => (
-                                        <div
-                                            key={perm.id}
-                                            className="flex items-center justify-between px-6 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors"
-                                        >
-                                            <code className="text-xs font-medium bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded text-primary">
-                                                {perm.name}
-                                            </code>
-                                            <div className="flex flex-wrap gap-1.5 justify-end max-w-[50%]">
-                                                {perm.roles.length > 0 ? (
-                                                    perm.roles.map((role) => (
-                                                        <Badge key={role.id} variant="outline" className="text-[10px] uppercase font-bold py-0 h-5 border-primary/20">
-                                                            {role.name}
-                                                        </Badge>
-                                                    ))
+                    {/* Permissions Grid */}
+                    <div className="grid items-start gap-4 sm:grid-cols-1 lg:grid-cols-2">
+                        {Object.entries(groups).map(([module, modulePerms]) => {
+                            const isOpen = openModules.has(module);
+
+                            return (
+                                <Card
+                                    key={module}
+                                    className="overflow-hidden p-0"
+                                >
+                                    {/* Header estilo tabla - clickable */}
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleModule(module)}
+                                        className="flex w-full items-center justify-between border-b bg-neutral-50/50 px-4 py-3 transition-colors hover:bg-neutral-100/50 dark:border-neutral-800 dark:bg-neutral-800/30 dark:hover:bg-neutral-800/50"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-neutral-400">
+                                                {isOpen ? (
+                                                    <ChevronDown className="h-4 w-4" />
                                                 ) : (
-                                                    <span className="text-[10px] text-neutral-400">Sin roles</span>
+                                                    <ChevronRight className="h-4 w-4" />
                                                 )}
                                             </div>
+                                            <ShieldCheck className="h-3.5 w-3.5 text-neutral-400" />
+                                            <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
+                                                {module}
+                                            </span>
+                                            <Badge
+                                                variant="secondary"
+                                                className="text-[10px]"
+                                            >
+                                                {modulePerms.length}
+                                            </Badge>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
+                                    </button>
+
+                                    {/* Collapsible content */}
+                                    {isOpen && (
+                                        <CardContent className="p-0">
+                                            <div className="divide-y">
+                                                {modulePerms.map((perm) => (
+                                                    <div
+                                                        key={perm.id}
+                                                        className="flex items-center justify-between px-6 py-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
+                                                    >
+                                                        <code className="rounded bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+                                                            {perm.name}
+                                                        </code>
+                                                        <div className="flex max-w-[50%] flex-wrap items-center justify-end gap-1.5">
+                                                            {perm.roles.length >
+                                                            0 ? (
+                                                                perm.roles.map(
+                                                                    (role) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                role.id
+                                                                            }
+                                                                            variant="outline"
+                                                                            className="text-[10px] font-medium capitalize"
+                                                                        >
+                                                                            {
+                                                                                role.name
+                                                                            }
+                                                                        </Badge>
+                                                                    ),
+                                                                )
+                                                            ) : (
+                                                                <span className="text-xs text-neutral-400">
+                                                                    Sin roles
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    )}
+                                </Card>
+                            );
+                        })}
                     </div>
                 </div>
             </SettingsLayout>
