@@ -177,7 +177,7 @@ function DataTablePagination({
                             onValueChange={(val) => onPerPageChange(parseInt(val, 10))}
                         >
                             <SelectTrigger className="h-8 w-20 text-xs">
-                                <SelectValue />
+                                <SelectValue placeholder={perPage?.toString() || perPageOptions[0].toString()} />
                             </SelectTrigger>
                             <SelectContent side="top">
                                 {perPageOptions.map((option) => (

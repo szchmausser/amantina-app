@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { BookOpen, GraduationCap, Plus, Trash2, Users } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +21,9 @@ import {
     DataTableBody,
     DataTableTR,
     DataTableTD,
+    type PaginationInfo,
 } from '@/components/ui/data-table';
+import { TableFilters } from '@/components/ui/table-filters';
 
 interface User {
     id: number;
@@ -52,10 +55,19 @@ interface AcademicYear {
     name: string;
 }
 
+interface PaginatedEnrollments {
+    data: Enrollment[];
+    links: { url: string | null; label: string; active: boolean }[];
+    total: number;
+    current_page: number;
+    last_page: number;
+    per_page: number;
+}
+
 interface Props {
     activeYear: AcademicYear | null;
     hasStructure: boolean;
-    enrollments: Enrollment[];
+    enrollments: PaginatedEnrollments;
     grades: Grade[];
     totalEnrolled: number;
     pendingStudents: number;
@@ -78,6 +90,35 @@ export default function EnrollmentsIndex({
         { title: 'Inscripciones', href: '/admin/enrollments' },
     ];
 
+    const [perPage, setPerPage] = useState(enrollments.per_page || 10);
+    const isFirstPerPageRender = useRef(true);
+    const selectedGradeIdRef = useRef(selectedGradeId);
+    const selectedSectionIdRef = useRef(selectedSectionId);
+
+    // Mantener refs actualizados
+    useEffect(() => {
+        selectedGradeIdRef.current = selectedGradeId;
+        selectedSectionIdRef.current = selectedSectionId;
+    }, [selectedGradeId, selectedSectionId]);
+
+    // Efecto para cambiar per_page cuando el usuario lo modifica
+    useEffect(() => {
+        if (isFirstPerPageRender.current) {
+            isFirstPerPageRender.current = false;
+            return;
+        }
+
+        router.get(
+            '/admin/enrollments',
+            {
+                grade_id: selectedGradeIdRef.current,
+                section_id: selectedSectionIdRef.current,
+                per_page: perPage,
+            },
+            { preserveState: true, replace: true },
+        );
+    }, [perPage]);
+
     const handleDelete = (id: number) => {
         if (
             confirm(
@@ -91,7 +132,11 @@ export default function EnrollmentsIndex({
     const handleFilterGrade = (val: string) => {
         router.get(
             '/admin/enrollments',
-            { grade_id: val === 'all' ? null : val, section_id: null },
+            {
+                grade_id: val === 'all' ? null : val,
+                section_id: null,
+                per_page: perPage,
+            },
             { preserveState: true },
         );
     };
@@ -102,6 +147,7 @@ export default function EnrollmentsIndex({
             {
                 grade_id: selectedGradeId,
                 section_id: val === 'all' ? null : val,
+                per_page: perPage,
             },
             { preserveState: true },
         );
@@ -178,6 +224,23 @@ export default function EnrollmentsIndex({
         );
     }
 
+    // Preparar paginación
+    const pagination: PaginationInfo | undefined =
+        enrollments.last_page > 1
+            ? {
+                  links: enrollments.links,
+                  total: enrollments.total,
+                  current_page: enrollments.current_page,
+                  last_page: enrollments.last_page,
+              }
+            : undefined;
+
+    const hasFilters = Boolean(selectedGradeId || selectedSectionId);
+
+    const handleClearFilters = () => {
+        router.get('/admin/enrollments', {}, { preserveState: true });
+    };
+
     // Columnas de la tabla
     const tableColumns = (
         <>
@@ -190,10 +253,12 @@ export default function EnrollmentsIndex({
                 <DataTableTH className="w-20 text-right">Acciones</DataTableTH>
             </DataTableHead>
             <DataTableBody>
-                {enrollments.map((enr, index) => (
+                {enrollments.data.map((enr, index) => (
                     <DataTableTR key={enr.id}>
                         <DataTableTD className="font-mono text-xs text-neutral-400">
-                            {index + 1}
+                            {(enrollments.current_page - 1) * perPage +
+                                index +
+                                1}
                         </DataTableTD>
                         <DataTableTD className="font-medium text-neutral-900 dark:text-neutral-100">
                             {enr.student.name}
@@ -226,6 +291,67 @@ export default function EnrollmentsIndex({
         </>
     );
 
+    // Filtros como componentes reutilizables
+    const gradeFilterSelect = (
+        <div className="w-full sm:w-44">
+            <Select
+                value={selectedGradeId ? selectedGradeId.toString() : 'all'}
+                onValueChange={handleFilterGrade}
+            >
+                <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Todos los Grados" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Todos los Grados</SelectItem>
+                    {grades.map((g) => (
+                        <SelectItem key={g.id} value={g.id.toString()}>
+                            {g.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+    );
+
+    const sectionFilterSelect = (
+        <div className="w-full sm:w-44">
+            <Select
+                value={selectedSectionId ? selectedSectionId.toString() : 'all'}
+                onValueChange={handleFilterSection}
+                disabled={!selectedGradeId || availableSections.length === 0}
+            >
+                <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Todas las Secciones" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Todas las Secciones</SelectItem>
+                    {availableSections.map((s) => (
+                        <SelectItem key={s.id} value={s.id.toString()}>
+                            {s.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+    );
+
+    const createButtons = (
+        <div className="flex gap-2 sm:ml-auto">
+            <Button variant="outline" asChild>
+                <Link href="/admin/enrollments/create">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nuevo Ingreso
+                </Link>
+            </Button>
+            <Button asChild>
+                <Link href="/admin/enrollments/promote">
+                    <GraduationCap className="mr-2 h-4 w-4" />
+                    Panel de Promoción
+                </Link>
+            </Button>
+        </div>
+    );
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Inscripciones | ${activeYear.name}`} />
@@ -245,20 +371,6 @@ export default function EnrollmentsIndex({
                                 </span>{' '}
                                 (Activo)
                             </p>
-                        </div>
-                        <div className="flex gap-2">
-                            <Button variant="outline" asChild>
-                                <Link href="/admin/enrollments/create">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Nuevo Ingreso
-                                </Link>
-                            </Button>
-                            <Button asChild>
-                                <Link href="/admin/enrollments/promote">
-                                    <GraduationCap className="mr-2 h-4 w-4" />
-                                    Panel de Promoción
-                                </Link>
-                            </Button>
                         </div>
                     </div>
 
@@ -300,73 +412,41 @@ export default function EnrollmentsIndex({
                         </Card>
                     </div>
 
-                    {/* Filtros */}
+                    {/* Filtros usando componente reutilizable */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <div className="w-full sm:w-1/3">
-                            <Select
-                                value={
-                                    selectedGradeId
-                                        ? selectedGradeId.toString()
-                                        : 'all'
-                                }
-                                onValueChange={handleFilterGrade}
+                        {gradeFilterSelect}
+                        {sectionFilterSelect}
+                        {hasFilters && (
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={handleClearFilters}
+                                className="text-neutral-600 hover:text-neutral-800"
                             >
-                                <SelectTrigger className="h-10">
-                                    <SelectValue placeholder="Todos los Grados" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        Todos los Grados
-                                    </SelectItem>
-                                    {grades.map((g) => (
-                                        <SelectItem
-                                            key={g.id}
-                                            value={g.id.toString()}
-                                        >
-                                            {g.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="w-full sm:w-1/3">
-                            <Select
-                                value={
-                                    selectedSectionId
-                                        ? selectedSectionId.toString()
-                                        : 'all'
-                                }
-                                onValueChange={handleFilterSection}
-                                disabled={
-                                    !selectedGradeId ||
-                                    availableSections.length === 0
-                                }
-                            >
-                                <SelectTrigger className="h-10">
-                                    <SelectValue placeholder="Todas las Secciones" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        Todas las Secciones
-                                    </SelectItem>
-                                    {availableSections.map((s) => (
-                                        <SelectItem
-                                            key={s.id}
-                                            value={s.id.toString()}
-                                        >
-                                            {s.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                                Limpiar filtros
+                            </Button>
+                        )}
+                        {createButtons}
                     </div>
 
                     {/* Tabla */}
                     <DataTable
-                        data={enrollments}
+                        data={enrollments.data}
                         columns={tableColumns}
+                        pagination={pagination}
+                        onPageChange={(_, url) => {
+                            router.get(
+                                url,
+                                { per_page: perPage },
+                                {
+                                    preserveState: true,
+                                    replace: true,
+                                },
+                            );
+                        }}
+                        perPage={perPage}
+                        onPerPageChange={setPerPage}
+                        perPageOptions={[10, 15, 25, 50, 100]}
                         emptyMessage="No hay inscripciones registradas. No se encontraron alumnos inscritos en esta sección/grado."
                     />
                 </div>

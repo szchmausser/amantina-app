@@ -105,8 +105,8 @@ export default function Index({ users, filters, availableRoles }: Props) {
         setRole(value);
         router.get(
             userIndex().url,
-            { 
-                search, 
+            {
+                search,
                 role: value === 'all' ? undefined : value,
                 per_page: perPage,
             },
@@ -157,9 +157,7 @@ export default function Index({ users, filters, availableRoles }: Props) {
                 {users.data.map((user, index) => (
                     <DataTableTR key={user.id}>
                         <DataTableTD className="font-mono text-xs text-neutral-400">
-                            {(users.current_page - 1) * users.data.length +
-                                index +
-                                1}
+                            {(users.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
                         <DataTableTD className="font-mono text-neutral-500">
                             {user.cedula}
@@ -298,14 +296,18 @@ export default function Index({ users, filters, availableRoles }: Props) {
                     columns={tableColumns}
                     pagination={pagination}
                     onPageChange={(page, url) => {
-                        router.get(url, {
-                            search: search || undefined,
-                            role: role === 'all' ? undefined : role,
-                            per_page: perPage,
-                        }, {
-                            preserveState: true,
-                            replace: true,
-                        })
+                        router.get(
+                            url,
+                            {
+                                search: search || undefined,
+                                role: role === 'all' ? undefined : role,
+                                per_page: perPage,
+                            },
+                            {
+                                preserveState: true,
+                                replace: true,
+                            },
+                        );
                     }}
                     perPage={perPage}
                     onPerPageChange={setPerPage}

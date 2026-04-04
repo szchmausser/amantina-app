@@ -39,8 +39,9 @@ class EnrollmentController extends Controller
                 ->when($gradeId, fn ($q) => $q->where('grade_id', $gradeId))
                 ->when($sectionId, fn ($q) => $q->where('section_id', $sectionId))
                 ->with(['student', 'grade', 'section'])
-                ->get()
-            : collect();
+                ->paginate($request->query('per_page', 10))
+                ->withQueryString()
+            : (object) ['data' => [], 'links' => [], 'total' => 0, 'current_page' => 1, 'last_page' => 1];
 
         $totalEnrolled = $activeYear
             ? Enrollment::where('academic_year_id', $activeYear->id)->count()
@@ -186,7 +187,7 @@ class EnrollmentController extends Controller
                 ->where('academic_year_id', $validated['academic_year_id'])
                 ->first();
 
-            if ($existingEnrollment && !$existingEnrollment->trashed()) {
+            if ($existingEnrollment && ! $existingEnrollment->trashed()) {
                 // El alumno tiene un enrollment activo
                 $existingEnrollment->load(['student', 'grade', 'section']);
                 $skippedDetails[] = [
@@ -232,17 +233,17 @@ class EnrollmentController extends Controller
         if ($count > 0) {
             $message = "{$count} alumno(s) promovido(s) correctamente.";
         } else {
-            $message = "No se promovió ningún alumno.";
+            $message = 'No se promovió ningún alumno.';
         }
 
         // Si hay alumnos omitidos, agregar advertencia detallada
         if ($skippedCount > 0) {
             $warningMessage = "ATENCIÓN: {$skippedCount} alumno(s) fueron omitidos porque ya están inscritos en el año escolar {$validated['academic_year_id']}:\n\n";
-            
+
             foreach ($skippedDetails as $detail) {
                 $warningMessage .= "• {$detail['name']} (CI: {$detail['cedula']}) - Inscrito en {$detail['grade']} - Sección {$detail['section']}\n";
             }
-            
+
             $warningMessage .= "\nSi necesita cambiar su inscripción, primero debe eliminar la inscripción actual desde el panel de Inscripciones.";
 
             return redirect()->back()
