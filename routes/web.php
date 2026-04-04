@@ -4,11 +4,13 @@ use App\Http\Controllers\Admin\AcademicStructureOverviewController;
 use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Controllers\Admin\GradeController;
+use App\Http\Controllers\Admin\HealthConditionController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RepresentativeController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SchoolTermController;
 use App\Http\Controllers\Admin\SectionController;
+use App\Http\Controllers\Admin\StudentHealthRecordController;
 use App\Http\Controllers\Admin\TeacherAssignmentController;
 use App\Http\Controllers\Admin\TermTypeController;
 use App\Http\Controllers\Admin\UserController;
@@ -34,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('sections', SectionController::class);
         Route::resource('school-terms', SchoolTermController::class)->except(['show']);
         Route::resource('term-types', TermTypeController::class)->except(['create', 'edit', 'show']);
+        Route::resource('health-conditions', HealthConditionController::class)->except(['create', 'edit', 'show']);
 
         // Enrollments (promote routes BEFORE resource to avoid route conflicts)
         Route::get('enrollments/promote', [EnrollmentController::class, 'showPromotionPanel'])->name('enrollments.promote');
@@ -49,6 +52,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Student Representatives
         Route::post('student-representatives', [RepresentativeController::class, 'store'])->name('student-representatives.store');
         Route::delete('student-representatives/{student_representative}', [RepresentativeController::class, 'destroy'])->name('student-representatives.destroy');
+
+        // Student Health Records
+        Route::post('student-health-records', [StudentHealthRecordController::class, 'store'])->name('student-health-records.store');
+        Route::put('student-health-records/{student_health_record}', [StudentHealthRecordController::class, 'update'])->name('student-health-records.update');
+        Route::delete('student-health-records/{student_health_record}', [StudentHealthRecordController::class, 'destroy'])->name('student-health-records.destroy');
     });
 });
 

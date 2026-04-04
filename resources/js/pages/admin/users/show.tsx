@@ -9,10 +9,18 @@ import {
     Phone,
     Trash2,
     UserPlus,
+    Heart,
+    FileText,
+    Download,
+    Plus,
+    Calendar,
+    MapPin,
+    Paperclip,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import {
@@ -25,6 +33,7 @@ import { store as linkRepresentative } from '@/routes/admin/student-representati
 import type { BreadcrumbItem, User } from '@/types';
 import { useState } from 'react';
 import AssignRepresentativeModal from './partials/assign-representative-modal';
+import HealthRecordModal from './partials/health-record-modal';
 import { router } from '@inertiajs/react';
 
 interface Props {
@@ -33,10 +42,12 @@ interface Props {
         permissions: any[];
         representatives: any[];
         represented_students: any[];
+        health_records: any[];
         avatar_url?: string | null;
     };
     relationshipTypes: any[];
     availableRepresentatives: any[];
+    healthConditions: any[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -49,9 +60,13 @@ export default function Show({
     user,
     relationshipTypes,
     availableRepresentatives,
+    healthConditions,
 }: Props) {
     const { auth } = usePage<any>().props;
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
+    const [editingHealthRecord, setEditingHealthRecord] = useState<any>(null);
+    const [activeTab, setActiveTab] = useState('general');
     const getInitials = useInitials();
 
     const hasPermission = (p: string) => auth.permissions?.includes(p);
@@ -99,6 +114,7 @@ export default function Show({
             <Head title={`Usuario: ${user.name}`} />
 
             <div className="p-4 lg:p-8">
+                {/* User Header */}
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <Button
@@ -157,359 +173,649 @@ export default function Show({
                     </div>
                     {(hasPermission('users.edit') ||
                         (auth.user && auth.user.id === user.id)) && (
-                        <Button asChild>
-                            <Link href={userEdit(user.id).url}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar Perfil
-                            </Link>
-                        </Button>
-                    )}
+                            <Button asChild>
+                                <Link href={userEdit(user.id).url}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Editar Perfil
+                                </Link>
+                            </Button>
+                        )}
                 </div>
 
-                <div className="space-y-6">
-                    {/* Información Personal */}
-                    <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                            <UserIcon className="h-4 w-4 text-neutral-500" />
-                            <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
-                                Información Personal
-                            </h2>
-                        </div>
-                        <div className="grid gap-6 p-6 md:grid-cols-2">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                    Cédula
-                                </p>
-                                <p className="text-sm font-medium">
-                                    {user.cedula || '—'}
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                    Correo Electrónico
-                                </p>
-                                <p className="text-sm font-medium">
-                                    {user.email}
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                    Teléfono
-                                </p>
-                                <p className="text-sm font-medium">
-                                    {user.phone || '—'}
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                    Dirección
-                                </p>
-                                <p className="text-sm font-medium">
-                                    {user.address || '—'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                {/* Tabs */}
+                <Tabs
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="space-y-6"
+                >
+                    <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:grid-cols-3">
+                        <TabsTrigger value="general">General</TabsTrigger>
+                        {isAlumno && (
+                            <TabsTrigger value="salud">
+                                <Heart className="mr-1.5 h-3.5 w-3.5" />
+                                Salud
+                            </TabsTrigger>
+                        )}
+                        <TabsTrigger value="permisos">Permisos</TabsTrigger>
+                    </TabsList>
 
-                    {/* Información Académica (Solo si es alumno) */}
-                    {isAlumno && (
-                        <>
-                            <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                                <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                    <BookOpen className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
-                                        Información Académica
-                                    </h2>
+                    {/* Tab: General */}
+                    <TabsContent value="general" className="space-y-6">
+                        {/* Información Personal */}
+                        <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                            <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                <UserIcon className="h-4 w-4 text-neutral-500" />
+                                <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                    Información Personal
+                                </h2>
+                            </div>
+                            <div className="grid gap-6 p-6 md:grid-cols-2">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                        Cédula
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {user.cedula || '—'}
+                                    </p>
                                 </div>
-                                <div className="grid gap-6 p-6 md:grid-cols-2">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                            Tipo de Ingreso
-                                        </p>
-                                        <Badge
-                                            variant="outline"
-                                            className="font-medium"
-                                        >
-                                            {user.is_transfer
-                                                ? 'Transferido'
-                                                : 'Regular'}
-                                        </Badge>
-                                    </div>
-                                    {user.is_transfer && (
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                                Institución de Procedencia
-                                            </p>
-                                            <p className="text-sm font-medium">
-                                                {user.institution_origin ||
-                                                    'No especificada'}
-                                            </p>
-                                        </div>
-                                    )}
-                                    <div className="col-span-full rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800/50">
-                                        <p className="text-xs text-neutral-500 italic">
-                                            * El grado y sección se gestionan en
-                                            el módulo de Inscripciones.
-                                        </p>
-                                    </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                        Correo Electrónico
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {user.email}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                        Teléfono
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {user.phone || '—'}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                        Dirección
+                                    </p>
+                                    <p className="text-sm font-medium">
+                                        {user.address || '—'}
+                                    </p>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Información Familiar (Representantes) */}
-                            <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                                <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                    <div className="flex items-center gap-2">
-                                        <Users className="h-4 w-4 text-neutral-500" />
+                        {/* Información Académica (Solo si es alumno) */}
+                        {isAlumno && (
+                            <>
+                                <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                    <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                        <BookOpen className="h-4 w-4 text-neutral-500" />
                                         <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
-                                            Representantes Legales
+                                            Información Académica
                                         </h2>
                                     </div>
-                                    {hasPermission('users.edit') && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-7 text-[10px] font-bold uppercase"
-                                            onClick={() =>
-                                                setIsAssignModalOpen(true)
-                                            }
-                                        >
-                                            <UserPlus className="mr-1.5 h-3 w-3" />
-                                            Asignar
-                                        </Button>
-                                    )}
+                                    <div className="grid gap-6 p-6 md:grid-cols-2">
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                                Tipo de Ingreso
+                                            </p>
+                                            <Badge
+                                                variant="outline"
+                                                className="font-medium"
+                                            >
+                                                {user.is_transfer
+                                                    ? 'Transferido'
+                                                    : 'Regular'}
+                                            </Badge>
+                                        </div>
+                                        {user.is_transfer && (
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                                    Institución de Procedencia
+                                                </p>
+                                                <p className="text-sm font-medium">
+                                                    {user.institution_origin ||
+                                                        'No especificada'}
+                                                </p>
+                                            </div>
+                                        )}
+                                        <div className="col-span-full rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800/50">
+                                            <p className="text-xs text-neutral-500 italic">
+                                                * El grado y sección se
+                                                gestionan en el módulo de
+                                                Inscripciones.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Información Familiar (Representantes) */}
+                                <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                    <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="h-4 w-4 text-neutral-500" />
+                                            <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                                Representantes Legales
+                                            </h2>
+                                        </div>
+                                        {hasPermission('users.edit') && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-7 text-[10px] font-bold uppercase"
+                                                onClick={() =>
+                                                    setIsAssignModalOpen(true)
+                                                }
+                                            >
+                                                <UserPlus className="mr-1.5 h-3 w-3" />
+                                                Asignar
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <div className="p-0">
+                                        {user.representatives &&
+                                            user.representatives.length > 0 ? (
+                                            <div className="divide-y divide-sidebar-border/70">
+                                                {user.representatives.map(
+                                                    (rep) => (
+                                                        <div
+                                                            key={rep.id}
+                                                            className="flex items-center justify-between p-4 px-6 transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+                                                                    <UserIcon className="h-4 w-4 text-neutral-500" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-semibold">
+                                                                        {
+                                                                            rep.name
+                                                                        }
+                                                                    </p>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Badge
+                                                                            variant="secondary"
+                                                                            className="h-4 px-1.5 text-[9px] uppercase"
+                                                                        >
+                                                                            {(
+                                                                                rep as any
+                                                                            )
+                                                                                .pivot
+                                                                                ?.relationship_type_name ||
+                                                                                'Vínculo'}
+                                                                        </Badge>
+                                                                        <span className="text-[11px] text-neutral-500">
+                                                                            {
+                                                                                rep.cedula
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-4">
+                                                                {rep.phone && (
+                                                                    <div className="hidden items-center gap-1 text-neutral-500 sm:flex">
+                                                                        <Phone className="h-3 w-3" />
+                                                                        <span className="text-xs">
+                                                                            {
+                                                                                rep.phone
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                                {hasPermission(
+                                                                    'users.edit',
+                                                                ) && (
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                                            onClick={() =>
+                                                                                handleUnlink(
+                                                                                    rep
+                                                                                        .pivot
+                                                                                        .id,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </Button>
+                                                                    )}
+                                                            </div>
+                                                        </div>
+                                                    ),
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="py-8 text-center text-neutral-400">
+                                                <p className="text-sm italic">
+                                                    No tiene representantes
+                                                    vinculados.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Información de Representados (Solo si es representante) */}
+                        {isRepresentante && (
+                            <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                    <Users className="h-4 w-4 text-neutral-500" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        Estudiantes a Cargo
+                                    </h2>
                                 </div>
                                 <div className="p-0">
-                                    {user.representatives &&
-                                    user.representatives.length > 0 ? (
+                                    {user.represented_students &&
+                                        user.represented_students.length > 0 ? (
                                         <div className="divide-y divide-sidebar-border/70">
-                                            {user.representatives.map((rep) => (
-                                                <div
-                                                    key={rep.id}
-                                                    className="flex items-center justify-between p-4 px-6 transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                                            <UserIcon className="h-4 w-4 text-neutral-500" />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-sm font-semibold">
-                                                                {rep.name}
-                                                            </p>
-                                                            <div className="flex items-center gap-2">
-                                                                <Badge
-                                                                    variant="secondary"
-                                                                    className="h-4 px-1.5 text-[9px] uppercase"
+                                            {user.represented_students.map(
+                                                (student) => (
+                                                    <div
+                                                        key={student.id}
+                                                        className="flex items-center justify-between p-4 px-6 transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+                                                                <UserIcon className="h-4 w-4 text-neutral-500" />
+                                                            </div>
+                                                            <div>
+                                                                <Link
+                                                                    href={
+                                                                        userShowDetail(
+                                                                            student.id,
+                                                                        ).url
+                                                                    }
+                                                                    className="text-sm font-semibold decoration-neutral-300 hover:underline"
                                                                 >
-                                                                    {(
-                                                                        rep as any
-                                                                    ).pivot
-                                                                        ?.relationship_type_name ||
-                                                                        'Vínculo'}
-                                                                </Badge>
-                                                                <span className="text-[11px] text-neutral-500">
-                                                                    {rep.cedula}
-                                                                </span>
+                                                                    {
+                                                                        student.name
+                                                                    }
+                                                                </Link>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Badge
+                                                                        variant="secondary"
+                                                                        className="h-4 px-1.5 text-[9px] uppercase"
+                                                                    >
+                                                                        {student
+                                                                            .pivot
+                                                                            ?.relationship_type
+                                                                            ?.name ||
+                                                                            'Vínculo'}
+                                                                    </Badge>
+                                                                    <span className="text-[11px] text-neutral-500">
+                                                                        {
+                                                                            student.cedula
+                                                                        }
+                                                                    </span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-4">
-                                                        {rep.phone && (
-                                                            <div className="hidden items-center gap-1 text-neutral-500 sm:flex">
-                                                                <Phone className="h-3 w-3" />
-                                                                <span className="text-xs">
-                                                                    {rep.phone}
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                        {hasPermission(
-                                                            'users.edit',
-                                                        ) && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                                                onClick={() =>
-                                                                    handleUnlink(
-                                                                        rep
-                                                                            .pivot
-                                                                            .id,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                ),
+                                            )}
                                         </div>
                                     ) : (
                                         <div className="py-8 text-center text-neutral-400">
                                             <p className="text-sm italic">
-                                                No tiene representantes
+                                                No tiene estudiantes a cargo
                                                 vinculados.
                                             </p>
                                         </div>
                                     )}
                                 </div>
                             </div>
-                        </>
-                    )}
+                        )}
 
-                    {/* Información de Representados (Solo si es representante) */}
-                    {isRepresentante && (
+                        {/* Matriz de Permisos */}
                         <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                            <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                <Users className="h-4 w-4 text-neutral-500" />
-                                <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
-                                    Estudiantes a Cargo
-                                </h2>
+                            <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                <div className="flex items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        Capacidades y Permisos
+                                    </h2>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-2 w-2 rounded-full border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"></div>
+                                        <span className="text-[10px] font-bold tracking-tighter text-neutral-400 uppercase">
+                                            Heredado
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                                        <span className="text-[10px] font-bold tracking-tighter text-neutral-400 uppercase">
+                                            Directo
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="p-0">
-                                {user.represented_students &&
-                                user.represented_students.length > 0 ? (
-                                    <div className="divide-y divide-sidebar-border/70">
-                                        {user.represented_students.map(
-                                            (student) => (
+                            <div className="divide-y divide-sidebar-border/70 p-6">
+                                {Object.keys(groupedPermissions).length > 0 ? (
+                                    <div className="grid gap-6 sm:grid-cols-2">
+                                        {Object.entries(groupedPermissions).map(
+                                            ([module, perms]) => (
                                                 <div
-                                                    key={student.id}
-                                                    className="flex items-center justify-between p-4 px-6 transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
+                                                    key={module}
+                                                    className="space-y-2"
                                                 >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                                            <UserIcon className="h-4 w-4 text-neutral-500" />
-                                                        </div>
-                                                        <div>
-                                                            <Link
-                                                                href={
-                                                                    userShowDetail(
-                                                                        student.id,
-                                                                    ).url
-                                                                }
-                                                                className="text-sm font-semibold decoration-neutral-300 hover:underline"
-                                                            >
-                                                                {student.name}
-                                                            </Link>
-                                                            <div className="flex items-center gap-2">
+                                                    <h3 className="text-[10px] font-black tracking-widest text-neutral-400 uppercase dark:text-neutral-500">
+                                                        {module}
+                                                    </h3>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {perms.map((perm) => {
+                                                            const action =
+                                                                perm.split(
+                                                                    '.',
+                                                                )[1];
+                                                            const isDirect =
+                                                                directPermissions.includes(
+                                                                    perm,
+                                                                );
+                                                            const isInherited =
+                                                                rolePermissions.has(
+                                                                    perm,
+                                                                );
+
+                                                            return (
                                                                 <Badge
-                                                                    variant="secondary"
-                                                                    className="h-4 px-1.5 text-[9px] uppercase"
+                                                                    key={perm}
+                                                                    variant="outline"
+                                                                    className={`px-2 py-0.5 text-[10px] font-normal ${isDirect
+                                                                            ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400'
+                                                                            : 'text-neutral-500 dark:text-neutral-400'
+                                                                        }`}
                                                                 >
-                                                                    {student
-                                                                        .pivot
-                                                                        ?.relationship_type
-                                                                        ?.name ||
-                                                                        'Vínculo'}
+                                                                    {action}
+                                                                    {isDirect &&
+                                                                        isInherited && (
+                                                                            <span className="ml-1 text-[8px] opacity-60">
+                                                                                (ambos)
+                                                                            </span>
+                                                                        )}
                                                                 </Badge>
-                                                                <span className="text-[11px] text-neutral-500">
-                                                                    {
-                                                                        student.cedula
-                                                                    }
-                                                                </span>
-                                                            </div>
-                                                        </div>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </div>
                                             ),
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="py-8 text-center text-neutral-400">
+                                    <div className="flex flex-col items-center justify-center py-8 text-center text-neutral-400">
+                                        <ShieldCheck className="mb-2 h-10 w-10 opacity-20" />
                                         <p className="text-sm italic">
-                                            No tiene estudiantes a cargo
-                                            vinculados.
+                                            Sin permisos asignados.
                                         </p>
                                     </div>
                                 )}
                             </div>
                         </div>
-                    )}
+                    </TabsContent>
 
-                    {/* Matriz de Permisos */}
-                    <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                            <div className="flex items-center gap-2">
-                                <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
-                                    Capacidades y Permisos
-                                </h2>
-                            </div>
-                            <div className="flex gap-3">
-                                <div className="flex items-center gap-1.5">
-                                    <div className="h-2 w-2 rounded-full border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"></div>
-                                    <span className="text-[10px] font-bold tracking-tighter text-neutral-400 uppercase">
-                                        Heredado
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                                    <span className="text-[10px] font-bold tracking-tighter text-neutral-400 uppercase">
-                                        Directo
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="divide-y divide-sidebar-border/70 p-6">
-                            {Object.keys(groupedPermissions).length > 0 ? (
-                                <div className="grid gap-6 sm:grid-cols-2">
-                                    {Object.entries(groupedPermissions).map(
-                                        ([module, perms]) => (
-                                            <div
-                                                key={module}
-                                                className="space-y-2"
-                                            >
-                                                <h3 className="text-[10px] font-black tracking-widest text-neutral-400 uppercase dark:text-neutral-500">
-                                                    {module}
-                                                </h3>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {perms.map((perm) => {
-                                                        const action =
-                                                            perm.split('.')[1];
-                                                        const isDirect =
-                                                            directPermissions.includes(
-                                                                perm,
-                                                            );
-                                                        const isInherited =
-                                                            rolePermissions.has(
-                                                                perm,
-                                                            );
-
-                                                        return (
-                                                            <Badge
-                                                                key={perm}
-                                                                variant="outline"
-                                                                className={`px-2 py-0.5 text-[10px] font-normal ${
-                                                                    isDirect
-                                                                        ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400'
-                                                                        : 'text-neutral-500 dark:text-neutral-400'
-                                                                }`}
-                                                            >
-                                                                {action}
-                                                                {isDirect &&
-                                                                    isInherited && (
-                                                                        <span className="ml-1 text-[8px] opacity-60">
-                                                                            (ambos)
-                                                                        </span>
-                                                                    )}
-                                                            </Badge>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        ),
+                    {/* Tab: Salud (solo para alumnos) */}
+                    {isAlumno && (
+                        <TabsContent value="salud" className="space-y-6">
+                            {/* Health Records Section */}
+                            <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                    <div className="flex items-center gap-2">
+                                        <Heart className="h-4 w-4 text-red-500" />
+                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                            Registros de Salud
+                                        </h2>
+                                    </div>
+                                    {hasPermission('student_health.create') && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 text-[10px] font-bold uppercase"
+                                            onClick={() => {
+                                                setEditingHealthRecord(null);
+                                                setIsHealthModalOpen(true);
+                                            }}
+                                        >
+                                            <Plus className="mr-1.5 h-3 w-3" />
+                                            Agregar Registro
+                                        </Button>
                                     )}
                                 </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-8 text-center text-neutral-400">
-                                    <ShieldCheck className="mb-2 h-10 w-10 opacity-20" />
-                                    <p className="text-sm italic">
-                                        Sin permisos asignados.
-                                    </p>
+                                <div className="p-0">
+                                    {user.health_records &&
+                                        user.health_records.length > 0 ? (
+                                        <div className="divide-y divide-sidebar-border/70">
+                                            {user.health_records.map(
+                                                (record: any) => (
+                                                    <div
+                                                        key={record.id}
+                                                        className="p-4 px-6 transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
+                                                    >
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
+                                                                    <Heart className="h-4 w-4 text-red-500" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                                                                        {record
+                                                                            .condition
+                                                                            ?.name ||
+                                                                            'Sin condición'}
+                                                                    </p>
+                                                                    <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                                                        <span className="flex items-center gap-1">
+                                                                            <Calendar className="h-3 w-3" />
+                                                                            {new Date(
+                                                                                record.received_at,
+                                                                            ).toLocaleDateString(
+                                                                                'es-ES',
+                                                                            )}
+                                                                        </span>
+                                                                        {record.received_at_location && (
+                                                                            <span className="flex items-center gap-1">
+                                                                                <MapPin className="h-3 w-3" />
+                                                                                {
+                                                                                    record.received_at_location
+                                                                                }
+                                                                            </span>
+                                                                        )}
+                                                                        <span>
+                                                                            Recibido
+                                                                            por:{' '}
+                                                                            {record
+                                                                                .received_by
+                                                                                ?.name ||
+                                                                                '—'}
+                                                                        </span>
+                                                                    </div>
+                                                                    {record.observations && (
+                                                                        <p className="mt-1 text-xs text-neutral-400 italic">
+                                                                            {
+                                                                                record.observations
+                                                                            }
+                                                                        </p>
+                                                                    )}
+                                                                    {record.media &&
+                                                                        record
+                                                                            .media
+                                                                            .length >
+                                                                        0 && (
+                                                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                                                {record.media.map(
+                                                                                    (
+                                                                                        m: any,
+                                                                                    ) => (
+                                                                                        <a
+                                                                                            key={
+                                                                                                m.id
+                                                                                            }
+                                                                                            href={
+                                                                                                m.original_url ||
+                                                                                                m.url
+                                                                                            }
+                                                                                            target="_blank"
+                                                                                            rel="noopener noreferrer"
+                                                                                            className="inline-flex items-center gap-1 rounded border bg-neutral-50 px-2 py-1 text-xs text-neutral-600 transition-colors hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                                                                                        >
+                                                                                            <Paperclip className="h-3 w-3" />
+                                                                                            {m
+                                                                                                .custom_properties
+                                                                                                ?.description ||
+                                                                                                m.file_name}
+                                                                                            <Download className="h-3 w-3" />
+                                                                                        </a>
+                                                                                    ),
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-1">
+                                                                {hasPermission(
+                                                                    'student_health.edit',
+                                                                ) && (
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 text-neutral-500 hover:text-blue-600"
+                                                                        >
+                                                                            <Edit className="h-3.5 w-3.5" />
+                                                                        </Button>
+                                                                    )}
+                                                                {hasPermission(
+                                                                    'student_health.delete',
+                                                                ) && (
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                                                            onClick={() => {
+                                                                                if (
+                                                                                    confirm(
+                                                                                        '¿Eliminar este registro de salud?',
+                                                                                    )
+                                                                                ) {
+                                                                                    router.delete(
+                                                                                        `/admin/student-health-records/${record.id}`,
+                                                                                    );
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                                        </Button>
+                                                                    )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="py-12 text-center text-neutral-400">
+                                            <Heart className="mx-auto mb-2 h-10 w-10 opacity-20" />
+                                            <p className="text-sm italic">
+                                                No hay registros de salud para
+                                                este estudiante.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            </div>
+                        </TabsContent>
+                    )}
+
+                    {/* Tab: Permisos */}
+                    <TabsContent value="permisos" className="space-y-6">
+                        <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                            <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                <div className="flex items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        Capacidades y Permisos
+                                    </h2>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-2 w-2 rounded-full border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"></div>
+                                        <span className="text-[10px] font-bold tracking-tighter text-neutral-400 uppercase">
+                                            Heredado
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                                        <span className="text-[10px] font-bold tracking-tighter text-neutral-400 uppercase">
+                                            Directo
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="divide-y divide-sidebar-border/70 p-6">
+                                {Object.keys(groupedPermissions).length > 0 ? (
+                                    <div className="grid gap-6 sm:grid-cols-2">
+                                        {Object.entries(groupedPermissions).map(
+                                            ([module, perms]) => (
+                                                <div
+                                                    key={module}
+                                                    className="space-y-2"
+                                                >
+                                                    <h3 className="text-[10px] font-black tracking-widest text-neutral-400 uppercase dark:text-neutral-500">
+                                                        {module}
+                                                    </h3>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {perms.map((perm) => {
+                                                            const action =
+                                                                perm.split(
+                                                                    '.',
+                                                                )[1];
+                                                            const isDirect =
+                                                                directPermissions.includes(
+                                                                    perm,
+                                                                );
+                                                            const isInherited =
+                                                                rolePermissions.has(
+                                                                    perm,
+                                                                );
+                                                            return (
+                                                                <Badge
+                                                                    key={perm}
+                                                                    variant="outline"
+                                                                    className={`px-2 py-0.5 text-[10px] font-normal ${isDirect
+                                                                            ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400'
+                                                                            : 'text-neutral-500 dark:text-neutral-400'
+                                                                        }`}
+                                                                >
+                                                                    {action}
+                                                                    {isDirect &&
+                                                                        isInherited && (
+                                                                            <span className="ml-1 text-[8px] opacity-60">
+                                                                                (ambos)
+                                                                            </span>
+                                                                        )}
+                                                                </Badge>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            ),
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-8 text-center text-neutral-400">
+                                        <ShieldCheck className="mb-2 h-10 w-10 opacity-20" />
+                                        <p className="text-sm italic">
+                                            Sin permisos asignados.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </TabsContent>
+                </Tabs>
             </div>
 
             <AssignRepresentativeModal
@@ -518,6 +824,20 @@ export default function Show({
                 studentId={user.id}
                 relationshipTypes={relationshipTypes}
                 availableRepresentatives={availableRepresentatives}
+            />
+
+            <HealthRecordModal
+                isOpen={isHealthModalOpen}
+                onClose={() => {
+                    setIsHealthModalOpen(false);
+                    setEditingHealthRecord(null);
+                }}
+                studentId={user.id}
+                studentName={user.name}
+                healthConditions={healthConditions}
+                currentUserId={auth.user.id}
+                existingRecord={editingHealthRecord}
+                isEditing={!!editingHealthRecord}
             />
         </AppLayout>
     );

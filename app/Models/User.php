@@ -100,6 +100,14 @@ class User extends Authenticatable implements HasMedia
             ->withTimestamps();
     }
 
+    /**
+     * Get the health records for this student.
+     */
+    public function healthRecords(): HasMany
+    {
+        return $this->hasMany(StudentHealthRecord::class, 'user_id');
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('avatar')

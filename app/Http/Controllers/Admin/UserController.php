@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Models\HealthCondition;
 use App\Models\RelationshipType;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -109,6 +110,9 @@ class UserController extends Controller
             'roles.permissions',
             'permissions',
             'representedStudents',
+            'healthRecords.condition',
+            'healthRecords.receivedBy',
+            'healthRecords.media',
         ]);
 
         $representatives = \DB::table('student_representatives')
@@ -148,6 +152,7 @@ class UserController extends Controller
             'availableRepresentatives' => $representativeRole
                 ? User::role('representante')->get(['id', 'name', 'cedula'])
                 : [],
+            'healthConditions' => HealthCondition::where('is_active', true)->get(),
         ]);
     }
 

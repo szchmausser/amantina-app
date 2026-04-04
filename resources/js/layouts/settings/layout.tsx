@@ -26,6 +26,7 @@ import {
     Palette,
     Building2,
     Layers,
+    Heart,
 } from 'lucide-react';
 import type { NavItem, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -86,6 +87,14 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             title: 'Secciones',
             href: sectionsIndex().url,
             icon: Layers,
+        });
+    }
+
+    if (auth.permissions?.includes('health_conditions.view')) {
+        sidebarNavItems.push({
+            title: 'Condiciones de Salud',
+            href: '/admin/health-conditions',
+            icon: Heart,
         });
     }
 

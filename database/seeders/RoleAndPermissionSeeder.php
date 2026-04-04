@@ -56,6 +56,14 @@ class RoleAndPermissionSeeder extends Seeder
             'assignments.edit',
             'assignments.delete',
             'academic_info.view',
+            'health_conditions.view',
+            'health_conditions.create',
+            'health_conditions.edit',
+            'health_conditions.delete',
+            'student_health.view',
+            'student_health.create',
+            'student_health.edit',
+            'student_health.delete',
         ];
 
         foreach ($permissions as $permission) {
