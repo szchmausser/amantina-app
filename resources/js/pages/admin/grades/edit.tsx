@@ -13,8 +13,8 @@ import {
 import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { index as gradesIndex } from '@/routes/admin/grades';
 import type { BreadcrumbItem } from '@/types';
+import { index as gradesIndex } from '@/routes/admin/grades';
 
 interface AcademicYear {
     id: number;
@@ -73,7 +73,8 @@ export default function GradeEdit({ grade, academicYears }: Props) {
             />
 
             <SettingsLayout>
-                <div className="mx-auto max-w-2xl px-4 py-4">
+                <div className="px-4 py-4">
+                    {/* Header */}
                     <div className="mb-6">
                         <Button
                             variant="ghost"
@@ -107,19 +108,17 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                            <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                        {/* Card */}
+                        <div className="overflow-hidden rounded-xl border">
+                            <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
                                 <GraduationCap className="h-4 w-4 text-neutral-500" />
-                                <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                <h2 className="text-sm font-semibold">
                                     Datos del Grado
                                 </h2>
                             </div>
                             <div className="grid gap-6 p-6">
                                 <div className="space-y-2">
-                                    <Label
-                                        htmlFor="academic_year_id"
-                                        className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase"
-                                    >
+                                    <Label htmlFor="academic_year_id">
                                         Año Académico
                                     </Label>
                                     <Select
@@ -151,10 +150,7 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label
-                                        htmlFor="name"
-                                        className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase"
-                                    >
+                                    <Label htmlFor="name">
                                         Nombre del Grado
                                     </Label>
                                     <Input
@@ -170,10 +166,7 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label
-                                        htmlFor="order"
-                                        className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase"
-                                    >
+                                    <Label htmlFor="order">
                                         Orden de Visualización
                                     </Label>
                                     <Input
@@ -191,7 +184,7 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                                         placeholder="Ej: 1"
                                         required
                                     />
-                                    <p className="text-[11px] text-neutral-500">
+                                    <p className="text-xs text-neutral-500">
                                         Define la secuencia en la que aparecerán
                                         los grados.
                                     </p>
@@ -200,12 +193,12 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-end gap-3 border-t pt-6">
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-3">
                             <Button
                                 variant="outline"
                                 asChild
                                 disabled={processing}
-                                className="h-10"
                             >
                                 <Link
                                     href={
@@ -220,11 +213,7 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                                     Cancelar
                                 </Link>
                             </Button>
-                            <Button
-                                type="submit"
-                                disabled={processing}
-                                className="h-10 px-8"
-                            >
+                            <Button type="submit" disabled={processing}>
                                 {processing ? (
                                     'Guardando...'
                                 ) : (

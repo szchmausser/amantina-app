@@ -13,8 +13,8 @@ import {
 import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { index as sectionsIndex } from '@/routes/admin/sections';
 import type { BreadcrumbItem } from '@/types';
+import { index as sectionsIndex } from '@/routes/admin/sections';
 
 interface Grade {
     id: number;
@@ -74,7 +74,6 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
         }
     };
 
-    // Filter grades based on selected academic year
     const filteredGrades = grades.filter(
         (g) => g.academic_year_id === data.academic_year_id,
     );
@@ -90,7 +89,8 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
             />
 
             <SettingsLayout>
-                <div className="mx-auto max-w-2xl px-4 py-4">
+                <div className="px-4 py-4">
+                    {/* Header */}
                     <div className="mb-6">
                         <Button
                             variant="ghost"
@@ -117,25 +117,23 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                             {isEditing ? 'Editar Sección' : 'Nueva Sección'}
                         </h1>
                         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                            Asigna un identificador (ej: Sección A) a un grado
+                            Asigna un identificador (ej: A) a un grado
                             específico.
                         </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                            <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                        {/* Card */}
+                        <div className="overflow-hidden rounded-xl border">
+                            <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
                                 <Layers className="h-4 w-4 text-neutral-500" />
-                                <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                <h2 className="text-sm font-semibold">
                                     Configuración de Sección
                                 </h2>
                             </div>
                             <div className="grid gap-6 p-6">
                                 <div className="space-y-2">
-                                    <Label
-                                        htmlFor="academic_year_id"
-                                        className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase"
-                                    >
+                                    <Label htmlFor="academic_year_id">
                                         Año Académico
                                     </Label>
                                     <Select
@@ -167,10 +165,7 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label
-                                        htmlFor="grade_id"
-                                        className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase"
-                                    >
+                                    <Label htmlFor="grade_id">
                                         Grado Académico
                                     </Label>
                                     <Select
@@ -197,10 +192,7 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label
-                                        htmlFor="name"
-                                        className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase"
-                                    >
+                                    <Label htmlFor="name">
                                         Nombre de la Sección
                                     </Label>
                                     <Input
@@ -217,12 +209,12 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-end gap-3 border-t pt-6">
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-3">
                             <Button
                                 variant="outline"
                                 asChild
                                 disabled={processing}
-                                className="h-10"
                             >
                                 <Link
                                     href={
@@ -238,11 +230,7 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                                     Cancelar
                                 </Link>
                             </Button>
-                            <Button
-                                type="submit"
-                                disabled={processing}
-                                className="h-10 px-8"
-                            >
+                            <Button type="submit" disabled={processing}>
                                 {processing ? (
                                     'Guardando...'
                                 ) : (
