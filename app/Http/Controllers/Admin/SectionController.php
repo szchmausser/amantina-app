@@ -30,7 +30,8 @@ class SectionController extends Controller
             ->where('academic_year_id', $academicYearId)
             ->when($gradeId, fn ($q) => $q->where('grade_id', $gradeId))
             ->with(['grade'])
-            ->get();
+            ->paginate($request->query('per_page', 10))
+            ->withQueryString();
 
         return Inertia::render('admin/sections/index', [
             'sections' => $sections,

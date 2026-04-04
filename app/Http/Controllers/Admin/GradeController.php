@@ -28,7 +28,8 @@ class GradeController extends Controller
             ->where('academic_year_id', $academicYearId)
             ->ordered()
             ->with('sections')
-            ->get();
+            ->paginate($request->query('per_page', 10))
+            ->withQueryString();
 
         return Inertia::render('admin/grades/index', [
             'grades' => $grades,

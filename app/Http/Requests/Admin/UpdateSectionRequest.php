@@ -39,8 +39,8 @@ class UpdateSectionRequest extends FormRequest
             'name' => [
                 'required',
                 'string',
-                'max:10',
-                'regex:/^[A-Z]+$/', // Solo letras mayúsculas
+                'max:1',
+                'regex:/^[A-Z]$/', // Una única letra mayúscula
                 Rule::unique('sections', 'name')
                     ->where('academic_year_id', $this->academic_year_id)
                     ->where('grade_id', $this->grade_id)

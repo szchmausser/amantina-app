@@ -27,7 +27,8 @@ class SchoolTermController extends Controller
         $schoolTerms = SchoolTerm::query()
             ->where('academic_year_id', $academicYearId)
             ->orderBy('term_number')
-            ->get();
+            ->paginate($request->query('per_page', 10))
+            ->withQueryString();
 
         return Inertia::render('admin/school-terms/index', [
             'schoolTerms' => $schoolTerms,

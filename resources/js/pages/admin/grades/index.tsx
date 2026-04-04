@@ -1,8 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, GraduationCap, Plus, Search, Trash2 } from 'lucide-react';
+import { Edit, GraduationCap, Plus, Trash2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Select,
     SelectContent,
@@ -13,6 +13,15 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
+import {
+    DataTable,
+    DataTableHead,
+    DataTableTH,
+    DataTableBody,
+    DataTableTR,
+    DataTableTD,
+    type PaginationInfo,
+} from '@/components/ui/data-table';
 
 interface Section {
     id: number;
@@ -32,8 +41,17 @@ interface AcademicYear {
     name: string;
 }
 
+interface PaginatedGrades {
+    data: Grade[];
+    links: { url: string | null; label: string; active: boolean }[];
+    total: number;
+    current_page: number;
+    last_page: number;
+    per_page: number;
+}
+
 interface Props {
-    grades: Grade[];
+    grades: PaginatedGrades;
     academicYears: AcademicYear[];
     selectedYearId: number;
 }
@@ -48,15 +66,31 @@ export default function GradesIndex({
         { title: 'Grados', href: '/admin/grades' },
     ];
 
+    const [perPage, setPerPage] = useState(grades.per_page || 10);
+    const isFirstPerPageRender = useRef(true);
+
+    useEffect(() => {
+        if (isFirstPerPageRender.current) {
+            isFirstPerPageRender.current = false;
+            return;
+        }
+
+        router.get(
+            '/admin/grades',
+            { academic_year_id: selectedYearId, per_page: perPage },
+            { preserveState: true, replace: true },
+        );
+    }, [perPage]);
+
     const handleYearChange = (yearId: string) => {
         router.get(
             '/admin/grades',
-            { academic_year_id: yearId },
+            { academic_year_id: yearId, per_page: perPage },
             { preserveState: true },
         );
     };
 
-    const handleDeleteGrade = (gradeId: number, yearId: number) => {
+    const handleDelete = (gradeId: number) => {
         if (
             confirm(
                 '¿Estás seguro de que deseas eliminar este grado? Se eliminarán también todas sus secciones.',
@@ -64,25 +98,136 @@ export default function GradesIndex({
         ) {
             router.delete(`/admin/grades/${gradeId}`, {
                 preserveState: true,
-                data: { academic_year_id: yearId },
             });
         }
     };
 
+    const pagination: PaginationInfo | undefined =
+        grades.last_page > 1
+            ? {
+                  links: grades.links,
+                  total: grades.total,
+                  current_page: grades.current_page,
+                  last_page: grades.last_page,
+              }
+            : undefined;
+
+    const tableColumns = (
+        <>
+            <DataTableHead>
+                <DataTableTH className="w-16">#</DataTableTH>
+                <DataTableTH>Grado</DataTableTH>
+                <DataTableTH className="w-24">Orden</DataTableTH>
+                <DataTableTH>Secciones</DataTableTH>
+                <DataTableTH className="w-48 text-right">Acciones</DataTableTH>
+            </DataTableHead>
+            <DataTableBody>
+                {grades.data.map((grade, index) => (
+                    <DataTableTR key={grade.id}>
+                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                            {(grades.current_page - 1) * perPage + index + 1}
+                        </DataTableTD>
+                        <DataTableTD>
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                                    <GraduationCap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+                                    {grade.name}
+                                </span>
+                            </div>
+                        </DataTableTD>
+                        <DataTableTD className="text-neutral-600 dark:text-neutral-400">
+                            {grade.order}
+                        </DataTableTD>
+                        <DataTableTD>
+                            <div className="flex flex-wrap items-center gap-1">
+                                {grade.sections?.length > 0 ? (
+                                    grade.sections.map((section) => (
+                                        <Link
+                                            key={section.id}
+                                            href={`/admin/sections/${section.id}`}
+                                            className="transition-opacity hover:opacity-75"
+                                        >
+                                            <Badge
+                                                variant="secondary"
+                                                className="cursor-pointer text-xs"
+                                            >
+                                                {section.name}
+                                            </Badge>
+                                        </Link>
+                                    ))
+                                ) : (
+                                    <span className="text-xs text-neutral-400 italic">
+                                        Sin secciones
+                                    </span>
+                                )}
+                            </div>
+                        </DataTableTD>
+                        <DataTableTD className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                    asChild
+                                    title="Añadir sección"
+                                >
+                                    <Link
+                                        href={`/admin/sections/create?grade_id=${grade.id}&academic_year_id=${grade.academic_year_id}`}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        <span className="sr-only">
+                                            Añadir sección
+                                        </span>
+                                    </Link>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                    asChild
+                                    title="Editar"
+                                >
+                                    <Link
+                                        href={`/admin/grades/${grade.id}/edit`}
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        <span className="sr-only">Editar</span>
+                                    </Link>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                    onClick={() => handleDelete(grade.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Eliminar</span>
+                                </Button>
+                            </div>
+                        </DataTableTD>
+                    </DataTableTR>
+                ))}
+            </DataTableBody>
+        </>
+    );
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Gestión de Grados" />
+            <Head title="Grados" />
 
             <SettingsLayout>
                 <div className="flex flex-col gap-6">
+                    {/* Encabezado */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                                 Grados Académicos
                             </h1>
-                            <p className="text-sm text-neutral-500">
-                                Configura los niveles y secciones del plantel
-                                por año escolar.
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                Configura los niveles del plantel por año
+                                escolar.
                             </p>
                         </div>
                         <Button asChild>
@@ -95,159 +240,50 @@ export default function GradesIndex({
                         </Button>
                     </div>
 
-                    <Card className="border-sidebar-border/70 dark:border-sidebar-border">
-                        <CardHeader className="border-b bg-neutral-50/50 pb-3 dark:bg-neutral-800/30">
-                            <div className="flex items-center gap-2">
-                                <Search className="h-4 w-4 text-neutral-400" />
-                                <CardTitle className="text-sm font-medium">
-                                    Búsqueda y Filtros
-                                </CardTitle>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <div className="flex flex-wrap items-center gap-4">
-                                <div className="w-full max-w-xs space-y-1.5">
-                                    <label className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase">
-                                        Filtrar por Año Escolar
-                                    </label>
-                                    <Select
-                                        value={selectedYearId.toString()}
-                                        onValueChange={handleYearChange}
-                                    >
-                                        <SelectTrigger className="h-10">
-                                            <SelectValue placeholder="Seleccionar año" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {academicYears.map((year) => (
-                                                <SelectItem
-                                                    key={year.id}
-                                                    value={year.id.toString()}
-                                                >
-                                                    {year.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                        {grades.length > 0 ? (
-                            grades.map((grade) => (
-                                <Card
-                                    key={grade.id}
-                                    className="group overflow-hidden border-sidebar-border/70 dark:border-sidebar-border"
-                                >
-                                    <CardHeader className="bg-neutral-50/50 pb-3 transition-colors group-hover:bg-neutral-100/50 dark:bg-neutral-800/30 dark:group-hover:bg-neutral-800/50">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-lg border bg-white shadow-sm dark:bg-neutral-800">
-                                                    <GraduationCap className="h-4 w-4 text-blue-500" />
-                                                </div>
-                                                <div>
-                                                    <CardTitle className="text-base font-bold">
-                                                        {grade.name}
-                                                    </CardTitle>
-                                                    <p className="text-[10px] text-neutral-500 uppercase">
-                                                        Orden: {grade.order}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-neutral-400 hover:text-neutral-900"
-                                                    asChild
-                                                >
-                                                    <Link
-                                                        href={`/admin/grades/${grade.id}/edit`}
-                                                    >
-                                                        <Edit className="h-3.5 w-3.5" />
-                                                    </Link>
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-red-400 hover:bg-red-50 hover:text-red-600"
-                                                    onClick={() =>
-                                                        handleDeleteGrade(
-                                                            grade.id,
-                                                            grade.academic_year_id,
-                                                        )
-                                                    }
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="pt-4">
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase">
-                                                    Secciones Registradas
-                                                </span>
-                                                <Badge
-                                                    variant="outline"
-                                                    className="h-5 bg-neutral-50 px-2 text-[10px] font-bold"
-                                                >
-                                                    {grade.sections?.length ||
-                                                        0}
-                                                </Badge>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {grade.sections?.map(
-                                                    (section) => (
-                                                        <Link
-                                                            key={section.id}
-                                                            href={`/admin/sections/${section.id}`}
-                                                        >
-                                                            <Badge
-                                                                variant="secondary"
-                                                                className="cursor-pointer px-2.5 py-1 text-xs transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-700"
-                                                            >
-                                                                {section.name}
-                                                            </Badge>
-                                                        </Link>
-                                                    ),
-                                                )}
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-7 border-dashed px-2 text-[10px] transition-all hover:border-solid"
-                                                    asChild
-                                                >
-                                                    <Link
-                                                        href={`/admin/sections/create?grade_id=${grade.id}&academic_year_id=${grade.academic_year_id}`}
-                                                    >
-                                                        <Plus className="mr-1 h-3 w-3" />
-                                                        Añadir Sección
-                                                    </Link>
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))
-                        ) : (
-                            <div className="col-span-full flex flex-col items-center justify-center rounded-xl border border-dashed border-neutral-200 py-20 dark:border-neutral-800">
-                                <GraduationCap className="mb-4 h-10 w-10 text-neutral-200" />
-                                <p className="text-sm font-medium text-neutral-500">
-                                    No se encontraron grados para este periodo.
-                                </p>
-                                <Button variant="link" asChild className="mt-2">
-                                    <Link
-                                        href={`/admin/grades/create?academic_year_id=${selectedYearId}`}
-                                    >
-                                        Registra el primer grado aquí
-                                    </Link>
-                                </Button>
-                            </div>
-                        )}
+                    {/* Filtro */}
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <div className="w-full sm:w-48">
+                            <Select
+                                value={selectedYearId.toString()}
+                                onValueChange={handleYearChange}
+                            >
+                                <SelectTrigger className="h-10">
+                                    <SelectValue placeholder="Seleccionar año" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {academicYears.map((year) => (
+                                        <SelectItem
+                                            key={year.id}
+                                            value={year.id.toString()}
+                                        >
+                                            {year.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
+
+                    {/* Tabla */}
+                    <DataTable
+                        data={grades.data}
+                        columns={tableColumns}
+                        pagination={pagination}
+                        onPageChange={(_, url) => {
+                            router.get(
+                                url,
+                                { per_page: perPage },
+                                {
+                                    preserveState: true,
+                                    replace: true,
+                                },
+                            );
+                        }}
+                        perPage={perPage}
+                        onPerPageChange={setPerPage}
+                        perPageOptions={[10, 15, 25, 50, 100]}
+                        emptyMessage="No se encontraron grados para este periodo."
+                    />
                 </div>
             </SettingsLayout>
         </AppLayout>
