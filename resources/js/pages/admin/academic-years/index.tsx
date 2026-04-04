@@ -8,6 +8,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { formatDate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
@@ -35,6 +36,8 @@ interface AcademicYear {
     name: string;
     is_active: boolean;
     required_hours: number;
+    start_date: string;
+    end_date: string;
 }
 
 interface PaginatedYears {
@@ -101,7 +104,13 @@ export default function AcademicYearIndex({ academicYears }: Props) {
                 <DataTableTH className="w-16">#</DataTableTH>
                 <DataTableTH>Año Escolar</DataTableTH>
                 <DataTableTH className="w-32 whitespace-nowrap">
-                    Cupo de Horas
+                    Inicio
+                </DataTableTH>
+                <DataTableTH className="w-32 whitespace-nowrap">
+                    Cierre
+                </DataTableTH>
+                <DataTableTH className="w-28 whitespace-nowrap">
+                    Cupo Horas
                 </DataTableTH>
                 <DataTableTH className="w-28 whitespace-nowrap">
                     Estado
@@ -126,8 +135,14 @@ export default function AcademicYearIndex({ academicYears }: Props) {
                                 </span>
                             </div>
                         </DataTableTD>
+                        <DataTableTD className="font-mono text-sm text-neutral-600 dark:text-neutral-400">
+                            {formatDate(year.start_date)}
+                        </DataTableTD>
+                        <DataTableTD className="font-mono text-sm text-neutral-600 dark:text-neutral-400">
+                            {formatDate(year.end_date)}
+                        </DataTableTD>
                         <DataTableTD className="font-mono text-neutral-600 dark:text-neutral-400">
-                            {year.required_hours} horas
+                            {year.required_hours}h
                         </DataTableTD>
                         <DataTableTD>
                             {year.is_active ? (

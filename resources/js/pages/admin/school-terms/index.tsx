@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { formatDate } from '@/lib/utils';
-import { Clock, Edit, Plus, Trash2 } from 'lucide-react';
+import { Clock, Edit, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ import {
 
 interface SchoolTerm {
     id: number;
-    term_number: number;
+    term_type_name: string;
     start_date: string;
     end_date: string;
     academic_year_id: number;
@@ -132,7 +132,7 @@ export default function SchoolTermsIndex({
                                     <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-                                    Lapso {term.term_number}
+                                    {term.term_type_name || 'Sin tipo'}
                                 </span>
                             </div>
                         </DataTableTD>
@@ -196,14 +196,22 @@ export default function SchoolTermsIndex({
                                 ciclo escolar.
                             </p>
                         </div>
-                        <Button asChild>
-                            <Link
-                                href={`/admin/school-terms/create?academic_year_id=${selectedYearId}`}
-                            >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nuevo Lapso
-                            </Link>
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" asChild>
+                                <Link href="/admin/term-types">
+                                    <Settings2 className="mr-2 h-4 w-4" />
+                                    Tipos de Lapsos
+                                </Link>
+                            </Button>
+                            <Button asChild>
+                                <Link
+                                    href={`/admin/school-terms/create?academic_year_id=${selectedYearId}`}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nuevo Lapso
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Filtro */}

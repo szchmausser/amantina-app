@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SchoolTermController;
 use App\Http\Controllers\Admin\SectionController;
 use App\Http\Controllers\Admin\TeacherAssignmentController;
+use App\Http\Controllers\Admin\TermTypeController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -32,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('grades', GradeController::class)->except(['show']);
         Route::resource('sections', SectionController::class);
         Route::resource('school-terms', SchoolTermController::class)->except(['show']);
+        Route::resource('term-types', TermTypeController::class)->except(['create', 'edit', 'show']);
 
         // Enrollments (promote routes BEFORE resource to avoid route conflicts)
         Route::get('enrollments/promote', [EnrollmentController::class, 'showPromotionPanel'])->name('enrollments.promote');

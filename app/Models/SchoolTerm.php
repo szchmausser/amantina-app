@@ -15,7 +15,8 @@ class SchoolTerm extends Model
 
     protected $fillable = [
         'academic_year_id',
-        'term_number',
+        'term_type_id',
+        'term_type_name',
         'start_date',
         'end_date',
     ];
@@ -31,5 +32,16 @@ class SchoolTerm extends Model
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    /**
+     * Get the term type name for display.
+     * Uses the stored snapshot name, falling back to the relation if needed.
+     */
+    public function getTermTypeNameAttribute(): string
+    {
+        return $this->attributes['term_type_name']
+            ?? $this->termType?->name
+            ?? 'Sin tipo';
     }
 }

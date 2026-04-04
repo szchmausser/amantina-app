@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\AcademicYear;
+use App\Models\SchoolTerm;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -24,11 +25,10 @@ class StoreSchoolTermRequest extends FormRequest
     {
         return [
             'academic_year_id' => ['required', 'exists:academic_years,id'],
-            'term_number' => [
+            'term_type_id' => [
                 'required',
-                'integer',
-                'between:1,3',
-                Rule::unique('school_terms', 'term_number')
+                'exists:term_types,id',
+                Rule::unique('school_terms', 'term_type_id')
                     ->where('academic_year_id', $this->academic_year_id),
             ],
             'start_date' => [
@@ -42,6 +42,9 @@ class StoreSchoolTermRequest extends FormRequest
                     if ($year && $value < $year->start_date->format('Y-m-d')) {
                         $fail(__('La fecha de inicio del lapso no puede ser anterior al inicio del año escolar.'));
                     }
+
+                    // Check for date overlap with existing terms
+                    $this->checkDateOverlap($value, $this->end_date, $fail);
                 },
             ],
             'end_date' => [
@@ -59,5 +62,27 @@ class StoreSchoolTermRequest extends FormRequest
                 },
             ],
         ];
+    }
+
+    /**
+     * Check if the proposed date range overlaps with any existing term.
+     */
+    protected function checkDateOverlap(string $startDate, ?string $endDate, \Closure $fail): void
+    {
+        if (! $this->academic_year_id || ! $endDate) {
+            return;
+        }
+
+        $overlapping = SchoolTerm::where('academic_year_id', $this->academic_year_id)
+            ->where(function ($query) use ($startDate, $endDate) {
+                // Overlap condition: existing.start <= new.end AND existing.end >= new.start
+                $query->where('start_date', '<=', $endDate)
+                    ->where('end_date', '>=', $startDate);
+            })
+            ->exists();
+
+        if ($overlapping) {
+            $fail(__('Las fechas del lapso se superponen con otro lapso existente en este año escolar.'));
+        }
     }
 }

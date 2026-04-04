@@ -7,8 +7,10 @@ use App\Http\Requests\Admin\StoreSchoolTermRequest;
 use App\Http\Requests\Admin\UpdateSchoolTermRequest;
 use App\Models\AcademicYear;
 use App\Models\SchoolTerm;
+use App\Models\TermType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,12 +28,26 @@ class SchoolTermController extends Controller
 
         $schoolTerms = SchoolTerm::query()
             ->where('academic_year_id', $academicYearId)
-            ->orderBy('term_number')
-            ->paginate($request->query('per_page', 10))
-            ->withQueryString();
+            ->get()
+            ->sortBy(fn ($t) => $t->term_type_name ?? 'zzz')
+            ->values();
+
+        // Manual pagination for collection
+        $page = $request->query('page', 1);
+        $perPage = $request->query('per_page', 10);
+        $total = $schoolTerms->count();
+        $paginated = $schoolTerms->forPage($page, $perPage);
+
+        $schoolTermsPaginated = new LengthAwarePaginator(
+            $paginated->values(),
+            $total,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return Inertia::render('admin/school-terms/index', [
-            'schoolTerms' => $schoolTerms,
+            'schoolTerms' => $schoolTermsPaginated,
             'academicYears' => AcademicYear::all(),
             'selectedYearId' => (int) $academicYearId,
         ]);
@@ -46,6 +62,7 @@ class SchoolTermController extends Controller
 
         return Inertia::render('admin/school-terms/edit', [
             'academicYears' => AcademicYear::all(),
+            'termTypes' => TermType::where('is_active', true)->orderBy('order')->get(),
         ]);
     }
 
@@ -54,7 +71,12 @@ class SchoolTermController extends Controller
      */
     public function store(StoreSchoolTermRequest $request): RedirectResponse
     {
-        SchoolTerm::create($request->validated());
+        $termType = TermType::find($request->term_type_id);
+
+        SchoolTerm::create([
+            ...$request->validated(),
+            'term_type_name' => $termType?->name,
+        ]);
 
         return redirect()->route('admin.school-terms.index', ['academic_year_id' => $request->academic_year_id])
             ->with('success', 'Lapso académico creado correctamente.');
@@ -70,6 +92,7 @@ class SchoolTermController extends Controller
         return Inertia::render('admin/school-terms/edit', [
             'schoolTerm' => $schoolTerm,
             'academicYears' => AcademicYear::all(),
+            'termTypes' => TermType::where('is_active', true)->orderBy('order')->get(),
         ]);
     }
 
@@ -78,7 +101,12 @@ class SchoolTermController extends Controller
      */
     public function update(UpdateSchoolTermRequest $request, SchoolTerm $schoolTerm): RedirectResponse
     {
-        $schoolTerm->update($request->validated());
+        $termType = TermType::find($request->term_type_id);
+
+        $schoolTerm->update([
+            ...$request->validated(),
+            'term_type_name' => $termType?->name,
+        ]);
 
         return redirect()->route('admin.school-terms.index', ['academic_year_id' => $schoolTerm->academic_year_id])
             ->with('success', 'Lapso académico actualizado correctamente.');

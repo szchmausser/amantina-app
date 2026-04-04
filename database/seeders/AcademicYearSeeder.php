@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\Grade;
 use App\Models\SchoolTerm;
 use App\Models\Section;
+use App\Models\TermType;
 use Illuminate\Database\Seeder;
 
 class AcademicYearSeeder extends Seeder
@@ -15,6 +16,17 @@ class AcademicYearSeeder extends Seeder
      */
     public function run(): void
     {
+        // Ensure term_types exist
+        $termTypes = [
+            ['name' => 'Lapso 1', 'order' => 1],
+            ['name' => 'Lapso 2', 'order' => 2],
+            ['name' => 'Lapso 3', 'order' => 3],
+        ];
+
+        foreach ($termTypes as $type) {
+            TermType::updateOrCreate(['name' => $type['name']], $type);
+        }
+
         $year = AcademicYear::create([
             'name' => '2024-2025',
             'start_date' => '2024-09-01',
@@ -26,19 +38,19 @@ class AcademicYearSeeder extends Seeder
         // Lapsos
         SchoolTerm::create([
             'academic_year_id' => $year->id,
-            'term_number' => 1,
+            'term_type_id' => TermType::where('order', 1)->value('id'),
             'start_date' => '2024-09-15',
             'end_date' => '2024-12-15',
         ]);
         SchoolTerm::create([
             'academic_year_id' => $year->id,
-            'term_number' => 2,
+            'term_type_id' => TermType::where('order', 2)->value('id'),
             'start_date' => '2025-01-07',
             'end_date' => '2025-04-10',
         ]);
         SchoolTerm::create([
             'academic_year_id' => $year->id,
-            'term_number' => 3,
+            'term_type_id' => TermType::where('order', 3)->value('id'),
             'start_date' => '2025-04-25',
             'end_date' => '2025-07-15',
         ]);

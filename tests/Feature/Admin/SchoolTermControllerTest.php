@@ -6,6 +6,7 @@ namespace Tests\Feature\Admin;
 
 use App\Models\AcademicYear;
 use App\Models\SchoolTerm;
+use App\Models\TermType;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -24,6 +25,16 @@ class SchoolTermControllerTest extends TestCase
         $this->seed(RoleAndPermissionSeeder::class);
         $this->app->make(PermissionRegistrar::class)->forgetCachedPermissions();
         $this->withoutVite();
+
+        // Ensure term_types exist for tests
+        $termTypes = [
+            ['name' => 'Lapso 1', 'order' => 1],
+            ['name' => 'Lapso 2', 'order' => 2],
+            ['name' => 'Lapso 3', 'order' => 3],
+        ];
+        foreach ($termTypes as $type) {
+            TermType::firstOrCreate(['name' => $type['name']], $type);
+        }
     }
 
     public function test_admin_can_view_school_terms_index(): void
@@ -32,6 +43,14 @@ class SchoolTermControllerTest extends TestCase
         $admin->assignRole('admin');
 
         $year = AcademicYear::factory()->create(['is_active' => true]);
+        $termType = TermType::first();
+
+        SchoolTerm::create([
+            'academic_year_id' => $year->id,
+            'term_type_id' => $termType->id,
+            'start_date' => '2025-09-15',
+            'end_date' => '2025-12-15',
+        ]);
 
         $response = $this->actingAs($admin)->get(route('admin.school-terms.index', [
             'academic_year_id' => $year->id,
@@ -49,10 +68,11 @@ class SchoolTermControllerTest extends TestCase
             'start_date' => '2025-09-01',
             'end_date' => '2026-07-15',
         ]);
+        $termType = TermType::first();
 
         $response = $this->actingAs($admin)->post(route('admin.school-terms.store'), [
             'academic_year_id' => $year->id,
-            'term_number' => 1,
+            'term_type_id' => $termType->id,
             'start_date' => '2025-09-15',
             'end_date' => '2025-12-15',
         ]);
@@ -60,7 +80,7 @@ class SchoolTermControllerTest extends TestCase
         $response->assertRedirect();
         $this->assertDatabaseHas('school_terms', [
             'academic_year_id' => $year->id,
-            'term_number' => 1,
+            'term_type_id' => $termType->id,
         ]);
     }
 
@@ -73,16 +93,17 @@ class SchoolTermControllerTest extends TestCase
             'start_date' => '2025-09-01',
             'end_date' => '2026-07-15',
         ]);
-        $term = SchoolTerm::factory()->create([
+        $termType = TermType::first();
+        $term = SchoolTerm::create([
             'academic_year_id' => $year->id,
-            'term_number' => 1,
+            'term_type_id' => $termType->id,
             'start_date' => '2025-09-15',
             'end_date' => '2025-12-15',
         ]);
 
         $response = $this->actingAs($admin)->put(route('admin.school-terms.update', $term), [
             'academic_year_id' => $year->id,
-            'term_number' => 1,
+            'term_type_id' => $termType->id,
             'start_date' => '2025-09-20',
             'end_date' => '2025-12-20',
         ]);
@@ -98,7 +119,14 @@ class SchoolTermControllerTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('admin');
 
-        $term = SchoolTerm::factory()->create();
+        $year = AcademicYear::factory()->create();
+        $termType = TermType::first();
+        $term = SchoolTerm::create([
+            'academic_year_id' => $year->id,
+            'term_type_id' => $termType->id,
+            'start_date' => '2025-09-15',
+            'end_date' => '2025-12-15',
+        ]);
 
         $response = $this->actingAs($admin)->delete(route('admin.school-terms.destroy', $term));
 

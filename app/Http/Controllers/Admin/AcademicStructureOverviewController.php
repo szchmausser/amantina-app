@@ -47,7 +47,7 @@ class AcademicStructureOverviewController extends Controller
             ],
             'currentTerm' => $currentTerm ? [
                 'id' => $currentTerm->id,
-                'term_number' => $currentTerm->term_number,
+                'term_type_name' => $currentTerm->term_type_name,
                 'start_date' => $currentTerm->start_date->format('Y-m-d'),
                 'end_date' => $currentTerm->end_date->format('Y-m-d'),
             ] : null,

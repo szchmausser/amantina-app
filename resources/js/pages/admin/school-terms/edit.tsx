@@ -26,10 +26,17 @@ interface AcademicYear {
     name: string;
 }
 
+interface TermType {
+    id: number;
+    name: string;
+    order: number;
+}
+
 interface SchoolTerm {
     id: number;
     academic_year_id: number;
-    term_number: number;
+    term_type_id: number;
+    term_type?: TermType;
     start_date: string;
     end_date: string;
 }
@@ -37,9 +44,14 @@ interface SchoolTerm {
 interface Props {
     schoolTerm?: SchoolTerm;
     academicYears: AcademicYear[];
+    termTypes: TermType[];
 }
 
-export default function SchoolTermEdit({ schoolTerm, academicYears }: Props) {
+export default function SchoolTermEdit({
+    schoolTerm,
+    academicYears,
+    termTypes,
+}: Props) {
     const isEditing = !!schoolTerm;
     const { url } = usePage();
     const queryParams = new URLSearchParams(url.split('?')[1]);
@@ -49,7 +61,7 @@ export default function SchoolTermEdit({ schoolTerm, academicYears }: Props) {
         academic_year_id:
             schoolTerm?.academic_year_id ||
             (defaultYearId ? parseInt(defaultYearId) : academicYears[0]?.id),
-        term_number: schoolTerm?.term_number || 1,
+        term_type_id: schoolTerm?.term_type_id || termTypes[0]?.id || null,
         start_date: schoolTerm?.start_date
             ? schoolTerm.start_date.substring(0, 10)
             : '',
@@ -78,7 +90,7 @@ export default function SchoolTermEdit({ schoolTerm, academicYears }: Props) {
             <Head
                 title={
                     isEditing
-                        ? `Editar Lapso ${schoolTerm.term_number}`
+                        ? `Editar ${schoolTerm.term_type?.name || 'Lapso'}`
                         : 'Nuevo Lapso Académico'
                 }
             />
@@ -161,34 +173,35 @@ export default function SchoolTermEdit({ schoolTerm, academicYears }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="term_number">
-                                        Número de Lapso
+                                    <Label htmlFor="term_type_id">
+                                        Tipo de Lapso
                                     </Label>
                                     <Select
-                                        value={data.term_number.toString()}
+                                        value={
+                                            data.term_type_id?.toString() || ''
+                                        }
                                         onValueChange={(val) =>
                                             setData(
-                                                'term_number',
+                                                'term_type_id',
                                                 parseInt(val),
                                             )
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Seleccionar número" />
+                                            <SelectValue placeholder="Seleccionar tipo de lapso" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="1">
-                                                Lapso 1
-                                            </SelectItem>
-                                            <SelectItem value="2">
-                                                Lapso 2
-                                            </SelectItem>
-                                            <SelectItem value="3">
-                                                Lapso 3
-                                            </SelectItem>
+                                            {termTypes.map((type) => (
+                                                <SelectItem
+                                                    key={type.id}
+                                                    value={type.id.toString()}
+                                                >
+                                                    {type.name}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
-                                    <InputError message={errors.term_number} />
+                                    <InputError message={errors.term_type_id} />
                                 </div>
 
                                 <div className="grid gap-6 md:grid-cols-2">

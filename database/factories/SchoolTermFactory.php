@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\AcademicYear;
 use App\Models\SchoolTerm;
+use App\Models\TermType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,10 +20,11 @@ class SchoolTermFactory extends Factory
     public function definition(): array
     {
         $year = AcademicYear::factory()->create();
+        $termType = TermType::first() ?? TermType::create(['name' => 'Lapso 1', 'order' => 1]);
 
         return [
             'academic_year_id' => $year->id,
-            'term_number' => 1,
+            'term_type_id' => $termType->id,
             'start_date' => $year->start_date->format('Y-m-d'),
             'end_date' => $year->start_date->copy()->addMonths(3)->format('Y-m-d'),
         ];
