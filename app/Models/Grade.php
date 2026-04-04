@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Askedio\SoftCascade\Traits\SoftCascadeTrait;
 use Database\Factories\GradeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Grade extends Model
 {
     /** @use HasFactory<GradeFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftCascadeTrait, SoftDeletes;
+
+    /**
+     * Cascade soft deletes to sections.
+     * Sections cascade to enrollments and teacher assignments.
+     */
+    protected $softCascade = ['sections'];
 
     protected $fillable = [
         'academic_year_id',
