@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { formatDate } from '@/lib/utils';
-import { Clock, Edit, Plus, Search } from 'lucide-react';
+import { Clock, Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,7 +46,23 @@ export default function SchoolTermsIndex({
     ];
 
     const handleYearChange = (yearId: string) => {
-        router.get('/admin/school-terms', { academic_year_id: yearId }, { preserveState: true });
+        router.get(
+            '/admin/school-terms',
+            { academic_year_id: yearId },
+            { preserveState: true },
+        );
+    };
+
+    const handleDeleteTerm = (termId: number) => {
+        if (
+            confirm(
+                '¿Estás seguro de que deseas eliminar este lapso académico?',
+            )
+        ) {
+            router.delete(`/admin/school-terms/${termId}`, {
+                preserveState: true,
+            });
+        }
     };
 
     return (
@@ -61,36 +77,47 @@ export default function SchoolTermsIndex({
                                 Lapsos Académicos
                             </h1>
                             <p className="text-sm text-neutral-500">
-                                Administra los periodos de evaluación para cada ciclo escolar.
+                                Administra los periodos de evaluación para cada
+                                ciclo escolar.
                             </p>
                         </div>
                         <Button asChild>
-                            <Link href={`/admin/school-terms/create?academic_year_id=${selectedYearId}`}>
+                            <Link
+                                href={`/admin/school-terms/create?academic_year_id=${selectedYearId}`}
+                            >
                                 <Plus className="mr-2 h-4 w-4" />
                                 Nuevo Lapso
                             </Link>
                         </Button>
                     </div>
 
-                    <Card className="border-sidebar-border/70 dark:border-sidebar-border shadow-sm">
-                        <CardHeader className="pb-3 border-b bg-neutral-50/50 dark:bg-neutral-800/30">
+                    <Card className="border-sidebar-border/70 shadow-sm dark:border-sidebar-border">
+                        <CardHeader className="border-b bg-neutral-50/50 pb-3 dark:bg-neutral-800/30">
                             <div className="flex items-center gap-2">
                                 <Search className="h-4 w-4 text-neutral-400" />
-                                <CardTitle className="text-sm font-medium uppercase tracking-tight">Filtro por Ciclo</CardTitle>
+                                <CardTitle className="text-sm font-medium tracking-tight uppercase">
+                                    Filtro por Ciclo
+                                </CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">
                             <div className="w-full max-w-xs space-y-1.5">
-                                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                                <label className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase">
                                     Seleccionar Año Escolar
                                 </label>
-                                <Select value={selectedYearId.toString()} onValueChange={handleYearChange}>
+                                <Select
+                                    value={selectedYearId.toString()}
+                                    onValueChange={handleYearChange}
+                                >
                                     <SelectTrigger className="h-10">
                                         <SelectValue placeholder="Seleccionar año" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {academicYears.map((year) => (
-                                            <SelectItem key={year.id} value={year.id.toString()}>
+                                            <SelectItem
+                                                key={year.id}
+                                                value={year.id.toString()}
+                                            >
                                                 {year.name}
                                             </SelectItem>
                                         ))}
@@ -103,45 +130,96 @@ export default function SchoolTermsIndex({
                     <div className="grid gap-6 md:grid-cols-2">
                         {schoolTerms.length > 0 ? (
                             schoolTerms.map((term) => (
-                                <Card key={term.id} className="overflow-hidden border-sidebar-border/70 group dark:border-sidebar-border">
+                                <Card
+                                    key={term.id}
+                                    className="group overflow-hidden border-sidebar-border/70 dark:border-sidebar-border"
+                                >
                                     <CardHeader className="bg-neutral-50/50 pb-4 dark:bg-neutral-800/30">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100/50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border border-blue-200/50 dark:border-blue-900/30">
-                                                    <span className="text-lg font-black">{term.term_number}</span>
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-blue-200/50 bg-blue-100/50 text-blue-700 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400">
+                                                    <span className="text-lg font-black">
+                                                        {term.term_number}
+                                                    </span>
                                                 </div>
                                                 <div>
-                                                    <CardTitle className="text-lg font-bold uppercase tracking-tight">Lapso {term.term_number}</CardTitle>
-                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">Periodo de Evaluación</p>
+                                                    <CardTitle className="text-lg font-bold tracking-tight uppercase">
+                                                        Lapso {term.term_number}
+                                                    </CardTitle>
+                                                    <p className="text-[10px] font-bold text-neutral-500 uppercase">
+                                                        Periodo de Evaluación
+                                                    </p>
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" size="icon" asChild className="h-9 w-9 text-neutral-400 hover:text-blue-600">
-                                                <Link href={`/admin/school-terms/${term.id}/edit`}>
-                                                    <Edit className="h-4.5 w-4.5" />
-                                                </Link>
-                                            </Button>
+                                            <div className="flex items-center gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    asChild
+                                                    className="h-9 w-9 text-neutral-400 hover:text-blue-600"
+                                                >
+                                                    <Link
+                                                        href={`/admin/school-terms/${term.id}/edit`}
+                                                    >
+                                                        <Edit className="h-4.5 w-4.5" />
+                                                    </Link>
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-9 w-9 text-red-400 hover:bg-red-50 hover:text-red-600"
+                                                    onClick={() =>
+                                                        handleDeleteTerm(
+                                                            term.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="pt-6 space-y-6">
+                                    <CardContent className="space-y-6 pt-6">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-1">
-                                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest font-mono">Inicio</p>
+                                                <p className="font-mono text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
+                                                    Inicio
+                                                </p>
                                                 <div className="flex items-center gap-2 font-mono">
                                                     <Clock className="h-3 w-3 text-neutral-400" />
-                                                    <span className="text-sm font-semibold">{formatDate(term.start_date)}</span>
+                                                    <span className="text-sm font-semibold">
+                                                        {formatDate(
+                                                            term.start_date,
+                                                        )}
+                                                    </span>
                                                 </div>
                                             </div>
                                             <div className="space-y-1 font-mono">
-                                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Cierre</p>
+                                                <p className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
+                                                    Cierre
+                                                </p>
                                                 <div className="flex items-center gap-2">
                                                     <Clock className="h-3 w-3 text-neutral-400" />
-                                                    <span className="text-sm font-semibold">{formatDate(term.end_date)}</span>
+                                                    <span className="text-sm font-semibold">
+                                                        {formatDate(
+                                                            term.end_date,
+                                                        )}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="pt-4 border-t border-sidebar-border/50">
-                                            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 border-dashed">
-                                                {academicYears.find(y => y.id === term.academic_year_id)?.name}
+                                        <div className="border-t border-sidebar-border/50 pt-4">
+                                            <Badge
+                                                variant="outline"
+                                                className="border-dashed text-[10px] font-bold tracking-widest text-neutral-400 uppercase"
+                                            >
+                                                {
+                                                    academicYears.find(
+                                                        (y) =>
+                                                            y.id ===
+                                                            term.academic_year_id,
+                                                    )?.name
+                                                }
                                             </Badge>
                                         </div>
                                     </CardContent>
@@ -149,8 +227,10 @@ export default function SchoolTermsIndex({
                             ))
                         ) : (
                             <div className="col-span-full flex flex-col items-center justify-center rounded-xl border border-dashed border-neutral-200 py-20 dark:border-neutral-800">
-                                <Clock className="h-10 w-10 text-neutral-200 mb-4" />
-                                <p className="text-sm font-bold text-neutral-400 uppercase tracking-widest">No hay lapsos configurados</p>
+                                <Clock className="mb-4 h-10 w-10 text-neutral-200" />
+                                <p className="text-sm font-bold tracking-widest text-neutral-400 uppercase">
+                                    No hay lapsos configurados
+                                </p>
                             </div>
                         )}
                     </div>

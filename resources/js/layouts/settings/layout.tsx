@@ -11,19 +11,21 @@ import { edit as editSecurity } from '@/routes/security';
 import { edit as editInstitution } from '@/routes/institution';
 import { index as academicYearsIndex } from '@/routes/admin/academic-years';
 import { index as gradesIndex } from '@/routes/admin/grades';
+import { index as sectionsIndex } from '@/routes/admin/sections';
 import { index as schoolTermsIndex } from '@/routes/admin/school-terms';
-import { 
-    Calendar, 
-    Clock, 
-    GraduationCap, 
-    UserPlus, 
-    BookUser, 
-    Shield, 
+import {
+    Calendar,
+    Clock,
+    GraduationCap,
+    UserPlus,
+    BookUser,
+    Shield,
     ShieldCheck,
     User,
     Lock,
     Palette,
-    Building2
+    Building2,
+    Layers,
 } from 'lucide-react';
 import type { NavItem, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -73,9 +75,17 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
     if (auth.permissions?.includes('grades.view')) {
         sidebarNavItems.push({
-            title: 'Grados y Secciones',
+            title: 'Grados',
             href: gradesIndex().url,
             icon: GraduationCap,
+        });
+    }
+
+    if (auth.permissions?.includes('sections.view')) {
+        sidebarNavItems.push({
+            title: 'Secciones',
+            href: sectionsIndex().url,
+            icon: Layers,
         });
     }
 
@@ -153,9 +163,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 <Separator className="my-6 lg:hidden" />
 
                 <div className="flex-1 overflow-hidden">
-                    <section className="space-y-12">
-                        {children}
-                    </section>
+                    <section className="space-y-12">{children}</section>
                 </div>
             </div>
         </div>

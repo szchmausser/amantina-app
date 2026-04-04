@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, Layers, Plus } from 'lucide-react';
+import { Edit, Layers, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,7 +57,6 @@ export default function SectionsIndex({
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Grados y Secciones', href: '/admin/grades' },
         { title: 'Secciones', href: '/admin/sections' },
     ];
 
@@ -72,6 +71,12 @@ export default function SectionsIndex({
         router.get('/admin/sections', params, { preserveState: true });
     };
 
+    const handleDelete = (id: number) => {
+        if (confirm('¿Estás seguro de que deseas eliminar esta sección?')) {
+            router.delete(`/admin/sections/${id}`);
+        }
+    };
+
     // Columnas de la tabla
     const tableColumns = (
         <>
@@ -79,7 +84,7 @@ export default function SectionsIndex({
                 <DataTableTH>Sección</DataTableTH>
                 <DataTableTH>Grado</DataTableTH>
                 <DataTableTH>Año Escolar</DataTableTH>
-                <DataTableTH className="w-20 text-right">Acciones</DataTableTH>
+                <DataTableTH className="w-24 text-right">Acciones</DataTableTH>
             </DataTableHead>
             <DataTableBody>
                 {sections.map((section) => (
@@ -105,19 +110,30 @@ export default function SectionsIndex({
                             )?.name || 'N/A'}
                         </DataTableTD>
                         <DataTableTD className="text-right">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-neutral-500 hover:text-blue-600"
-                                asChild
-                            >
-                                <Link
-                                    href={`/admin/sections/${section.id}/edit`}
+                            <div className="flex items-center justify-end gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                    asChild
                                 >
-                                    <Edit className="h-4 w-4" />
-                                    <span className="sr-only">Editar</span>
-                                </Link>
-                            </Button>
+                                    <Link
+                                        href={`/admin/sections/${section.id}/edit`}
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        <span className="sr-only">Editar</span>
+                                    </Link>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                    onClick={() => handleDelete(section.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Eliminar</span>
+                                </Button>
+                            </div>
                         </DataTableTD>
                     </DataTableTR>
                 ))}
