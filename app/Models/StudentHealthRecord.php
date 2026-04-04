@@ -2,18 +2,27 @@
 
 namespace App\Models;
 
+use Askedio\SoftCascade\Traits\SoftCascadeTrait;
 use Database\Factories\StudentHealthRecordFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class StudentHealthRecord extends Model implements HasMedia
 {
     /** @use HasFactory<StudentHealthRecordFactory> */
-    use HasFactory, InteractsWithMedia, SoftDeletes;
+    use HasFactory, InteractsWithMedia, SoftCascadeTrait, SoftDeletes;
+
+    /**
+     * Cascade soft deletes to associated media.
+     * Physical files are deleted on soft delete to free storage space.
+     */
+    protected $softCascade = ['media'];
 
     protected $fillable = [
         'user_id',
@@ -29,6 +38,15 @@ class StudentHealthRecord extends Model implements HasMedia
         return [
             'received_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Delete physical files when soft deleted (to free storage space).
+        // Note: If the record is restored later, the files are gone.
+        static::deleted(function (StudentHealthRecord $record) {
+            $record->getMedia('health_documents')->each->delete();
+        });
     }
 
     public function registerMediaCollections(): void
@@ -50,5 +68,13 @@ class StudentHealthRecord extends Model implements HasMedia
     public function receivedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by');
+    }
+
+    /**
+     * Get all media associated with this record.
+     */
+    public function media(): MorphMany
+    {
+        return $this->morphMany(Media::class, 'model');
     }
 }

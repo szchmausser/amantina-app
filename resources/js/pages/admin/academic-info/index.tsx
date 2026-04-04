@@ -67,6 +67,7 @@ interface Props {
         name: string;
         start_date: string;
         end_date: string;
+        total_enrolled: number;
     } | null;
     currentTerm: {
         id: number;
@@ -168,23 +169,24 @@ export default function AcademicInfo({
                         </CardContent>
                     </Card>
 
-                    <Card className="hidden border-2 border-dashed border-neutral-200 bg-transparent lg:block dark:border-neutral-800">
+                    <Card className="hidden border-none bg-linear-to-br from-amber-500 to-orange-600 text-white shadow-lg lg:block">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                            <CardTitle className="text-sm font-medium opacity-90">
                                 Resumen General
                             </CardTitle>
-                            <Users className="h-5 w-5 text-muted-foreground opacity-50" />
+                            <Users className="h-5 w-5 opacity-80" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-neutral-600 dark:text-neutral-400">
-                                {grades.length} Grados
+                            <div className="text-2xl font-bold">
+                                {activeYear.total_enrolled} Alumnos
                             </div>
-                            <p className="mt-1 text-xs text-muted-foreground">
+                            <p className="mt-1 text-xs opacity-80">
+                                {grades.length} Grados ·{' '}
                                 {grades.reduce(
                                     (acc, g) => acc + g.sections.length,
                                     0,
                                 )}{' '}
-                                Secciones en total
+                                Secciones
                             </p>
                         </CardContent>
                     </Card>

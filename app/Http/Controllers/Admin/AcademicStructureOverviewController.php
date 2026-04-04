@@ -30,6 +30,7 @@ class AcademicStructureOverviewController extends Controller
                 'activeYear' => null,
                 'currentTerm' => null,
                 'grades' => [],
+                'totalEnrolled' => 0,
             ]);
         }
 
@@ -38,12 +39,16 @@ class AcademicStructureOverviewController extends Controller
             ->filter(fn ($term) => $currentDate->between($term->start_date, $term->end_date))
             ->first();
 
+        $totalEnrolled = $activeYear->grades->sum(fn ($grade) => $grade->sections->sum(fn ($section) => $section->enrollments->count())
+        );
+
         return Inertia::render('admin/academic-info/index', [
             'activeYear' => [
                 'id' => $activeYear->id,
                 'name' => $activeYear->name,
                 'start_date' => $activeYear->start_date->format('Y-m-d'),
                 'end_date' => $activeYear->end_date->format('Y-m-d'),
+                'total_enrolled' => $totalEnrolled,
             ],
             'currentTerm' => $currentTerm ? [
                 'id' => $currentTerm->id,

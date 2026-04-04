@@ -173,13 +173,13 @@ export default function Show({
                     </div>
                     {(hasPermission('users.edit') ||
                         (auth.user && auth.user.id === user.id)) && (
-                            <Button asChild>
-                                <Link href={userEdit(user.id).url}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Editar Perfil
-                                </Link>
-                            </Button>
-                        )}
+                        <Button asChild>
+                            <Link href={userEdit(user.id).url}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Editar Perfil
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {/* Tabs */}
@@ -315,7 +315,7 @@ export default function Show({
                                     </div>
                                     <div className="p-0">
                                         {user.representatives &&
-                                            user.representatives.length > 0 ? (
+                                        user.representatives.length > 0 ? (
                                             <div className="divide-y divide-sidebar-border/70">
                                                 {user.representatives.map(
                                                     (rep) => (
@@ -367,21 +367,21 @@ export default function Show({
                                                                 {hasPermission(
                                                                     'users.edit',
                                                                 ) && (
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                                                            onClick={() =>
-                                                                                handleUnlink(
-                                                                                    rep
-                                                                                        .pivot
-                                                                                        .id,
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </Button>
-                                                                    )}
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                                        onClick={() =>
+                                                                            handleUnlink(
+                                                                                rep
+                                                                                    .pivot
+                                                                                    .id,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ),
@@ -411,7 +411,7 @@ export default function Show({
                                 </div>
                                 <div className="p-0">
                                     {user.represented_students &&
-                                        user.represented_students.length > 0 ? (
+                                    user.represented_students.length > 0 ? (
                                         <div className="divide-y divide-sidebar-border/70">
                                             {user.represented_students.map(
                                                 (student) => (
@@ -526,10 +526,11 @@ export default function Show({
                                                                 <Badge
                                                                     key={perm}
                                                                     variant="outline"
-                                                                    className={`px-2 py-0.5 text-[10px] font-normal ${isDirect
+                                                                    className={`px-2 py-0.5 text-[10px] font-normal ${
+                                                                        isDirect
                                                                             ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400'
                                                                             : 'text-neutral-500 dark:text-neutral-400'
-                                                                        }`}
+                                                                    }`}
                                                                 >
                                                                     {action}
                                                                     {isDirect &&
@@ -587,7 +588,7 @@ export default function Show({
                                 </div>
                                 <div className="p-0">
                                     {user.health_records &&
-                                        user.health_records.length > 0 ? (
+                                    user.health_records.length > 0 ? (
                                         <div className="divide-y divide-sidebar-border/70">
                                             {user.health_records.map(
                                                 (record: any) => (
@@ -644,7 +645,7 @@ export default function Show({
                                                                         record
                                                                             .media
                                                                             .length >
-                                                                        0 && (
+                                                                            0 && (
                                                                             <div className="mt-2 flex flex-wrap gap-2">
                                                                                 {record.media.map(
                                                                                     (
@@ -679,36 +680,36 @@ export default function Show({
                                                                 {hasPermission(
                                                                     'student_health.edit',
                                                                 ) && (
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            className="h-7 w-7 text-neutral-500 hover:text-blue-600"
-                                                                        >
-                                                                            <Edit className="h-3.5 w-3.5" />
-                                                                        </Button>
-                                                                    )}
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7 text-neutral-500 hover:text-blue-600"
+                                                                    >
+                                                                        <Edit className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                )}
                                                                 {hasPermission(
                                                                     'student_health.delete',
                                                                 ) && (
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
-                                                                            onClick={() => {
-                                                                                if (
-                                                                                    confirm(
-                                                                                        '¿Eliminar este registro de salud?',
-                                                                                    )
-                                                                                ) {
-                                                                                    router.delete(
-                                                                                        `/admin/student-health-records/${record.id}`,
-                                                                                    );
-                                                                                }
-                                                                            }}
-                                                                        >
-                                                                            <Trash2 className="h-3.5 w-3.5" />
-                                                                        </Button>
-                                                                    )}
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                                                        onClick={() => {
+                                                                            if (
+                                                                                confirm(
+                                                                                    '¿Eliminar este registro de salud?\n\nLos archivos adjuntos se eliminarán permanentemente del servidor y no podrán recuperarse.',
+                                                                                )
+                                                                            ) {
+                                                                                router.delete(
+                                                                                    `/admin/student-health-records/${record.id}`,
+                                                                                );
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -784,10 +785,11 @@ export default function Show({
                                                                 <Badge
                                                                     key={perm}
                                                                     variant="outline"
-                                                                    className={`px-2 py-0.5 text-[10px] font-normal ${isDirect
+                                                                    className={`px-2 py-0.5 text-[10px] font-normal ${
+                                                                        isDirect
                                                                             ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400'
                                                                             : 'text-neutral-500 dark:text-neutral-400'
-                                                                        }`}
+                                                                    }`}
                                                                 >
                                                                     {action}
                                                                     {isDirect &&
