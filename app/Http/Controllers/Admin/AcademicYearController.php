@@ -57,10 +57,18 @@ class AcademicYearController extends Controller
     {
         Gate::authorize('academic_years.view');
 
-        $academicYear->load(['schoolTerms', 'grades.sections']);
+        $academicYear->loadCount(['schoolTerms', 'grades']);
+        $sectionsCount = \DB::table('sections')
+            ->join('grades', 'grades.id', '=', 'sections.grade_id')
+            ->where('grades.academic_year_id', $academicYear->id)
+            ->whereNull('sections.deleted_at')
+            ->count();
 
         return Inertia::render('admin/academic-years/show', [
-            'academicYear' => $academicYear,
+            'academicYear' => [
+                ...$academicYear->toArray(),
+                'sections_count' => $sectionsCount,
+            ],
         ]);
     }
 
