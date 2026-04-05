@@ -20,8 +20,12 @@ class HealthConditionController extends Controller
     {
         Gate::authorize('health_conditions.view');
 
+        $perPage = request('per_page', 10);
+
         return Inertia::render('admin/health-conditions/index', [
-            'healthConditions' => HealthCondition::orderBy('name')->get(),
+            'healthConditions' => HealthCondition::orderBy('name')
+                ->paginate($perPage)
+                ->withQueryString(),
         ]);
     }
 
