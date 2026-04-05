@@ -71,7 +71,16 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={auth.permissions?.includes('academic_info.view') ? academicInfoIndex().url : dashboard()} prefetch>
+                            <Link
+                                href={
+                                    auth.permissions?.includes(
+                                        'academic_info.view',
+                                    )
+                                        ? academicInfoIndex().url
+                                        : dashboard()
+                                }
+                                prefetch
+                            >
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

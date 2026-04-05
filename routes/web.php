@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\Admin\AcademicStructureOverviewController;
 use App\Http\Controllers\Admin\AcademicYearController;
+use App\Http\Controllers\Admin\ActivityCategoryController;
 use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Controllers\Admin\GradeController;
 use App\Http\Controllers\Admin\HealthConditionController;
+use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RepresentativeController;
 use App\Http\Controllers\Admin\RoleController;
@@ -37,6 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('school-terms', SchoolTermController::class)->except(['show']);
         Route::resource('term-types', TermTypeController::class)->except(['create', 'edit', 'show']);
         Route::resource('health-conditions', HealthConditionController::class)->except(['create', 'edit', 'show']);
+        Route::resource('activity-categories', ActivityCategoryController::class)->except(['create', 'edit', 'show']);
+        Route::resource('locations', LocationController::class)->except(['create', 'edit', 'show']);
 
         // Enrollments (promote routes BEFORE resource to avoid route conflicts)
         Route::get('enrollments/promote', [EnrollmentController::class, 'showPromotionPanel'])->name('enrollments.promote');

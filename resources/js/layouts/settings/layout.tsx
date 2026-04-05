@@ -27,6 +27,8 @@ import {
     Building2,
     Layers,
     Heart,
+    Tag,
+    MapPin,
 } from 'lucide-react';
 import type { NavItem, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -95,6 +97,22 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             title: 'Condiciones de Salud',
             href: '/admin/health-conditions',
             icon: Heart,
+        });
+    }
+
+    if (auth.permissions?.includes('activity_categories.view')) {
+        sidebarNavItems.push({
+            title: 'Categorías',
+            href: '/admin/activity-categories',
+            icon: Tag,
+        });
+    }
+
+    if (auth.permissions?.includes('locations.view')) {
+        sidebarNavItems.push({
+            title: 'Ubicaciones',
+            href: '/admin/locations',
+            icon: MapPin,
         });
     }
 

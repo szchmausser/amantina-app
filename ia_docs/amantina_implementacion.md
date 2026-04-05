@@ -48,7 +48,7 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 | 6    | Inscripciones y asignaciones     | Vínculo académico, promoción masiva             | ✅     |
 | 7    | Representantes                   | Vínculo familiar (asignación desde perfil)      | ✅     |
 | 8    | Información de salud             | Condiciones médicas y soportes                  | ✅     |
-| 9    | Catálogos de configuración       | Actividades y ubicaciones                       | 🔲     |
+| 9    | Catálogos de configuración       | Actividades y ubicaciones                       | ✅     |
 | 10   | Jornadas de campo                | Registro central de actividades                 | 🔲     |
 | 11   | Asistencia y subactividades      | Acreditación de horas y evidencias              | 🔲     |
 | 12   | Horas externas                   | Acreditación para transferidos                  | 🔲     |
@@ -56,13 +56,14 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 | 14   | Reportes en PDF                  | Generación de certificados y listados           | 🔲     |
 | 15   | Revisión y estabilización        | QA final y seeders demo                         | 🔲     |
 
-> **Nota de progreso (2026-04-04):**
+> **Nota de progreso (2026-04-05):**
 >
-> - Hitos 0-8 completados
+> - Hitos 0-9 completados
 > - Hito 7 simplificado: solo asignación de representantes desde perfil de estudiante
 > - Hito 8 completado: Información de salud con archivos adjuntos y eliminación en cascada
+> - Hito 9 completado: Catálogos de configuración (actividades y ubicaciones) con CRUD para admin y profesor
 > - Mejoras visuales globales: componentes DataTable, TableFilters, formularios estandarizados
-> - Próximos hitos pendientes: 9-15
+> - Próximos hitos pendientes: 10-15
 
 ---
 
@@ -70,18 +71,18 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 
 | Categoría          | Cantidad                                   |
 | ------------------ | ------------------------------------------ |
-| Modelos            | 13                                         |
-| Controladores      | 18 (1 base + 14 admin + 3 settings)        |
-| Form Requests      | 22 (18 admin + 4 settings)                 |
+| Modelos            | 15                                         |
+| Controladores      | 20 (1 base + 16 admin + 3 settings)        |
+| Form Requests      | 26 (22 admin + 4 settings)                 |
 | Policies           | 1 (UserPolicy)                             |
 | Middleware custom  | 3                                          |
-| Migraciones        | 23                                         |
-| Seeders            | 13                                         |
-| Factories          | 9                                          |
-| Feature Tests      | 28                                         |
-| Páginas React      | 41                                         |
+| Migraciones        | 25                                         |
+| Seeders            | 15                                         |
+| Factories          | 11                                         |
+| Feature Tests      | 30                                         |
+| Páginas React      | 43                                         |
 | Componentes UI     | 28                                         |
-| Permisos definidos | 46                                         |
+| Permisos definidos | 54                                         |
 | Roles definidos    | 4 (admin, profesor, alumno, representante) |
 
 ---
@@ -724,27 +725,84 @@ Todas las páginas administrativas fueron actualizadas para usar `DataTable` y `
 
 ### Hito 9 — Catálogos de Configuración
 
+**Estado:** Finalizado ✅
+
 **Enfoque:** Categorías de actividades y ubicaciones.
 
-Entidades esperadas:
+**Principio de diseño:** Estas tablas son **catálogos plantilla**, no entidades relacionales. Las jornadas de campo **copian el valor** (snapshot) al momento de su creación, sin usar foreign keys. El mismo patrón que se usa con `term_types` → `school_terms.name`: el catálogo provee opciones, la jornada guarda el string.
 
-- `ActivityCategory` — Catálogo de tipos de actividad (desmalezamiento, limpieza, siembra, riego, etc.)
-- `Location` — Catálogo de ubicaciones donde se realizan jornadas (huerto escolar, cancha, comunidad, etc.)
+#### Entidades creadas
 
-Ambas entidades serán referenciadas por las jornadas de campo (Hito 10).
+| Modelo             | Tabla                 | Relaciones                       | Traits                        |
+| ------------------ | --------------------- | -------------------------------- | ----------------------------- |
+| `ActivityCategory` | `activity_categories` | Ninguna (catálogo independiente) | SoftDeletes, SoftCascadeTrait |
+| `Location`         | `locations`           | Ninguna (catálogo independiente) | SoftDeletes, SoftCascadeTrait |
 
-#### Roles y Permisos (esperados)
+#### Diseño de snapshots en `field_sessions` (Hito 10)
 
-| Permiso                      | Protege                | Roles que lo tendrán |
-| ---------------------------- | ---------------------- | -------------------- |
-| `activity_categories.view`   | Listado de categorías  | `admin`              |
-| `activity_categories.create` | Crear categorías       | `admin`              |
-| `activity_categories.edit`   | Editar categorías      | `admin`              |
-| `activity_categories.delete` | Eliminar categorías    | `admin`              |
-| `locations.view`             | Listado de ubicaciones | `admin`, `profesor`  |
-| `locations.create`           | Crear ubicaciones      | `admin`              |
-| `locations.edit`             | Editar ubicaciones     | `admin`              |
-| `locations.delete`           | Eliminar ubicaciones   | `admin`              |
+```
+field_sessions:
+  activity_name (VARCHAR nullable)  ← snapshot del nombre de categoría
+  location_name (VARCHAR nullable)  ← snapshot del nombre de ubicación
+  ← SIN foreign keys a activity_categories ni locations
+```
+
+**Consecuencia:** Eliminar una categoría o ubicación del catálogo **no afecta** las jornadas existentes. Las jornadas pasadas conservan el nombre que se guardó como string en el momento de su creación.
+
+#### Backend
+
+- **`ActivityCategoryController`:** CRUD completo (index, store, update, destroy) con validación de nombres únicos
+- **`LocationController`:** CRUD completo (index, store, update, destroy) con validación de nombres únicos
+- **`StoreActivityCategoryRequest`, `UpdateActivityCategoryRequest`:** Validaciones con autorización por permiso
+- **`StoreLocationRequest`, `UpdateLocationRequest`:** Validaciones con autorización por permiso
+
+#### Frontend
+
+- **`/admin/activity-categories`:** Listado con formulario inline de crear/editar. Enlace en menú de Configuración → "Categorías"
+- **`/admin/locations`:** Listado con formulario inline de crear/editar. Enlace en menú de Configuración → "Ubicaciones"
+- Ambos accesibles desde el menú de configuración (`SettingsLayout`) para `admin` y `profesor`
+
+#### Datos de prueba
+
+- **ActivityCategorySeeder:** 14 categorías base (desmalezamiento, siembra, riego, etc.)
+- **LocationSeeder:** 10 ubicaciones base (huerto escolar, cancha, comunidad, etc.)
+- **ActivityCategoryFactory, LocationFactory**
+
+#### Tests
+
+- `tests/Feature/Admin/ActivityCategoryControllerTest.php` — CRUD base, duplicados, permisos de profesor
+- `tests/Feature/Admin/LocationControllerTest.php` — CRUD base, duplicados, permisos de profesor
+
+#### ENTREGA
+
+- Catálogo de categorías de actividad administrable por admin y profesor
+- Catálogo de ubicaciones administrable por admin y profesor
+- Permisos asignados a ambos roles en el seeder
+- 14 tests pasando (7 por entidad)
+
+#### Roles y Permisos
+
+> **Decisión de arquitectura:** Se otorga CRUD completo a `profesor` en ambos catálogos porque serán su herramienta de trabajo diario. Al crear jornadas, el profesor selecciona del catálogo y el sistema guarda el **nombre** como snapshot, no una FK.
+
+| Permiso                      | Protege                | Roles que lo tienen |
+| ---------------------------- | ---------------------- | ------------------- |
+| `activity_categories.view`   | Listado de categorías  | `admin`, `profesor` |
+| `activity_categories.create` | Crear categorías       | `admin`, `profesor` |
+| `activity_categories.edit`   | Editar categorías      | `admin`, `profesor` |
+| `activity_categories.delete` | Eliminar categorías    | `admin`, `profesor` |
+| `locations.view`             | Listado de ubicaciones | `admin`, `profesor` |
+| `locations.create`           | Crear ubicaciones      | `admin`, `profesor` |
+| `locations.edit`             | Editar ubicaciones     | `admin`, `profesor` |
+| `locations.delete`           | Eliminar ubicaciones   | `admin`, `profesor` |
+
+**Acceso por rol:**
+
+| Rol             | Ve catálogos | Crea/edita/elimina      |
+| --------------- | ------------ | ----------------------- |
+| `admin`         | Sí           | Sí                      |
+| `profesor`      | Sí           | Sí (autonomía completa) |
+| `alumno`        | No           | No                      |
+| `representante` | No           | No                      |
 
 ---
 
@@ -752,20 +810,106 @@ Ambas entidades serán referenciadas por las jornadas de campo (Hito 10).
 
 **Enfoque:** Registro central de actividades de campo.
 
-Entidad esperada:
+**Principio de diseño:** Las jornadas son el evento central del sistema. Todo gira alrededor de ellas: la asistencia se registra en jornadas, las horas se acreditan a partir de jornadas, los reportes se construyen sobre jornadas. Este hito cubre **solo la creación y gestión de jornadas**; la asistencia y subactividades se abordan en el Hito 11. Se permiten jornadas planificadas con anticipación o registradas después de realizadas.
 
-- `FieldSession` — Jornadas con `start_datetime`, `end_datetime`, `base_hours`, `status` (realized/cancelled), FK a profesor responsable, categoría de actividad y ubicación.
+#### Entidades esperadas
+
+| Modelo               | Tabla                    | Relaciones                                                                          |
+| -------------------- | ------------------------ | ----------------------------------------------------------------------------------- |
+| `FieldSessionStatus` | `field_session_statuses` | Catálogo de estados (planned, realized, cancelled)                                  |
+| `FieldSession`       | `field_sessions`         | BelongsTo: AcademicYear, SchoolTerm (nullable), User (profesor), FieldSessionStatus |
+
+**Diseño de snapshots:** `activity_name` y `location_name` son campos VARCHAR que copian el valor del catálogo al momento de crear la jornada. **Sin foreign keys** a `activity_categories` ni `locations`.
+
+**Cascada de soft deletes:** `AcademicYear` → `FieldSession` (ya configurado en AcademicYear con SoftCascadeTrait)
+
+#### Estructura de `field_sessions`
+
+| Campo                 | Tipo                  | Notas                                      |
+| --------------------- | --------------------- | ------------------------------------------ |
+| `id`                  | BIGINT                | PK                                         |
+| `name`                | VARCHAR               | Nombre/título de la jornada                |
+| `description`         | TEXT nullable         | Descripción detallada                      |
+| `academic_year_id`    | BIGINT (FK)           | Desnormalizado para evitar JOINs           |
+| `school_term_id`      | BIGINT (FK, nullable) | Sugerido automáticamente por fecha         |
+| `user_id`             | BIGINT (FK)           | Profesor responsable (dueño de la jornada) |
+| `activity_name`       | VARCHAR nullable      | Snapshot del catálogo (sin FK)             |
+| `location_name`       | VARCHAR nullable      | Snapshot del catálogo (sin FK)             |
+| `start_datetime`      | DATETIME              | Fecha y hora de inicio                     |
+| `end_datetime`        | DATETIME              | Fecha y hora de fin                        |
+| `base_hours`          | DECIMAL               | Calculado automáticamente (end - start)    |
+| `status_id`           | BIGINT (FK)           | FK a `field_session_statuses`              |
+| `cancellation_reason` | TEXT nullable         | Obligatorio si status = cancelled          |
+| `deleted_at`          | TIMESTAMP             | SoftDeletes                                |
+| `timestamps`          |                       |                                            |
+
+#### Estados de jornada (`field_session_statuses`)
+
+| Estado      | Descripción                     |
+| ----------- | ------------------------------- |
+| `planned`   | Planificada (aún no se realiza) |
+| `realized`  | Realizada (ya se ejecutó)       |
+| `cancelled` | Cancelada (no se realizó)       |
+
+#### Backend esperado
+
+- **`FieldSessionController`:** CRUD completo (index, create, store, show, edit, update, destroy)
+- **`StoreFieldSessionRequest`:** Validaciones con:
+    - `start_datetime` < `end_datetime`
+    - `cancellation_reason` obligatorio si status = cancelled
+    - `base_hours` calculado automáticamente en el backend
+    - `school_term_id` sugerido automáticamente comparando `start_datetime` contra fechas de lapsos del año activo
+- **`UpdateFieldSessionRequest`:** Mismas validaciones + regla de propiedad (solo dueño o admin)
+- **Lógica de sugerencia de lapso:** Al cargar el formulario de creación, el backend busca el lapso del año activo cuyo rango de fechas contenga `start_datetime` y lo pre-selecciona. Si no encuentra coincidencia, deja el campo vacío con advertencia.
+- **Regla de propiedad:** Solo el profesor responsable (`user_id`) o un admin puede editar/eliminar la jornada.
+
+#### Frontend esperado
+
+- **`/admin/field-sessions`:** Listado con DataTable, filtros por año, lapso, profesor y estado
+- **`/admin/field-sessions/create`:** Formulario con:
+    - Campo de nombre y descripción
+    - Select de año académico (pre-seleccionado el activo)
+    - Select de lapso (pre-sugerido por fecha de inicio)
+    - Select de profesor responsable (pre-seleccionado el usuario logueado si es profesor)
+    - **Combobox de categoría de actividad:** Dropdown con autocompletado del catálogo `activity_categories`, pero permite escribir texto libre. Si el profesor escribe algo que no existe, puede crear la categoría al vuelo desde el mismo componente.
+    - **Combobox de ubicación:** Mismo patrón que categoría.
+    - Campos de fecha/hora de inicio y fin
+    - `base_hours` calculado en tiempo real en el frontend
+    - Select de estado (planned, realized, cancelled)
+    - Campo de motivo de cancelación (visible solo si status = cancelled)
+- **`/admin/field-sessions/{id}/edit`:** Mismo formulario, solo editable por dueño o admin
+- **`/admin/field-sessions/{id}/show`:** Vista de detalles de la jornada
+
+#### Catálogo + texto libre (patrón de UI)
+
+El profesor tiene dos opciones al seleccionar categoría o ubicación:
+
+1. **Seleccionar del catálogo:** El dropdown muestra las categorías/ubicaciones existentes. Al seleccionar, se copia el `name` como snapshot.
+2. **Escribir texto libre:** Si el profesor escribe algo que no existe en el catálogo, el sistema guarda el texto como snapshot directamente (no requiere crear la categoría primero). Opcionalmente ofrece un botón "Crear categoría" para agregarla al catálogo y reusarla después.
+
+Esto asegura que el catálogo es una **herramienta de productividad**, no una restricción.
 
 #### Roles y Permisos (esperados)
+
+> **Decisión de arquitectura:** El profesor tiene CRUD completo sobre sus propias jornadas. Solo puede editar/eliminar las que creó. El admin puede gestionar todas.
 
 | Permiso                 | Protege             | Roles que lo tendrán                   |
 | ----------------------- | ------------------- | -------------------------------------- |
 | `field_sessions.view`   | Listado de jornadas | `admin`, `profesor`                    |
 | `field_sessions.create` | Crear jornadas      | `admin`, `profesor`                    |
 | `field_sessions.edit`   | Editar jornadas     | `admin`, `profesor` (solo las propias) |
-| `field_sessions.delete` | Eliminar jornadas   | `admin`                                |
+| `field_sessions.delete` | Eliminar jornadas   | `admin`, `profesor` (solo las propias) |
 
-**Regla de propiedad:** Solo el profesor responsable de una jornada (`user_id`) o un admin puede editarla. Un profesor puede ver las jornadas de otros pero no modificarlas.
+**Regla de propiedad:** Solo el profesor responsable de una jornada (`user_id` en `field_sessions`) o un administrador puede editarla o eliminarla. Un profesor puede ver las jornadas de otros profesores pero no modificarlas.
+
+**Acceso por rol:**
+
+| Rol             | Ve todas las jornadas | Crea jornadas | Edita jornadas   | Elimina jornadas |
+| --------------- | --------------------- | ------------- | ---------------- | ---------------- |
+| `admin`         | Sí (todas)            | Sí            | Sí (todas)       | Sí (todas)       |
+| `profesor`      | Sí (todas)            | Sí            | Solo las propias | Solo las propias |
+| `alumno`        | No                    | No            | No               | No               |
+| `representante` | No                    | No            | No               | No               |
 
 ---
 

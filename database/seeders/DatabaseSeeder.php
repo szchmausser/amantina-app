@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             TestUsersSeeder::class,
             AcademicYearSeeder::class,
+            ActivityCategorySeeder::class,
+            LocationSeeder::class,
             HealthConditionSeeder::class,
         ]);
     }

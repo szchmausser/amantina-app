@@ -64,6 +64,14 @@ class RoleAndPermissionSeeder extends Seeder
             'student_health.create',
             'student_health.edit',
             'student_health.delete',
+            'activity_categories.view',
+            'activity_categories.create',
+            'activity_categories.edit',
+            'activity_categories.delete',
+            'locations.view',
+            'locations.create',
+            'locations.edit',
+            'locations.delete',
         ];
 
         foreach ($permissions as $permission) {
@@ -86,7 +94,20 @@ class RoleAndPermissionSeeder extends Seeder
             }
 
             if ($roleName === 'profesor') {
-                $role->syncPermissions(['users.view', 'enrollments.view', 'assignments.view', 'academic_info.view']);
+                $role->syncPermissions([
+                    'users.view',
+                    'enrollments.view',
+                    'assignments.view',
+                    'academic_info.view',
+                    'activity_categories.view',
+                    'activity_categories.create',
+                    'activity_categories.edit',
+                    'activity_categories.delete',
+                    'locations.view',
+                    'locations.create',
+                    'locations.edit',
+                    'locations.delete',
+                ]);
             }
         }
     }
