@@ -72,6 +72,10 @@ class RoleAndPermissionSeeder extends Seeder
             'locations.create',
             'locations.edit',
             'locations.delete',
+            'field_sessions.view',
+            'field_sessions.create',
+            'field_sessions.edit',
+            'field_sessions.delete',
         ];
 
         foreach ($permissions as $permission) {
@@ -107,6 +111,10 @@ class RoleAndPermissionSeeder extends Seeder
                     'locations.create',
                     'locations.edit',
                     'locations.delete',
+                    'field_sessions.view',
+                    'field_sessions.create',
+                    'field_sessions.edit',
+                    'field_sessions.delete',
                 ]);
             }
         }

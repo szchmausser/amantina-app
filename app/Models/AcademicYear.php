@@ -16,10 +16,10 @@ class AcademicYear extends Model
     use HasFactory, SoftCascadeTrait, SoftDeletes;
 
     /**
-     * Cascade soft deletes to school terms and grades.
+     * Cascade soft deletes to school terms, grades, and field sessions.
      * Grades cascade to sections, which cascade to enrollments and teacher assignments.
      */
-    protected $softCascade = ['schoolTerms', 'grades'];
+    protected $softCascade = ['schoolTerms', 'grades', 'fieldSessions'];
 
     protected $fillable = [
         'name',
@@ -62,6 +62,14 @@ class AcademicYear extends Model
     public function teacherAssignments(): HasMany
     {
         return $this->hasMany(TeacherAssignment::class);
+    }
+
+    /**
+     * @return HasMany<FieldSession, $this>
+     */
+    public function fieldSessions(): HasMany
+    {
+        return $this->hasMany(FieldSession::class);
     }
 
     public function scopeActive(Builder $query): void

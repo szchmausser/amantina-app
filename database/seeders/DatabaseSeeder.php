@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ActivityCategorySeeder::class,
             LocationSeeder::class,
             HealthConditionSeeder::class,
+            FieldSessionStatusSeeder::class,
         ]);
     }
 }

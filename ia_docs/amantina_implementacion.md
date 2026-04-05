@@ -49,7 +49,7 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 | 7    | Representantes                   | Vínculo familiar (asignación desde perfil)      | ✅     |
 | 8    | Información de salud             | Condiciones médicas y soportes                  | ✅     |
 | 9    | Catálogos de configuración       | Actividades y ubicaciones                       | ✅     |
-| 10   | Jornadas de campo                | Registro central de actividades                 | 🔲     |
+| 10   | Jornadas de campo                | Registro central de actividades                 | ✅     |
 | 11   | Asistencia y subactividades      | Acreditación de horas y evidencias              | 🔲     |
 | 12   | Horas externas                   | Acreditación para transferidos                  | 🔲     |
 | 13   | Acumulados y dashboards          | Progreso visual y KPIs                          | 🔲     |
@@ -808,11 +808,15 @@ field_sessions:
 
 ### Hito 10 — Jornadas de Campo
 
+**Estado:** Finalizado ✅
+
 **Enfoque:** Registro central de actividades de campo.
 
 **Principio de diseño:** Las jornadas son el evento central del sistema. Todo gira alrededor de ellas: la asistencia se registra en jornadas, las horas se acreditan a partir de jornadas, los reportes se construyen sobre jornadas. Este hito cubre **solo la creación y gestión de jornadas**; la asistencia y subactividades se abordan en el Hito 11. Se permiten jornadas planificadas con anticipación o registradas después de realizadas.
 
-#### Entidades esperadas
+**Regla de negocio:** Las jornadas siempre pertenecen al año escolar activo. No se permite seleccionar otro año al crear una jornada.
+
+#### Entidades creadas
 
 | Modelo               | Tabla                    | Relaciones                                                                          |
 | -------------------- | ------------------------ | ----------------------------------------------------------------------------------- |
@@ -825,23 +829,23 @@ field_sessions:
 
 #### Estructura de `field_sessions`
 
-| Campo                 | Tipo                  | Notas                                      |
-| --------------------- | --------------------- | ------------------------------------------ |
-| `id`                  | BIGINT                | PK                                         |
-| `name`                | VARCHAR               | Nombre/título de la jornada                |
-| `description`         | TEXT nullable         | Descripción detallada                      |
-| `academic_year_id`    | BIGINT (FK)           | Desnormalizado para evitar JOINs           |
-| `school_term_id`      | BIGINT (FK, nullable) | Sugerido automáticamente por fecha         |
-| `user_id`             | BIGINT (FK)           | Profesor responsable (dueño de la jornada) |
-| `activity_name`       | VARCHAR nullable      | Snapshot del catálogo (sin FK)             |
-| `location_name`       | VARCHAR nullable      | Snapshot del catálogo (sin FK)             |
-| `start_datetime`      | DATETIME              | Fecha y hora de inicio                     |
-| `end_datetime`        | DATETIME              | Fecha y hora de fin                        |
-| `base_hours`          | DECIMAL               | Calculado automáticamente (end - start)    |
-| `status_id`           | BIGINT (FK)           | FK a `field_session_statuses`              |
-| `cancellation_reason` | TEXT nullable         | Obligatorio si status = cancelled          |
-| `deleted_at`          | TIMESTAMP             | SoftDeletes                                |
-| `timestamps`          |                       |                                            |
+| Campo                 | Tipo                  | Notas                                                   |
+| --------------------- | --------------------- | ------------------------------------------------------- |
+| `id`                  | BIGINT                | PK                                                      |
+| `name`                | VARCHAR               | Nombre/título de la jornada                             |
+| `description`         | TEXT nullable         | Descripción detallada                                   |
+| `academic_year_id`    | BIGINT (FK)           | Desnormalizado. Se asigna automáticamente al año activo |
+| `school_term_id`      | BIGINT (FK, nullable) | Sugerido automáticamente por fecha                      |
+| `user_id`             | BIGINT (FK)           | Profesor responsable (dueño de la jornada)              |
+| `activity_name`       | VARCHAR nullable      | Snapshot del catálogo (sin FK)                          |
+| `location_name`       | VARCHAR nullable      | Snapshot del catálogo (sin FK)                          |
+| `start_datetime`      | DATETIME              | Fecha y hora de inicio                                  |
+| `end_datetime`        | DATETIME              | Fecha y hora de fin                                     |
+| `base_hours`          | DECIMAL               | Calculado automáticamente (end - start)                 |
+| `status_id`           | BIGINT (FK)           | FK a `field_session_statuses`                           |
+| `cancellation_reason` | TEXT nullable         | Obligatorio si status = cancelled                       |
+| `deleted_at`          | TIMESTAMP             | SoftDeletes                                             |
+| `timestamps`          |                       |                                                         |
 
 #### Estados de jornada (`field_session_statuses`)
 
@@ -851,7 +855,7 @@ field_sessions:
 | `realized`  | Realizada (ya se ejecutó)       |
 | `cancelled` | Cancelada (no se realizó)       |
 
-#### Backend esperado
+#### Backend
 
 - **`FieldSessionController`:** CRUD completo (index, create, store, show, edit, update, destroy)
 - **`StoreFieldSessionRequest`:** Validaciones con:
@@ -859,41 +863,51 @@ field_sessions:
     - `cancellation_reason` obligatorio si status = cancelled
     - `base_hours` calculado automáticamente en el backend
     - `school_term_id` sugerido automáticamente comparando `start_datetime` contra fechas de lapsos del año activo
-- **`UpdateFieldSessionRequest`:** Mismas validaciones + regla de propiedad (solo dueño o admin)
-- **Lógica de sugerencia de lapso:** Al cargar el formulario de creación, el backend busca el lapso del año activo cuyo rango de fechas contenga `start_datetime` y lo pre-selecciona. Si no encuentra coincidencia, deja el campo vacío con advertencia.
-- **Regla de propiedad:** Solo el profesor responsable (`user_id`) o un admin puede editar/eliminar la jornada.
+    - `academic_year_id` NO se recibe del formulario — se asigna automáticamente desde el año activo
+- **`UpdateFieldSessionRequest`:** Mismas validaciones
+- **Regla de propiedad:** Solo el profesor responsable (`user_id`) o un admin puede editar/eliminar la jornada. Verificado en el controlador con `abort(403)`.
+- **Lógica de sugerencia de lapso:** Al crear o editar, el backend busca el lapso del año activo cuyo rango de fechas contenga `start_datetime` y lo asigna automáticamente.
 
-#### Frontend esperado
+#### Frontend
 
-- **`/admin/field-sessions`:** Listado con DataTable, filtros por año, lapso, profesor y estado
+- **`/admin/field-sessions`:** Listado con DataTable, filtros por año y estado, badges de colores por estado
 - **`/admin/field-sessions/create`:** Formulario con:
     - Campo de nombre y descripción
-    - Select de año académico (pre-seleccionado el activo)
-    - Select de lapso (pre-sugerido por fecha de inicio)
-    - Select de profesor responsable (pre-seleccionado el usuario logueado si es profesor)
-    - **Combobox de categoría de actividad:** Dropdown con autocompletado del catálogo `activity_categories`, pero permite escribir texto libre. Si el profesor escribe algo que no existe, puede crear la categoría al vuelo desde el mismo componente.
-    - **Combobox de ubicación:** Mismo patrón que categoría.
+    - Año escolar mostrado como texto fijo (no seleccionable, siempre el activo)
+    - Select de profesor responsable
+    - Select de estado (planned, realized, cancelled)
     - Campos de fecha/hora de inicio y fin
     - `base_hours` calculado en tiempo real en el frontend
-    - Select de estado (planned, realized, cancelled)
+    - **Combobox de categoría de actividad:** Dropdown con búsqueda que muestra las categorías existentes del catálogo. Permite escribir texto libre y crear nuevas categorías al vuelo si no existe.
+    - **Combobox de ubicación:** Mismo patrón que categoría.
     - Campo de motivo de cancelación (visible solo si status = cancelled)
 - **`/admin/field-sessions/{id}/edit`:** Mismo formulario, solo editable por dueño o admin
 - **`/admin/field-sessions/{id}/show`:** Vista de detalles de la jornada
 
-#### Catálogo + texto libre (patrón de UI)
+#### Datos de prueba
 
-El profesor tiene dos opciones al seleccionar categoría o ubicación:
+- **FieldSessionStatusSeeder:** 3 estados base (planned, realized, cancelled)
+- **FieldSessionFactory, FieldSessionStatusFactory**
 
-1. **Seleccionar del catálogo:** El dropdown muestra las categorías/ubicaciones existentes. Al seleccionar, se copia el `name` como snapshot.
-2. **Escribir texto libre:** Si el profesor escribe algo que no existe en el catálogo, el sistema guarda el texto como snapshot directamente (no requiere crear la categoría primero). Opcionalmente ofrece un botón "Crear categoría" para agregarla al catálogo y reusarla después.
+#### Tests
 
-Esto asegura que el catálogo es una **herramienta de productividad**, no una restricción.
+- `tests/Feature/Admin/FieldSessionControllerTest.php` — CRUD base, validación de fechas, motivo de cancelación obligatorio, regla de propiedad (profesor no puede editar jornada ajena), cálculo automático de base_hours
 
-#### Roles y Permisos (esperados)
+#### ENTREGA
+
+- Catálogo de estados de jornada con 3 estados base
+- CRUD completo de jornadas con asignación automática del año activo
+- Sugerencia automática de lapso según fecha de inicio
+- Cálculo automático de horas base
+- Regla de propiedad: profesor solo edita/elimina sus propias jornadas
+- Campo condicional de motivo de cancelación
+- 14 tests pasando
+
+#### Roles y Permisos
 
 > **Decisión de arquitectura:** El profesor tiene CRUD completo sobre sus propias jornadas. Solo puede editar/eliminar las que creó. El admin puede gestionar todas.
 
-| Permiso                 | Protege             | Roles que lo tendrán                   |
+| Permiso                 | Protege             | Roles que lo tienen                    |
 | ----------------------- | ------------------- | -------------------------------------- |
 | `field_sessions.view`   | Listado de jornadas | `admin`, `profesor`                    |
 | `field_sessions.create` | Crear jornadas      | `admin`, `profesor`                    |
@@ -907,6 +921,9 @@ Esto asegura que el catálogo es una **herramienta de productividad**, no una re
 | Rol             | Ve todas las jornadas | Crea jornadas | Edita jornadas   | Elimina jornadas |
 | --------------- | --------------------- | ------------- | ---------------- | ---------------- |
 | `admin`         | Sí (todas)            | Sí            | Sí (todas)       | Sí (todas)       |
+| `profesor`      | Sí (todas)            | Sí            | Solo las propias | Solo las propias |
+| `alumno`        | No                    | No            | No               | No               |
+| `representante` | No                    | No            | No               | No               |
 | `profesor`      | Sí (todas)            | Sí            | Solo las propias | Solo las propias |
 | `alumno`        | No                    | No            | No               | No               |
 | `representante` | No                    | No            | No               | No               |

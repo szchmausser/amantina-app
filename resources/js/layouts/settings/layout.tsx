@@ -29,6 +29,7 @@ import {
     Heart,
     Tag,
     MapPin,
+    ClipboardList,
 } from 'lucide-react';
 import type { NavItem, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -113,6 +114,14 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             title: 'Ubicaciones',
             href: '/admin/locations',
             icon: MapPin,
+        });
+    }
+
+    if (auth.permissions?.includes('field_sessions.view')) {
+        sidebarNavItems.push({
+            title: 'Jornadas de Campo',
+            href: '/admin/field-sessions',
+            icon: ClipboardList,
         });
     }
 
