@@ -1,6 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Clock,
     Edit,
     ShieldCheck,
     User as UserIcon,
@@ -48,6 +49,29 @@ interface Props {
     relationshipTypes: any[];
     availableRepresentatives: any[];
     healthConditions: any[];
+    hourHistory?: HourHistoryItem[];
+}
+
+interface HourHistoryActivity {
+    id: number;
+    hours: number;
+    activity_category: string | null;
+}
+
+interface HourHistoryFieldSession {
+    id: number;
+    name: string;
+    start_datetime: string | null;
+    status: string | null;
+}
+
+interface HourHistoryItem {
+    id: number;
+    attended: boolean;
+    notes: string | null;
+    created_at: string;
+    fieldSession: HourHistoryFieldSession | null;
+    activities: HourHistoryActivity[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -188,12 +212,18 @@ export default function Show({
                     onValueChange={setActiveTab}
                     className="space-y-6"
                 >
-                    <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:grid-cols-4">
                         <TabsTrigger value="general">General</TabsTrigger>
                         {isAlumno && (
                             <TabsTrigger value="salud">
                                 <Heart className="mr-1.5 h-3.5 w-3.5" />
                                 Salud
+                            </TabsTrigger>
+                        )}
+                        {isAlumno && (
+                            <TabsTrigger value="horas">
+                                <Clock className="mr-1.5 h-3.5 w-3.5" />
+                                Horas
                             </TabsTrigger>
                         )}
                         <TabsTrigger value="permisos">Permisos</TabsTrigger>
@@ -722,6 +752,131 @@ export default function Show({
                                             <p className="text-sm italic">
                                                 No hay registros de salud para
                                                 este estudiante.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </TabsContent>
+                    )}
+
+                    {/* Tab: Horas (solo para alumnos) */}
+                    {isAlumno && hourHistory && (
+                        <TabsContent value="horas" className="space-y-6">
+                            <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                    <Clock className="h-4 w-4 text-green-600" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        Historial de Horas Socioproductivas
+                                    </h2>
+                                </div>
+                                <div className="p-0">
+                                    {hourHistory.length > 0 ? (
+                                        <div className="divide-y divide-sidebar-border/70">
+                                            {hourHistory.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="p-4 px-6"
+                                                >
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex items-start gap-3">
+                                                            <div
+                                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                                                                    item.attended
+                                                                        ? 'bg-green-50 dark:bg-green-900/20'
+                                                                        : 'bg-red-50 dark:bg-red-900/20'
+                                                                }`}
+                                                            >
+                                                                {item.attended ? (
+                                                                    <Clock className="h-4 w-4 text-green-600" />
+                                                                ) : (
+                                                                    <UserIcon className="h-4 w-4 text-red-600" />
+                                                                )}
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                                                                    {item
+                                                                        .fieldSession
+                                                                        ?.name ||
+                                                                        'Jornada'}
+                                                                </p>
+                                                                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                                                    {item
+                                                                        .fieldSession
+                                                                        ?.start_datetime && (
+                                                                        <span className="flex items-center gap-1">
+                                                                            <Calendar className="h-3 w-3" />
+                                                                            {
+                                                                                item
+                                                                                    .fieldSession
+                                                                                    .start_datetime
+                                                                            }
+                                                                        </span>
+                                                                    )}
+                                                                    <span
+                                                                        className={`flex items-center gap-1 ${
+                                                                            item.attended
+                                                                                ? 'text-green-600'
+                                                                                : 'text-red-600'
+                                                                        }`}
+                                                                    >
+                                                                        {item.attended
+                                                                            ? 'Asistió'
+                                                                            : 'Ausente'}
+                                                                    </span>
+                                                                </div>
+                                                                {item.activities &&
+                                                                    item
+                                                                        .activities
+                                                                        .length >
+                                                                        0 && (
+                                                                        <div className="mt-2 flex flex-wrap gap-2">
+                                                                            {item.activities.map(
+                                                                                (
+                                                                                    activity,
+                                                                                ) => (
+                                                                                    <Badge
+                                                                                        key={
+                                                                                            activity.id
+                                                                                        }
+                                                                                        className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                                                                    >
+                                                                                        {
+                                                                                            activity.hours
+                                                                                        }
+                                                                                        h{' '}
+                                                                                        {activity.activity_category ||
+                                                                                            ''}
+                                                                                    </Badge>
+                                                                                ),
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                {item.notes && (
+                                                                    <p className="mt-1 text-xs text-neutral-400 italic">
+                                                                        {
+                                                                            item.notes
+                                                                        }
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                        >
+                                                            {item.created_at}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="py-12 text-center text-neutral-400">
+                                            <Clock className="mx-auto mb-2 h-10 w-10 opacity-20" />
+                                            <p className="text-sm italic">
+                                                Este estudiante no tiene horas
+                                                registradas aún.
                                             </p>
                                         </div>
                                     )}

@@ -20,7 +20,6 @@ import {
     type PaginationInfo,
 } from '@/components/ui/data-table';
 import AppLayout from '@/layouts/app-layout';
-import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
 
 interface Status {
@@ -224,76 +223,74 @@ export default function FieldSessionsIndex({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Jornadas de Campo" />
 
-            <SettingsLayout>
-                <div className="flex flex-col gap-6">
-                    {/* Header */}
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                                Jornadas de Campo
-                            </h1>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                                Registro y gestión de actividades de campo
-                                realizadas por los estudiantes.
-                            </p>
-                        </div>
-                        <Button asChild>
-                            <Link href="/admin/field-sessions/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nueva Jornada
-                            </Link>
-                        </Button>
+            <div className="flex flex-col gap-6 p-4 lg:p-8">
+                {/* Header */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                            Jornadas de Campo
+                        </h1>
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                            Registro y gestión de actividades de campo
+                            realizadas por los estudiantes.
+                        </p>
                     </div>
-
-                    {/* Filters */}
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <div className="w-full sm:w-48">
-                            <Select
-                                value={selectedStatusId?.toString() ?? ''}
-                                onValueChange={(val) =>
-                                    handleFilterChange(val || null)
-                                }
-                            >
-                                <SelectTrigger className="h-10">
-                                    <SelectValue placeholder="Estado" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {statuses.map((status) => (
-                                        <SelectItem
-                                            key={status.id}
-                                            value={status.id.toString()}
-                                        >
-                                            {statusLabels[status.name] ||
-                                                status.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
-                    {/* Table */}
-                    <DataTable
-                        data={fieldSessions.data}
-                        columns={tableColumns}
-                        pagination={pagination}
-                        onPageChange={(_, url) => {
-                            router.get(
-                                url,
-                                {
-                                    status_id: selectedStatusId ?? undefined,
-                                    per_page: perPage,
-                                },
-                                { preserveState: true, replace: true },
-                            );
-                        }}
-                        perPage={perPage}
-                        onPerPageChange={setPerPage}
-                        perPageOptions={[10, 15, 25, 50]}
-                        emptyMessage="No hay jornadas de campo registradas."
-                    />
+                    <Button asChild>
+                        <Link href="/admin/field-sessions/create">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Nueva Jornada
+                        </Link>
+                    </Button>
                 </div>
-            </SettingsLayout>
+
+                {/* Filters */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="w-full sm:w-48">
+                        <Select
+                            value={selectedStatusId?.toString() ?? ''}
+                            onValueChange={(val) =>
+                                handleFilterChange(val || null)
+                            }
+                        >
+                            <SelectTrigger className="h-10">
+                                <SelectValue placeholder="Estado" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {statuses.map((status) => (
+                                    <SelectItem
+                                        key={status.id}
+                                        value={status.id.toString()}
+                                    >
+                                        {statusLabels[status.name] ||
+                                            status.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                {/* Table */}
+                <DataTable
+                    data={fieldSessions.data}
+                    columns={tableColumns}
+                    pagination={pagination}
+                    onPageChange={(_, url) => {
+                        router.get(
+                            url,
+                            {
+                                status_id: selectedStatusId ?? undefined,
+                                per_page: perPage,
+                            },
+                            { preserveState: true, replace: true },
+                        );
+                    }}
+                    perPage={perPage}
+                    onPerPageChange={setPerPage}
+                    perPageOptions={[10, 15, 25, 50]}
+                    emptyMessage="No hay jornadas de campo registradas."
+                />
+            </div>
         </AppLayout>
     );
 }

@@ -76,6 +76,14 @@ class RoleAndPermissionSeeder extends Seeder
             'field_sessions.create',
             'field_sessions.edit',
             'field_sessions.delete',
+            'attendances.view',
+            'attendances.create',
+            'attendances.edit',
+            'attendances.delete',
+            'attendance_activities.view',
+            'attendance_activities.create',
+            'attendance_activities.edit',
+            'attendance_activities.delete',
         ];
 
         foreach ($permissions as $permission) {
@@ -115,6 +123,14 @@ class RoleAndPermissionSeeder extends Seeder
                     'field_sessions.create',
                     'field_sessions.edit',
                     'field_sessions.delete',
+                    'attendances.view',
+                    'attendances.create',
+                    'attendances.edit',
+                    'attendances.delete',
+                    'attendance_activities.view',
+                    'attendance_activities.create',
+                    'attendance_activities.edit',
+                    'attendance_activities.delete',
                 ]);
             }
         }

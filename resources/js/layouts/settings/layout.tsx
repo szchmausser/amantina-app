@@ -117,14 +117,6 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         });
     }
 
-    if (auth.permissions?.includes('field_sessions.view')) {
-        sidebarNavItems.push({
-            title: 'Jornadas de Campo',
-            href: '/admin/field-sessions',
-            icon: ClipboardList,
-        });
-    }
-
     if (auth.permissions?.includes('enrollments.view')) {
         sidebarNavItems.push({
             title: 'Inscripciones',

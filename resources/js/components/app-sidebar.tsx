@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    CalendarCheck,
     FolderGit2,
     LayoutDashboard,
     LayoutGrid,
@@ -54,6 +55,14 @@ export function AppSidebar() {
             title: 'Dashboard',
             href: dashboard(),
             icon: LayoutGrid,
+        });
+    }
+
+    if (auth.permissions?.includes('field_sessions.view')) {
+        mainNavItems.push({
+            title: 'Jornadas',
+            href: '/admin/field-sessions',
+            icon: CalendarCheck,
         });
     }
 

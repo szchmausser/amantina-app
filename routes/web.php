@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\AcademicStructureOverviewController;
 use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\ActivityCategoryController;
+use App\Http\Controllers\Admin\AttendanceActivityController;
+use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Controllers\Admin\FieldSessionController;
 use App\Http\Controllers\Admin\GradeController;
@@ -45,6 +47,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Field Sessions
         Route::resource('field-sessions', FieldSessionController::class);
+
+        // Attendance
+        Route::get('field-sessions/{field_session}/attendance', [AttendanceController::class, 'index'])->name('field-sessions.attendance');
+        Route::post('field-sessions/{field_session}/attendance', [AttendanceController::class, 'store'])->name('field-sessions.attendance.store');
+        Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
+        Route::post('field-sessions/{field_session}/attendance/bulk-absent', [AttendanceController::class, 'bulkAbsent'])->name('field-sessions.attendance.bulk-absent');
+        Route::post('field-sessions/{field_session}/attendance/bulk-assign-hours', [AttendanceController::class, 'bulkAssignHours'])->name('field-sessions.attendance.bulk-assign-hours');
+        Route::post('field-sessions/{field_session}/attendance/quick-assign-hours', [AttendanceController::class, 'quickAssignHours'])->name('field-sessions.attendance.quick-assign-hours');
+
+        // Attendance Activities
+        Route::post('attendance-activities', [AttendanceActivityController::class, 'store'])->name('attendance-activities.store');
+        Route::put('attendance-activities/{attendance_activity}', [AttendanceActivityController::class, 'update'])->name('attendance-activities.update');
+        Route::delete('attendance-activities/{attendance_activity}', [AttendanceActivityController::class, 'destroy'])->name('attendance-activities.destroy');
 
         // Enrollments (promote routes BEFORE resource to avoid route conflicts)
         Route::get('enrollments/promote', [EnrollmentController::class, 'showPromotionPanel'])->name('enrollments.promote');

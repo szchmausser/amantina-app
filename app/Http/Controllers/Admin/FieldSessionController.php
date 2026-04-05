@@ -7,12 +7,15 @@ use App\Http\Requests\Admin\StoreFieldSessionRequest;
 use App\Http\Requests\Admin\UpdateFieldSessionRequest;
 use App\Models\AcademicYear;
 use App\Models\ActivityCategory;
+use App\Models\Attendance;
 use App\Models\FieldSession;
 use App\Models\FieldSessionStatus;
+use App\Models\Grade;
 use App\Models\Location;
 use App\Models\SchoolTerm;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -109,14 +112,91 @@ class FieldSessionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(FieldSession $fieldSession): Response
+    public function show(Request $request, FieldSession $fieldSession): Response
     {
         Gate::authorize('field_sessions.view');
 
         $fieldSession->load(['academicYear', 'schoolTerm', 'teacher', 'status']);
 
+        $gradeId = $request->input('grade');
+        $sectionId = $request->input('section');
+        $search = $request->input('search');
+
+        // Get attendances with student and enrollment info for the table
+        $query = Attendance::where('field_session_id', $fieldSession->id)
+            ->with(['student', 'attendanceActivities.activityCategory'])
+            ->orderBy('created_at', 'desc');
+
+        // Apply search filter if provided
+        if ($search) {
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")
+                    ->orWhere('cedula', 'ilike', "%{$search}%");
+            });
+        }
+
+        // Apply filters if provided
+        if ($gradeId || $sectionId) {
+            $query->whereHas('student.enrollments', function ($q) use ($gradeId, $sectionId, $fieldSession) {
+                $q->where('academic_year_id', $fieldSession->academic_year_id);
+                if ($gradeId) {
+                    $q->where('grade_id', $gradeId);
+                }
+                if ($sectionId) {
+                    $q->where('section_id', $sectionId);
+                }
+            });
+        }
+
+        $attendances = $query->paginate(10)
+            ->through(function ($attendance) {
+                $totalHours = $attendance->attendanceActivities->sum('hours');
+
+                // Get section info from enrollment
+                $enrollment = \DB::table('enrollments')
+                    ->join('sections', 'enrollments.section_id', '=', 'sections.id')
+                    ->join('grades', 'sections.grade_id', '=', 'grades.id')
+                    ->where('enrollments.user_id', $attendance->user_id)
+                    ->where('enrollments.academic_year_id', $attendance->academic_year_id)
+                    ->select('sections.name as section_name', 'grades.name as grade_name', 'grades.id as grade_id')
+                    ->first();
+
+                return [
+                    'id' => $attendance->id,
+                    'user_id' => $attendance->user_id,
+                    'student_name' => $attendance->student->name,
+                    'student_cedula' => $attendance->student->cedula,
+                    'grade_name' => $enrollment?->grade_name ?? 'N/A',
+                    'grade_id' => $enrollment?->grade_id ?? null,
+                    'section_name' => $enrollment?->section_name ?? 'N/A',
+                    'attended' => $attendance->attended,
+                    'total_hours' => $totalHours,
+                    'activities' => $attendance->attendanceActivities->map(fn ($act) => [
+                        'id' => $act->id,
+                        'activity_category' => $act->activityCategory?->name,
+                        'hours' => (float) $act->hours,
+                    ])->values(),
+                    'notes' => $attendance->notes,
+                    'created_at' => $attendance->created_at->format('d/m/Y H:i'),
+                ];
+            });
+
+        // Get all grades/sections for filter dropdown
+        $grades = Grade::with(['sections'])->orderBy('order')->get(['id', 'name', 'order']);
+
+        // Get activity categories for the forms
+        $activityCategories = ActivityCategory::orderBy('name')->get(['id', 'name']);
+
         return Inertia::render('admin/field-sessions/show', [
             'fieldSession' => $fieldSession,
+            'attendances' => $attendances,
+            'grades' => $grades,
+            'activityCategories' => $activityCategories,
+            'filters' => [
+                'search' => $request->input('search'),
+                'grade' => $gradeId,
+                'section' => $sectionId,
+            ],
         ]);
     }
 

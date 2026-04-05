@@ -153,6 +153,32 @@ class UserController extends Controller
                 ? User::role('representante')->get(['id', 'name', 'cedula'])
                 : [],
             'healthConditions' => HealthCondition::where('is_active', true)->get(),
+            'hourHistory' => $user->hasRole('alumno')
+                ? Attendance::where('user_id', $user->id)
+                    ->with(['fieldSession' => function ($query) {
+                        $query->with('status');
+                    }, 'attendanceActivities.activityCategory'])
+                    ->orderBy('created_at', 'desc')
+                    ->limit(50)
+                    ->get()
+                    ->map(fn ($a) => [
+                        'id' => $a->id,
+                        'attended' => $a->attended,
+                        'notes' => $a->notes,
+                        'created_at' => $a->created_at->format('d/m/Y H:i'),
+                        'fieldSession' => $a->fieldSession ? [
+                            'id' => $a->fieldSession->id,
+                            'name' => $a->fieldSession->name,
+                            'start_datetime' => $a->fieldSession->start_datetime?->format('d/m/Y'),
+                            'status' => $a->fieldSession->status?->name,
+                        ] : null,
+                        'activities' => $a->attendanceActivities->map(fn ($act) => [
+                            'id' => $act->id,
+                            'hours' => (float) $act->hours,
+                            'activity_category' => $act->activityCategory?->name,
+                        ])->values(),
+                    ])
+                : [],
         ]);
     }
 

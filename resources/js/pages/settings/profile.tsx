@@ -2,6 +2,7 @@ import { Transition } from '@headlessui/react';
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import {
     Calendar,
+    Clock,
     FileText,
     Heart,
     MapPin,
@@ -66,6 +67,28 @@ interface RepresentedStudent {
     relationship_type_name: string;
 }
 
+interface HourHistoryActivity {
+    id: number;
+    hours: number;
+    activity_category: string | null;
+}
+
+interface HourHistoryFieldSession {
+    id: number;
+    name: string;
+    start_datetime: string | null;
+    status: string | null;
+}
+
+interface HourHistoryItem {
+    id: number;
+    attended: boolean;
+    notes: string | null;
+    created_at: string;
+    fieldSession: HourHistoryFieldSession | null;
+    activities: HourHistoryActivity[];
+}
+
 export default function Profile({
     mustVerifyEmail,
     status,
@@ -101,6 +124,7 @@ export default function Profile({
     representatives: Representative[];
     representedStudents: RepresentedStudent[];
     healthRecords: HealthRecord[];
+    hourHistory?: HourHistoryItem[];
 }) {
     const { auth } = usePage<any>().props;
     const [activeTab, setActiveTab] = useState('profile');
@@ -118,6 +142,9 @@ export default function Profile({
             ? [{ value: 'representados', label: 'Mis Representados' }]
             : []),
         ...(isAlumno ? [{ value: 'salud', label: 'Salud', icon: Heart }] : []),
+        ...(isAlumno
+            ? [{ value: 'horas', label: 'Mis Horas', icon: Clock }]
+            : []),
     ];
 
     const tabCount = tabs.length;
@@ -690,6 +717,132 @@ export default function Profile({
                                             <p className="text-sm italic">
                                                 No tienes registros de salud
                                                 registrados.
+                                            </p>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                    )}
+
+                    {/* Tab: Mis Horas (solo alumnos) */}
+                    {isAlumno && hourHistory && (
+                        <TabsContent value="horas" className="space-y-6">
+                            <Card>
+                                <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="h-4 w-4 text-green-600" />
+                                        <CardTitle className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
+                                            Historial de Horas Socioproductivas
+                                        </CardTitle>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    {hourHistory.length > 0 ? (
+                                        <div className="divide-y">
+                                            {hourHistory.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="p-4 px-6"
+                                                >
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex items-start gap-3">
+                                                            <div
+                                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                                                                    item.attended
+                                                                        ? 'bg-green-50 dark:bg-green-900/20'
+                                                                        : 'bg-red-50 dark:bg-red-900/20'
+                                                                }`}
+                                                            >
+                                                                {item.attended ? (
+                                                                    <Clock className="h-4 w-4 text-green-600" />
+                                                                ) : (
+                                                                    <UserIcon className="h-4 w-4 text-red-600" />
+                                                                )}
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                                                                    {item
+                                                                        .fieldSession
+                                                                        ?.name ||
+                                                                        'Jornada'}
+                                                                </p>
+                                                                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                                                    {item
+                                                                        .fieldSession
+                                                                        ?.start_datetime && (
+                                                                        <span className="flex items-center gap-1">
+                                                                            <Calendar className="h-3 w-3" />
+                                                                            {
+                                                                                item
+                                                                                    .fieldSession
+                                                                                    .start_datetime
+                                                                            }
+                                                                        </span>
+                                                                    )}
+                                                                    <span
+                                                                        className={`flex items-center gap-1 ${
+                                                                            item.attended
+                                                                                ? 'text-green-600'
+                                                                                : 'text-red-600'
+                                                                        }`}
+                                                                    >
+                                                                        {item.attended
+                                                                            ? 'Asistió'
+                                                                            : 'Ausente'}
+                                                                    </span>
+                                                                </div>
+                                                                {item.activities &&
+                                                                    item
+                                                                        .activities
+                                                                        .length >
+                                                                        0 && (
+                                                                        <div className="mt-2 flex flex-wrap gap-2">
+                                                                            {item.activities.map(
+                                                                                (
+                                                                                    activity,
+                                                                                ) => (
+                                                                                    <Badge
+                                                                                        key={
+                                                                                            activity.id
+                                                                                        }
+                                                                                        className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                                                                    >
+                                                                                        {
+                                                                                            activity.hours
+                                                                                        }
+                                                                                        h{' '}
+                                                                                        {activity.activity_category ||
+                                                                                            ''}
+                                                                                    </Badge>
+                                                                                ),
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                {item.notes && (
+                                                                    <p className="mt-1 text-xs text-neutral-400 italic">
+                                                                        {
+                                                                            item.notes
+                                                                        }
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                        >
+                                                            {item.created_at}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="py-12 text-center text-neutral-400">
+                                            <Clock className="mx-auto mb-2 h-10 w-10 opacity-20" />
+                                            <p className="text-sm italic">
+                                                No tienes horas registradas aún.
                                             </p>
                                         </div>
                                     )}

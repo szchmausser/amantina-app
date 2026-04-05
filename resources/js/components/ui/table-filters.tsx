@@ -63,10 +63,10 @@ export function TableFilters({
             {/* Botón limpiar filtros */}
             {hasFilters && onClearFilters && (
                 <Button
-                    variant="secondary"
+                    variant="outline"
                     size="sm"
                     onClick={onClearFilters}
-                    className="h-10 text-neutral-600 hover:text-neutral-800"
+                    className="h-10 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                 >
                     <X className="mr-1 h-4 w-4" />
                     Limpiar

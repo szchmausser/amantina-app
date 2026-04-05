@@ -7,6 +7,7 @@ use Database\Factories\FieldSessionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FieldSession extends Model
@@ -14,7 +15,7 @@ class FieldSession extends Model
     /** @use HasFactory<FieldSessionFactory> */
     use HasFactory, SoftCascadeTrait, SoftDeletes;
 
-    protected $softCascade = [];
+    protected $softCascade = ['attendances'];
 
     protected $fillable = [
         'name',
@@ -70,5 +71,13 @@ class FieldSession extends Model
     public function status(): BelongsTo
     {
         return $this->belongsTo(FieldSessionStatus::class, 'status_id');
+    }
+
+    /**
+     * @return HasMany<Attendance, $this>
+     */
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
     }
 }
