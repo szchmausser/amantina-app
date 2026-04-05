@@ -12,16 +12,17 @@ Stack: Laravel 12 · React 19 · TypeScript · Inertia.js · PostgreSQL · Spati
 
 Cada hito está organizado de la misma forma para facilitar la lectura y la replicación:
 
-| Elemento              | Qué indica                                           |
-| --------------------- | ---------------------------------------------------- |
-| Contexto              | Por qué existe este hito y qué problema resuelve     |
-| Prerrequisitos        | Qué debe estar hecho antes de empezar                |
-| Archivos involucrados | Lista de archivos a crear o modificar                |
-| Pasos numerados       | Secuencia exacta de acciones a ejecutar              |
-| Bloques de código     | Comandos o código listo para copiar y ejecutar       |
-| ADVERTENCIA           | Errores conocidos o trampas comunes a evitar         |
-| NOTA                  | Información complementaria relevante                 |
-| ENTREGA               | Lo que debe existir y funcionar al finalizar el hito |
+| Elemento          | Qué indica                                           |
+| ----------------- | ---------------------------------------------------- |
+| Contexto          | Por qué existe este hito y qué problema resuelve     |
+| Prerrequisitos    | Qué debe estar hecho antes de empezar                |
+| Entidades creadas | Modelos, tablas y relaciones                         |
+| Backend           | Controladores, requests, policies, middleware        |
+| Frontend          | Páginas React, componentes, rutas                    |
+| Roles y Permisos  | Permisos nuevos, roles que los heredan, protecciones |
+| Datos de prueba   | Seeders, factories                                   |
+| Tests             | Feature tests creados                                |
+| ENTREGA           | Lo que debe existir y funcionar al finalizar el hito |
 
 > **NOTA:** Los bloques de código asumen que el directorio de trabajo es la raíz del proyecto (`amantina-app/`) salvo que se indique explícitamente lo contrario.
 
@@ -29,1487 +30,842 @@ Cada hito está organizado de la misma forma para facilitar la lectura y la repl
 
 # Plan de Desarrollo
 
-El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalidad completamente operativa de punta a punta: migracion, modelo, validaciones, seeders, factories, controlador y UI. No se crean todas las migraciones al inicio. El principio es que al finalizar cada hito el sistema tenga algo nuevo y funcional que se pueda usar, probar y validar antes de continuar.
+El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalidad completamente operativa de punta a punta: migración, modelo, validaciones, seeders, factories, controlador y UI. No se crean todas las migraciones al inicio. El principio es que al finalizar cada hito el sistema tenga algo nuevo y funcional que se pueda usar, probar y validar antes de continuar.
 
 | Prerequisito antes del Hito 0: PHP 8.2+, Composer, Node.js 20+, npm y PostgreSQL instalados en el entorno de desarrollo. |
 | ------------------------------------------------------------------------------------------------------------------------ |
 
 ## Resumen de Hitos
 
-| Hito | Título                       | Enfoque Principal                          | Estado |
-| ---- | ---------------------------- | ------------------------------------------ | ------ |
-| 0    | Instalacion y esqueleto base | Setup inicial, auth base, Spatie           | ✅     |
-| 1    | Usuarios: base del sistema   | Tabla users definitiva y seeder admin      | ✅     |
-| 2    | Roles técnicos (Spatie)      | Definición de roles base para Auth         | ✅     |
-| 3    | Autenticacion personalizada  | Login con contexto y multi-rol             | ✅     |
-| 4    | CRUD de usuarios y RBAC      | Gestión integral y Seguridad Blindada      | ✅     |
-| 5    | Estructura academica         | Años, lapsos, grados y secciones           | ✅     |
-| 6    | Inscripciones y asignaciones | Vínculo académico y lógica de secciones    | ✅     |
-| 7    | Representantes               | Vínculo familiar (asignación desde perfil) | ✅     |
-| 8    | Información de salud         | Condiciones médicas y soportes             | 🔲     |
-| 9    | Catálogos de configuración   | Actividades y ubicaciones                  | 🔲     |
-| 10   | Jornadas de campo            | Registro central de actividades            | 🔲     |
-| 11   | Asistencia y subactividades  | Acreditación de horas y evidencias         | 🔲     |
-| 12   | Horas externas               | Acreditación para transferidos             | 🔲     |
-| 13   | Acumulados y dashboards      | Progreso visual y KPIs                     | 🔲     |
-| 14   | Reportes en PDF              | Generación de certificados y listados      | 🔲     |
-| 15   | Revisión y estabilización    | QA final y seeders demo                    | 🔲     |
+| Hito | Título                           | Enfoque Principal                               | Estado |
+| ---- | -------------------------------- | ----------------------------------------------- | ------ |
+| 0    | Instalación y esqueleto base     | Setup inicial, auth base, Spatie                | ✅     |
+| 1    | Usuarios y datos institucionales | Tabla users, Institution, registro público      | ✅     |
+| 2    | Roles técnicos (Spatie)          | Definición de roles base para Auth              | ✅     |
+| 3    | Autenticación personalizada      | Login con contexto y multi-rol                  | ✅     |
+| 4    | CRUD de usuarios y RBAC          | Gestión integral, permisos, seguridad           | ✅     |
+| 5    | Estructura académica             | Años, lapsos, tipos de lapso, grados, secciones | ✅     |
+| 6    | Inscripciones y asignaciones     | Vínculo académico, promoción masiva             | ✅     |
+| 7    | Representantes                   | Vínculo familiar (asignación desde perfil)      | ✅     |
+| 8    | Información de salud             | Condiciones médicas y soportes                  | ✅     |
+| 9    | Catálogos de configuración       | Actividades y ubicaciones                       | 🔲     |
+| 10   | Jornadas de campo                | Registro central de actividades                 | 🔲     |
+| 11   | Asistencia y subactividades      | Acreditación de horas y evidencias              | 🔲     |
+| 12   | Horas externas                   | Acreditación para transferidos                  | 🔲     |
+| 13   | Acumulados y dashboards          | Progreso visual y KPIs                          | 🔲     |
+| 14   | Reportes en PDF                  | Generación de certificados y listados           | 🔲     |
+| 15   | Revisión y estabilización        | QA final y seeders demo                         | 🔲     |
 
-> [!NOTE]
-> Este plan dicta la planificación general del proyecto. Los detalles de cada hito se desarrollan en las secciones siguientes.
-
-> **Nota de progreso (2026-04-03):**
+> **Nota de progreso (2026-04-04):**
 >
-> - Hitos 0-7 completados
-> - Hito 7 simplificado: solo asignación de representantes desde perfil de estudiante (RBAC completo diferido)
-> - Próximos hitos pendientes: 8-15
+> - Hitos 0-8 completados
+> - Hito 7 simplificado: solo asignación de representantes desde perfil de estudiante
+> - Hito 8 completado: Información de salud con archivos adjuntos y eliminación en cascada
+> - Mejoras visuales globales: componentes DataTable, TableFilters, formularios estandarizados
+> - Próximos hitos pendientes: 9-15
+
+---
+
+## Estadísticas Actuales del Proyecto
+
+| Categoría          | Cantidad                                   |
+| ------------------ | ------------------------------------------ |
+| Modelos            | 13                                         |
+| Controladores      | 18 (1 base + 14 admin + 3 settings)        |
+| Form Requests      | 22 (18 admin + 4 settings)                 |
+| Policies           | 1 (UserPolicy)                             |
+| Middleware custom  | 3                                          |
+| Migraciones        | 23                                         |
+| Seeders            | 13                                         |
+| Factories          | 9                                          |
+| Feature Tests      | 28                                         |
+| Páginas React      | 41                                         |
+| Componentes UI     | 28                                         |
+| Permisos definidos | 46                                         |
+| Roles definidos    | 4 (admin, profesor, alumno, representante) |
 
 ---
 
 ### Hito 0 — Instalación y esqueleto base
 
-Punto de partida del proyecto. Todo lo que se instala aquí es prerrequisito para todos los hitos siguientes. Al finalizar este hito el proyecto debe estar corriendo en el navegador con el login del starter kit operativo y PostgreSQL conectado.
+**Estado:** Finalizado ✅
 
-#### Prerrequisitos del entorno
+Punto de partida del proyecto. Todo lo que se instala aquí es prerrequisito para todos los hitos siguientes.
 
-Verificar que el entorno de desarrollo cuenta con las siguientes herramientas antes de ejecutar cualquier comando:
+#### Entorno
 
-| Herramienta | Versión mínima | Verificar con    |
-| ----------- | -------------- | ---------------- |
-| PHP         | 8.2            | `php -v`         |
-| Composer    | 2.x            | `composer -V`    |
-| Node.js     | 20.x           | `node -v`        |
-| npm         | 10.x           | `npm -v`         |
-| PostgreSQL  | 15.x           | `psql --version` |
-| Git         | cualquiera     | `git --version`  |
+| Herramienta  | Versión | Verificar con    |
+| ------------ | ------- | ---------------- |
+| PHP          | 8.4     | `php -v`         |
+| Composer     | 2.x     | `composer -V`    |
+| Node.js      | 20.x    | `node -v`        |
+| npm          | 10.x    | `npm -v`         |
+| PostgreSQL   | 18      | `psql --version` |
+| Laravel Herd | latest  | `herd --version` |
 
-#### Archivos involucrados
+#### Paquetes instalados
 
-- `.env` (creado desde `.env.example`)
-- `composer.json` (modificado al instalar paquetes Spatie)
-- `config/permission.php` (publicado por Spatie Permissions)
-- `database/migrations/` (migraciones de Spatie publicadas aquí)
+- `spatie/laravel-permission` — Control de roles y permisos (RBAC)
+- `spatie/laravel-medialibrary` — Gestión unificada de archivos adjuntos
+- `laravel/fortify` — Autenticación headless
+- `laravel/boost` — Servidor MCP para agentes IA
+- `askedio/laravel-soft-cascade` — Eliminación suave en cascada
 
-#### Paso 1 — Clonar el proyecto
+#### Tablas creadas
 
-```bash
-laravel new amantina-app --react -n
-cd amantina-app
-```
+- `users`, `password_reset_tokens`, `sessions`, `cache`, `jobs` (Laravel core)
+- `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions` (Spatie)
+- `media` (Spatie Media Library)
 
-#### Paso 2 — Instalar dependencias
+#### ENTREGA
 
-```bash
-# Dependencias PHP
-composer install
+- Proyecto corriendo en Laravel Herd con PostgreSQL conectado
+- Login del starter kit operativo
+- Spatie Permissions y Media Library instalados y configurados
+- Modelo `User` con traits `HasRoles` e `InteractsWithMedia`
 
-# Dependencias JavaScript
-npm install
-```
+#### Roles y Permisos
 
-#### Paso 3 — Configurar el entorno
-
-```bash
-cp .env.example .env
-php artisan key:generate
-```
-
-Editar el archivo `.env` con las credenciales de PostgreSQL:
-
-```env
-APP_NAME="Amantina App"
-APP_URL=http://amantina-app.test
-
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=amantina_app
-DB_USERNAME=tu_usuario_postgres
-DB_PASSWORD=tu_contrasena_postgres
-```
-
-#### Paso 4 — Crear la base de datos en PostgreSQL
-
-```bash
-# Desde la consola de psql
-CREATE DATABASE amantina_app;
-
-# Verificar que existe
-\l
-```
-
-#### Paso 5 — Instalar Spatie Laravel Permissions
-
-```bash
-composer require spatie/laravel-permission
-
-php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
-```
-
-Add the necessary trait to your User model:
-
-```php
-class User extends Authenticatable
-{
-    use HasFactory, HasRoles, Notifiable, TwoFactorAuthenticatable;
-}
-```
-
-> **NOTA:** Esto crea `config/permission.php` y una migración que generará las tablas: `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions`.
-
-#### Paso 6 — Instalar Spatie Laravel Media Library
-
-```bash
-composer require spatie/laravel-medialibrary
-
-php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"
-php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"
-```
-
-Preparing your model
-
-```php
-class User extends Authenticatable implements HasMedia
-{
-    use HasFactory, HasRoles, InteractsWithMedia, Notifiable, TwoFactorAuthenticatable;
-}
-```
-
-> **NOTA:** Esto crea una migración que generará la tabla `media`: la tabla polifórmica centralizada para todos los archivos adjuntos del sistema (fotos de perfil, evidencias, soportes médicos, documentos de horas externas).
-
-#### Paso 7 — Ejecutar migraciones iniciales
-
-```bash
-php artisan migrate
-```
-
-Se crean en este punto: las tablas del starter kit (`users`, `password_reset_tokens`, `sessions`, `cache`, `jobs`) y las tablas de Spatie (`roles`, `permissions`, `media` y las tablas de relación intermedias).
-
-#### Paso 8 — Verificar que el proyecto levanta
-
-```bash
-# Terminal 1: servidor PHP
-php artisan serve
-
-# Terminal 2: compilación de assets (mantener corriendo)
-npm run dev
-```
-
-Abrir `http://amantina-app.test` en el navegador. Debe mostrarse la pantalla de bienvenida del starter kit con los enlaces de Login y Register visibles.
-
-> **ENTREGA:** Proyecto corriendo en el navegador. Login del starter kit operativo. PostgreSQL conectado y migrado. Spatie Permissions y Media Library instalados.
+> **Sin permisos en este hito.** Solo se instala la infraestructura de Spatie Permissions. Las tablas `roles`, `permissions`, `model_has_roles`, etc. existen pero están vacías. Los permisos se definen en el Hito 2.
 
 ---
 
-### Hito 1 — Usuarios y Datos Institucionales (Base del Sistema)
+### Hito 1 — Usuarios y Datos Institucionales
 
-La tabla `users` del starter kit tiene solo los campos mínimos para autenticación básica. Este hito la extiende con todos los campos que requiere el sistema y ajusta el modelo Eloquent, el factory y el seeder. Además, se introduce la entidad fundamental **`Institution`** (Datos Institucionales), que servirá para dotar al sistema de identidad local y permitirá automatizar reglas de negocio como la asignación de la "institución de origen" a los nuevos alumnos nativos.
+**Estado:** Finalizado ✅
 
-Los conceptos de roles y permisos no existen todavía en este hito (eso se resuelve en el Hito 2). Aquí solo se define la estructura base de los usuarios y de la sede institucional.
+Extiende la tabla `users` del starter kit con los campos del sistema e introduce la entidad `Institution` (datos de la sede escolar).
 
-#### Prerrequisitos
+#### Entidades creadas
 
-Hito 0 completado: proyecto corriendo, PostgreSQL conectado, Spatie instalado.
+| Entidad            | Tabla                    | Campos clave                                                                                 |
+| ------------------ | ------------------------ | -------------------------------------------------------------------------------------------- |
+| `User` (extendido) | `users`                  | `cedula`, `phone`, `address`, `is_active`, `is_transfer`, `institution_origin`, `deleted_at` |
+| `Institution`      | `institution` (singular) | `name`, `address`, `email`, `phone`, `code`                                                  |
 
-#### Archivos involucrados
+#### Backend
 
-| Archivo                                                              | Acción    | Motivo                                                         |
-| -------------------------------------------------------------------- | --------- | -------------------------------------------------------------- |
-| `database/migrations/2026_03_13_143000_create_institution_table.php` | Crear     | Tabla base para los datos fijos del plantel                    |
-| `app/Models/Institution.php`                                         | Crear     | Modelo asociado a Datos Institucionales                        |
-| `database/seeders/InstitutionSeeder.php`                             | Crear     | Primer registro (Amantina de Sucre)                            |
-| `app/Http/Controllers/Settings/InstitutionController.php`            | Crear     | Controlador para manejar actualización en UI                   |
-| `resources/js/pages/settings/institution.tsx`                        | Crear     | Componente React para CRUD de Institución                      |
-| `routes/settings.php`                                                | Modificar | Rutas para el controlador InstitutionController                |
-| `resources/js/layouts/settings/layout.tsx`                           | Modificar | Añadir menú lateral para "Datos Institucionales"               |
-| `database/migrations/2026...add_new_fields_to_users_table.php`       | Crear     | Expansión de campos en tabla `users` (`cedula`, `phone`, etc.) |
-| `database/migrations/2026...add_address_to_users_table.php`          | Crear     | Expansión de campos en tabla `users` (`address`)               |
-| `app/Models/User.php`                                                | Modificar | `$fillable`, `casts`, y `SoftDeletes`                          |
-| `database/factories/UserFactory.php`                                 | Modificar | Campos obligatorios y valores por defecto                      |
-| `database/seeders/UserSeeder.php`                                    | Crear     | Administrador raíz del sistema                                 |
-| `database/seeders/DatabaseSeeder.php`                                | Modificar | Ejecutar InstitutionSeeder y UserSeeder                        |
-| `app/Concerns/ProfileValidationRules.php`                            | Modificar | Reglas de validación y unicidad de cédula                      |
-| `app/Actions/Fortify/CreateNewUser.php`                              | Modificar | Persistencia del usuario e institución origen nativa           |
-| `resources/js/pages/auth/register.tsx`                               | Modificar | Inclusión visual de campos base y condicionales                |
-| `tests/Feature/Auth/RegistrationTest.php`                            | Modificar | Pruebas unificadas de usuario e institución                    |
-| `tests/Feature/Settings/InstitutionTest.php`                         | Crear     | Pruebas de CRUD de la entidad Institution                      |
+- **Modelo User:** `$fillable` extendido, `casts` para booleanos, trait `SoftDeletes`
+- **Modelo Institution:** `$table = 'institution'`, fillable básico
+- **`app/Concerns/ProfileValidationRules.php`:** Trait con reglas de validación reutilizables (cedula única, campos condicionales para transferidos)
+- **`app/Actions/Fortify/CreateNewUser.php`:** Intercepción del registro público para auto-asignar `institution_origin` si no es transferido
+- **Migración de constraints parciales:** `fix_users_unique_constraints_for_soft_deletes` — índices únicos parciales para permitir re-registro tras soft delete
+
+#### Frontend
+
+- **`resources/js/pages/auth/register.tsx`:** Formulario de autoregistro con campos condicionales (institution_origin solo si es transferido)
+- **`resources/js/pages/settings/institution.tsx`:** Formulario de edición de datos institucionales
+- **`resources/js/layouts/settings/layout.tsx`:** Menú lateral de settings con enlace a "Datos Institucionales"
+
+#### Datos de prueba
+
+- **UserSeeder:** Admin raíz (`admin@amantina.test`)
+- **InstitutionSeeder:** Registro por defecto "Amantina de Sucre"
+- **UserFactory:** Campos completos para tests
+
+#### Tests
+
+- `tests/Feature/Auth/RegistrationTest.php` — Registro público, transferidos, campos obligatorios
+- `tests/Feature/Settings/InstitutionTest.php` — CRUD de institución
+
+#### ENTREGA
+
+- Tabla `users` con todos los campos del sistema
+- Entidad `Institution` con registro por defecto
+- Autoregistro público funcional con lógica de transferencia
+- Página de settings para editar datos institucionales
+- Seeder de admin funcional
+
+#### Roles y Permisos
+
+> **Sin permisos todavía.** La página de "Datos Institucionales" es visible para cualquier usuario autenticado. Esto es temporal y se restringe en el Hito 2.
+
+| Ruta                    | Acceso actual  | Acceso esperado (Hito 2)    |
+| ----------------------- | -------------- | --------------------------- |
+| `/settings/institution` | Cualquier auth | Solo `admin`                |
+| `/register`             | Público        | Público (solo rol `alumno`) |
 
 ---
-
-#### 1. Implementación de Datos Institucionales (Institution)
-
-El sistema ya no depende de opciones estáticas, sino que su configuración global parte de la tabla `institution`. Esta tabla actúa en singular dado que el software gestionará un solo plantel.
-
-##### Paso 1.1 — Migración y Modelo de Institution
-
-Se debe crear la tabla con los campos de contacto y organizativos.
-
-```bash
-php artisan make:model Institution -m
-```
-
-Reemplazar la migración generada con:
-
-```php
-public function up(): void
-{
-    Schema::create('institution', function (Blueprint $row) {
-        $row->id();
-        $row->string('name');
-        $row->text('address')->nullable();
-        $row->string('email')->nullable();
-        $row->string('phone')->nullable();
-        $row->string('code')->nullable();
-        $row->timestamps();
-    });
-}
-```
-
-En el modelo `app/Models/Institution.php`:
-
-```php
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Institution extends Model
-{
-    protected $table = 'institution';
-
-    protected $fillable = [
-        'name',
-        'address',
-        'email',
-        'phone',
-        'code',
-    ];
-}
-```
-
-##### Paso 1.2 — Seeder Base Institucional
-
-El sistema no puede levantar sin su identidad principal. Creamos su seeder.
-
-```bash
-php artisan make:seeder InstitutionSeeder
-```
-
-En `database/seeders/InstitutionSeeder.php`:
-
-```php
-<?php
-
-namespace Database\Seeders;
-
-use App\Models\Institution;
-use Illuminate\Database\Seeder;
-
-class InstitutionSeeder extends Seeder
-{
-    public function run(): void
-    {
-        Institution::updateOrCreate(
-            ['id' => 1],
-            [
-                'name' => 'Amantina de Sucre',
-                'address' => 'Dirección de la institución',
-                'email' => 'contacto@amantina.edu',
-                'phone' => '04120000000',
-                'code' => 'AM-001',
-            ]
-        );
-    }
-}
-```
-
-Agregarlo al inicio de `database/seeders/DatabaseSeeder.php` antes que `UserSeeder`:
-
-```php
-$this->call([
-    InstitutionSeeder::class,
-    UserSeeder::class,
-]);
-```
-
-##### Paso 1.3 — Controlador
-
-Este controlador gestionará los datos en la interfaz.
-
-```bash
-php artisan make:controller Settings/InstitutionController
-```
-
-En `app/Http/Controllers/Settings/InstitutionController.php`:
-
-```php
-<?php
-
-namespace App\Http\Controllers\Settings;
-
-use App\Http\Controllers\Controller;
-use App\Models\Institution;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
-
-class InstitutionController extends Controller
-{
-    public function edit(Request $request): Response
-    {
-        return Inertia::render('settings/institution', [
-            'institution' => Institution::first(),
-        ]);
-    }
-
-    public function update(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'address' => ['nullable', 'string'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'code' => ['nullable', 'string', 'max:50'],
-        ]);
-
-        $institution = Institution::first() ?? new Institution();
-        $institution->fill($validated);
-        $institution->save();
-
-        return back();
-    }
-}
-```
-
-##### Paso 1.4 — Rutas y Menú Lateral (UI)
-
-Registrar las rutas en `routes/settings.php` dentro del grupo `auth` y `verified`:
-
-```php
-    Route::get('settings/institution', [InstitutionController::class, 'edit'])->name('institution.edit');
-    Route::patch('settings/institution', [InstitutionController::class, 'update'])->name('institution.update');
-```
-
-En `resources/js/layouts/settings/layout.tsx`, este es el código completo con la navegación actualizada:
-
-```tsx
-import { Link } from '@inertiajs/react';
-import type { PropsWithChildren } from 'react';
-import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { useCurrentUrl } from '@/hooks/use-current-url';
-import { cn, toUrl } from '@/lib/utils';
-import { edit as editAppearance } from '@/routes/appearance';
-import { edit } from '@/routes/profile';
-import { edit as editSecurity } from '@/routes/security';
-import { edit as editInstitution } from '@/routes/institution';
-import type { NavItem } from '@/types';
-
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Security',
-        href: editSecurity(),
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: null,
-    },
-    {
-        title: 'Datos Institucionales',
-        href: editInstitution().url,
-        icon: null,
-    },
-];
-
-export default function SettingsLayout({ children }: PropsWithChildren) {
-    const { isCurrentOrParentUrl } = useCurrentUrl();
-
-    // When server-side rendering, we only render the layout on the client...
-    if (typeof window === 'undefined') {
-        return null;
-    }
-
-    return (
-        <div className="px-4 py-6">
-            <Heading
-                title="Settings"
-                description="Manage your profile and account settings"
-            />
-
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
-                    <nav
-                        className="flex flex-col space-y-1 space-x-0"
-                        aria-label="Settings"
-                    >
-                        {sidebarNavItems.map((item, index) => (
-                            <Button
-                                key={`${toUrl(item.href)}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': isCurrentOrParentUrl(item.href),
-                                })}
-                            >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
-                                    )}
-                                    {item.title}
-                                </Link>
-                            </Button>
-                        ))}
-                    </nav>
-                </aside>
-
-                <Separator className="my-6 lg:hidden" />
-
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">
-                        {children}
-                    </section>
-                </div>
-            </div>
-        </div>
-    );
-}
-```
-
-> **ADVERTENCIA:** Como lección aprendida de arquitectura de permisos, este menú es temporalmente visible para cualquier usuario autenticado en el Hito 1. Su control estricto de visibilidad (RBAC) debe restringirse a roles de administrador en el **Hito 2**.
-
-##### Paso 1.5 — Componente React para Institution
-
-Crear `resources/js/pages/settings/institution.tsx`. A continuación el código completo del componente que gestiona los datos interactivos:
-
-```tsx
-import { Transition } from '@headlessui/react';
-import { Form, Head } from '@inertiajs/react';
-import {
-    Check,
-    Mail,
-    MapPin,
-    Phone,
-    Building2,
-    Fingerprint,
-} from 'lucide-react';
-import InstitutionController from '@/actions/App/Http/Controllers/Settings/InstitutionController';
-import Heading from '@/components/heading';
-import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
-import SettingsLayout from '@/layouts/settings/layout';
-import { edit } from '@/routes/institution';
-import type { BreadcrumbItem } from '@/types';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Datos institucionales',
-        href: edit().url,
-    },
-];
-
-interface InstitutionProps {
-    institution: {
-        name: string;
-        address: string | null;
-        email: string | null;
-        phone: string | null;
-        code: string | null;
-    } | null;
-}
-
-export default function InstitutionSettings({ institution }: InstitutionProps) {
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Datos institucionales" />
-
-            <h1 className="sr-only">Datos institucionales</h1>
-
-            <SettingsLayout>
-                <div className="space-y-6">
-                    <Heading
-                        variant="small"
-                        title="Información de la Institución"
-                        description="Gestiona los datos de contacto y parámetros generales de la institución"
-                    />
-
-                    <Form
-                        {...InstitutionController.update.form()}
-                        options={{
-                            preserveScroll: true,
-                        }}
-                        className="space-y-6"
-                    >
-                        {({ processing, recentlySuccessful, errors }) => (
-                            <>
-                                <div className="grid gap-6 md:grid-cols-2">
-                                    <div className="grid gap-2">
-                                        <Label
-                                            htmlFor="name"
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Building2 className="h-4 w-4" />
-                                            Nombre de la Institución
-                                        </Label>
-                                        <Input
-                                            id="name"
-                                            className="mt-1 block w-full"
-                                            defaultValue={institution?.name}
-                                            name="name"
-                                            required
-                                            placeholder="Ej: Amanita de Sucre"
-                                        />
-                                        <InputError message={errors.name} />
-                                    </div>
-
-                                    <div className="grid gap-2">
-                                        <Label
-                                            htmlFor="code"
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Fingerprint className="h-4 w-4" />
-                                            Código Institucional
-                                        </Label>
-                                        <Input
-                                            id="code"
-                                            className="mt-1 block w-full"
-                                            defaultValue={institution?.code}
-                                            name="code"
-                                            placeholder="Ej: AM-001"
-                                        />
-                                        <InputError message={errors.code} />
-                                    </div>
-
-                                    <div className="grid gap-2">
-                                        <Label
-                                            htmlFor="email"
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Mail className="h-4 w-4" />
-                                            Correo Electrónico
-                                        </Label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            className="mt-1 block w-full"
-                                            defaultValue={institution?.email}
-                                            name="email"
-                                            placeholder="contacto@institucion.com"
-                                        />
-                                        <InputError message={errors.email} />
-                                    </div>
-
-                                    <div className="grid gap-2">
-                                        <Label
-                                            htmlFor="phone"
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Phone className="h-4 w-4" />
-                                            Teléfono de Contacto
-                                        </Label>
-                                        <Input
-                                            id="phone"
-                                            className="mt-1 block w-full"
-                                            defaultValue={institution?.phone}
-                                            name="phone"
-                                            placeholder="0412-0000000"
-                                        />
-                                        <InputError message={errors.phone} />
-                                    </div>
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <Label
-                                        htmlFor="address"
-                                        className="flex items-center gap-2"
-                                    >
-                                        <MapPin className="h-4 w-4" />
-                                        Dirección
-                                    </Label>
-                                    <Input
-                                        id="address"
-                                        className="mt-1 block w-full"
-                                        defaultValue={institution?.address}
-                                        name="address"
-                                        placeholder="Dirección física completa"
-                                    />
-                                    <InputError message={errors.address} />
-                                </div>
-
-                                <div className="flex items-center gap-4">
-                                    <Button disabled={processing}>
-                                        Guardar cambios
-                                    </Button>
-
-                                    <Transition
-                                        show={recentlySuccessful}
-                                        enter="transition ease-in-out"
-                                        enterFrom="opacity-0"
-                                        leave="transition ease-in-out"
-                                        leaveTo="opacity-0"
-                                    >
-                                        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                            <Check className="h-4 w-4" />
-                                            Guardado correctamente
-                                        </p>
-                                    </Transition>
-                                </div>
-                            </>
-                        )}
-                    </Form>
-                </div>
-            </SettingsLayout>
-        </AppLayout>
-    );
-}
-```
-
----
-
-#### 2. Extensión de Usuarios
-
-La tabla del starter kit necesita los campos obligatorios para el esquema académico y logístico.
-
-##### Paso 2.1 — Migraciones a `users`
-
-Creamos las migraciones necesarias para extender la tabla `users` (`cedula`, `phone`, `is_active`, `is_transfer`, `institution_origin`, `softDeletes` y en un bloque aparte `address`).
-
-```bash
-php artisan make:migration add_new_fields_to_users_table
-php artisan make:migration add_address_to_users_table
-```
-
-En la migración `..._add_new_fields_to_users_table.php`:
-
-```php
-public function up(): void
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->string('cedula', 20)->unique();
-        $table->string('phone', 20)->nullable();
-        $table->boolean('is_active')->default(true);
-        $table->boolean('is_transfer')->nullable();
-        $table->string('institution_origin')->nullable();
-        $table->softDeletes();
-    });
-}
-```
-
-En la migración subsecuente `..._add_address_to_users_table.php`:
-
-```php
-public function up(): void
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->string('address')->nullable();
-    });
-}
-```
-
-##### Paso 2.2 — Actualizar el Modelo User
-
-Ajustamos `app/Models/User.php`.
-Es crucial incluir el trait `SoftDeletes` y definir los mapeos correspondientes de atributos de forma estricta.
-
-```php
-// Traits
-use Illuminate\Database\Eloquent\SoftDeletes;
-
-class User extends Authenticatable implements HasMedia
-{
-    use HasFactory, HasRoles, InteractsWithMedia, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
-
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'cedula',
-        'phone',
-        'address',
-        'is_active',
-        'is_transfer',
-        'institution_origin',
-    ];
-
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'two_factor_confirmed_at' => 'datetime',
-            'is_active' => 'boolean',
-            'is_transfer' => 'boolean',
-        ];
-    }
-}
-```
-
-> **NOTA DE APRENDIZAJE:** Destaca la adición de `SoftDeletes`. A futuro las eliminaciones en el panel no destruyen los registros relacionales del sistema sino que actúan bajo papelera reciclada, brindando integridad referencial pasiva. Por esta razón era vital agregar el trait.
-
-##### Paso 2.3 — UserFactory y UserSeeder
-
-Ajustamos `database/factories/UserFactory.php` para llenar los datos completos durante los tests:
-
-```php
-public function definition(): array
-{
-    return [
-        'cedula' => fake()->unique()->numerify('########'),
-        'name' => fake()->name(),
-        'email' => fake()->unique()->safeEmail(),
-        'email_verified_at' => now(),
-        'password' => static::$password ??= Hash::make('password'),
-        'phone' => fake()->phoneNumber(),
-        'address' => fake()->address(),
-        'is_active' => true,
-        'is_transfer' => false,
-        'institution_origin' => null,
-        'remember_token' => Str::random(10),
-        'two_factor_secret' => null,
-        'two_factor_recovery_codes' => null,
-        'two_factor_confirmed_at' => null,
-    ];
-}
-```
-
-Creamos `database/seeders/UserSeeder.php`:
-
-```bash
-php artisan make:seeder UserSeeder
-```
-
-```php
-public function run(): void
-{
-    User::create([
-        'cedula' => '00000000',
-        'name' => 'Administrador',
-        'email' => 'admin@amantina.test',
-        'password' => 'password',
-        'phone' => '04121234567',
-        'address' => null,
-        'is_active' => true,
-        'is_transfer' => false,
-        'institution_origin' => null,
-    ]);
-}
-```
-
-_(Nota: Puesto que el modelo establece el cast de `'password' => 'hashed'`, el texto plano `password` se asigna directamente y Eloquent lo cifrará.)_
-
-##### Paso 2.4 — Validaciones de Perfil y Registro de Usuarios
-
-Para que el registro demande los nuevos datos, modificamos el trait en `app/Concerns/ProfileValidationRules.php`. Aquí especificamos restricciones complejas y condicionales:
-
-```php
-protected function profileRules(?int $userId = null, bool $requireContactInfo = true): array
-{
-    return [
-        'cedula' => [
-            'required', 'string', 'max:20', Rule::unique('users', 'cedula')->ignore($userId),
-        ],
-        'name' => ['required', 'string', 'max:255'],
-        'email' => [
-            'required', 'string', 'email', 'max:255',
-            $userId === null ? Rule::unique(User::class) : Rule::unique(User::class)->ignore($userId),
-        ],
-        'phone' => [$requireContactInfo ? 'required' : 'nullable', 'string', 'max:20'],
-        'address' => [$requireContactInfo ? 'required' : 'nullable', 'string', 'max:500'],
-        'is_transfer' => ['nullable', 'boolean'],
-        'institution_origin' => [
-            $requireContactInfo ? 'required_if:is_transfer,true' : 'nullable',
-            'nullable', 'string', 'max:255',
-        ],
-    ];
-}
-```
-
-##### Paso 2.5 — Interceptar la Creación del Usurio (Fortify)
-
-La regla de negocio de referenciación a la Institución Base se consolida en `app/Actions/Fortify/CreateNewUser.php`. Esta acción es el enganche donde ambos modelos (User e Institution) interactúan.
-
-```php
-public function create(array $input): User
-{
-    Validator::make($input, [
-        ...$this->profileRules(userId: null, requireContactInfo: true),
-        'password' => $this->passwordRules(),
-    ])->validate();
-
-    return User::create([
-        'cedula' => $input['cedula'],
-        'name' => $input['name'],
-        'email' => $input['email'],
-        'password' => $input['password'],
-        'phone' => $input['phone'],
-        'address' => $input['address'],
-        'is_transfer' => $input['is_transfer'] ?? false,
-        'institution_origin' => ($input['is_transfer'] ?? false)
-                                    ? ($input['institution_origin'] ?? null)
-                                    : Institution::first()?->name,
-        'is_active' => true,
-    ]);
-}
-```
-
-##### Paso 2.6 — Formulario de Frontend (React)
-
-En `resources/js/pages/auth/register.tsx`, se añaden todos los inputs definidos y se captura de forma reactiva el estado de institución de origen. A continuación el código fuente íntegro:
-
-```tsx
-import { Form, Head } from '@inertiajs/react';
-import { useState } from 'react';
-import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/auth-layout';
-import { login } from '@/routes';
-import { store } from '@/routes/register';
-
-export default function Register() {
-    const [isTransfer, setIsTransfer] = useState(false);
-
-    return (
-        <AuthLayout
-            title="Crear cuenta"
-            description="Ingresa tus datos para registrarte en el sistema"
-        >
-            <Head title="Registro" />
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password', 'password_confirmation']}
-                disableWhileProcessing
-                className="flex flex-col gap-6"
-            >
-                {({ processing, errors }) => (
-                    <>
-                        <div className="grid gap-6">
-                            {/* Cédula */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="cedula">Cédula</Label>
-                                <Input
-                                    id="cedula"
-                                    type="text"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    name="cedula"
-                                    placeholder="Número de cédula"
-                                />
-                                <InputError message={errors.cedula} />
-                            </div>
-
-                            {/* Nombre */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Nombre completo</Label>
-                                <Input
-                                    id="name"
-                                    type="text"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="name"
-                                    name="name"
-                                    placeholder="Nombre completo"
-                                />
-                                <InputError message={errors.name} />
-                            </div>
-
-                            {/* Correo */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">
-                                    Correo electrónico
-                                </Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    required
-                                    tabIndex={3}
-                                    autoComplete="email"
-                                    name="email"
-                                    placeholder="correo@ejemplo.com"
-                                />
-                                <InputError message={errors.email} />
-                            </div>
-
-                            {/* Teléfono */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="phone">Teléfono</Label>
-                                <Input
-                                    id="phone"
-                                    type="tel"
-                                    required
-                                    tabIndex={4}
-                                    name="phone"
-                                    placeholder="Número de teléfono"
-                                />
-                                <InputError message={errors.phone} />
-                            </div>
-
-                            {/* Dirección */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="address">
-                                    Dirección de residencia
-                                </Label>
-                                <Input
-                                    id="address"
-                                    type="text"
-                                    required
-                                    tabIndex={5}
-                                    name="address"
-                                    placeholder="Dirección completa"
-                                />
-                                <InputError message={errors.address} />
-                            </div>
-
-                            {/* ¿Eres transferido? */}
-                            <div className="grid gap-2">
-                                <Label>
-                                    ¿Eres estudiante transferido de otra
-                                    institución?
-                                </Label>
-                                <div className="flex gap-6">
-                                    <label className="flex cursor-pointer items-center gap-2">
-                                        <input
-                                            type="radio"
-                                            name="is_transfer"
-                                            value="0"
-                                            defaultChecked
-                                            tabIndex={6}
-                                            onChange={() =>
-                                                setIsTransfer(false)
-                                            }
-                                        />
-                                        No
-                                    </label>
-                                    <label className="flex cursor-pointer items-center gap-2">
-                                        <input
-                                            type="radio"
-                                            name="is_transfer"
-                                            value="1"
-                                            tabIndex={7}
-                                            onChange={() => setIsTransfer(true)}
-                                        />
-                                        Sí
-                                    </label>
-                                </div>
-                                <InputError message={errors.is_transfer} />
-                            </div>
-
-                            {/* Institución de origen — solo si es transferido */}
-                            {isTransfer && (
-                                <div className="grid gap-2">
-                                    <Label htmlFor="institution_origin">
-                                        Institución de origen
-                                    </Label>
-                                    <Input
-                                        id="institution_origin"
-                                        type="text"
-                                        required
-                                        tabIndex={8}
-                                        name="institution_origin"
-                                        placeholder="Nombre de la institución anterior"
-                                    />
-                                    <InputError
-                                        message={errors.institution_origin}
-                                    />
-                                </div>
-                            )}
-
-                            {/* Contraseña */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">Contraseña</Label>
-                                <PasswordInput
-                                    id="password"
-                                    required
-                                    tabIndex={9}
-                                    autoComplete="new-password"
-                                    name="password"
-                                    placeholder="Contraseña"
-                                />
-                                <InputError message={errors.password} />
-                            </div>
-
-                            {/* Confirmar contraseña */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirmar contraseña
-                                </Label>
-                                <PasswordInput
-                                    id="password_confirmation"
-                                    required
-                                    tabIndex={10}
-                                    autoComplete="new-password"
-                                    name="password_confirmation"
-                                    placeholder="Confirmar contraseña"
-                                />
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="mt-2 w-full"
-                                tabIndex={11}
-                                data-test="register-user-button"
-                            >
-                                {processing && <Spinner />}
-                                Crear cuenta
-                            </Button>
-                        </div>
-
-                        <div className="text-center text-sm text-muted-foreground">
-                            ¿Ya tienes cuenta?{' '}
-                            <TextLink href={login()} tabIndex={12}>
-                                Iniciar sesión
-                            </TextLink>
-                        </div>
-                    </>
-                )}
-            </Form>
-        </AuthLayout>
-    );
-}
-```
-
----
-
-#### 3. Pruebas y Validación Final
-
-Creamos y corremos test unificados que demuestran que el flujo completo no posee fallas, especialmente sobre lógica customizada y reactiva del sistema.
-
-**`tests/Feature/Auth/RegistrationTest.php`**
-
-```php
-<?php
-
-namespace Tests\Feature\Auth;
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Fortify\Features;
-use Tests\TestCase;
-
-class RegistrationTest extends TestCase
-{
-    use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->skipUnlessFortifyFeature(Features::registration());
-    }
-
-    public function test_registration_screen_can_be_rendered()
-    {
-        $this->withoutVite();
-        $response = $this->get(route('register'));
-
-        $response->assertOk();
-    }
-
-    public function test_new_users_can_register()
-    {
-        // Asegurarnos de que la institución existe para el test
-        $this->seed(\Database\Seeders\InstitutionSeeder::class);
-
-        $response = $this->post(route('register.store'), [
-            'cedula' => '12345678',
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'phone' => '04121234567',
-            'address' => 'Test Address',
-            'is_transfer' => '0',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
-
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
-
-        $this->assertDatabaseHas('users', [
-            'email' => 'test@example.com',
-            'cedula' => '12345678',
-            'is_active' => true,
-            'is_transfer' => false,
-            'institution_origin' => 'Amantina de Sucre', // Verificamos auto-asignación desde Institution
-        ]);
-    }
-
-    public function test_registration_requires_mandatory_fields()
-    {
-        $response = $this->post(route('register.store'), []);
-
-        $response->assertSessionHasErrors(['cedula', 'name', 'email', 'phone', 'address', 'password']);
-    }
-
-    public function test_registration_as_transfer_requires_institution_origin()
-    {
-        $response = $this->post(route('register.store'), [
-            'cedula' => '12345678',
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'phone' => '04121234567',
-            'address' => 'Test Address',
-            'is_transfer' => '1',
-            'institution_origin' => '', // Vacío siendo transferido
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
-
-        $response->assertSessionHasErrors(['institution_origin']);
-    }
-
-    public function test_registration_as_transfer_with_institution_origin_success()
-    {
-        $response = $this->post(route('register.store'), [
-            'cedula' => '12345678',
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'phone' => '04121234567',
-            'address' => 'Test Address',
-            'is_transfer' => '1',
-            'institution_origin' => 'Otra Institución',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
-
-        $this->assertAuthenticated();
-        $this->assertDatabaseHas('users', [
-            'email' => 'test@example.com',
-            'is_transfer' => true,
-            'institution_origin' => 'Otra Institución',
-        ]);
-    }
-
-    public function test_new_user_has_student_role_incomplete()
-    {
-        $this->markTestIncomplete('La asignación del rol student se abordará en el Hito 2.');
-    }
-}
-
-```
-
-**`tests/Feature/Settings/InstitutionTest.php`**
-
-```php
-<?php
-
-namespace Tests\Feature\Settings;
-
-use App\Models\User;
-use App\Models\Institution;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-
-class InstitutionTest extends TestCase
-{
-    use RefreshDatabase;
-
-    public function test_institution_settings_page_can_be_rendered()
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->get(route('institution.edit'));
-
-        $response->assertOk();
-    }
-
-    public function test_institution_settings_can_be_updated()
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->patch(route('institution.update'), [
-            'name' => 'New Institution Name',
-            'address' => 'New Address',
-            'email' => 'new@institution.com',
-            'phone' => '04128888888',
-            'code' => 'NEW-001',
-        ]);
-
-        $response->assertSessionHasNoErrors();
-        $response->assertRedirect();
-
-        $institution = Institution::first();
-        $this->assertEquals('New Institution Name', $institution->name);
-        $this->assertEquals('New Address', $institution->address);
-        $this->assertEquals('new@institution.com', $institution->email);
-        $this->assertEquals('04128888888', $institution->phone);
-        $this->assertEquals('NEW-001', $institution->code);
-    }
-
-    public function test_institution_settings_requires_name()
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->patch(route('institution.update'), [
-            'name' => '',
-        ]);
-
-        $response->assertSessionHasErrors(['name']);
-    }
-}
-
-```
-
-#### 4. Preparación para Agentes de IA (Meta-desarrollo)
-
-Para garantizar la mantenibilidad y agilidad del desarrollo asistido por Inteligencia Artificial, se han implementado capas de "instrucciones de oro" y herramientas de comunicación nativa entre el código y los agentes que aseguran la coherencia del proyecto a largo plazo.
-
-##### 4.1 — Archivo de Reglas y Convenciones (AGENTS.md)
-
-Se ha creado el archivo raíz `AGENTS.md` que actúa como la "fuente de verdad" para cualquier IA que interactúe con el repositorio. Este archivo es el primer punto de lectura para agentes externos y define:
-
-- **Idioma**: Código en Inglés, Interfaz en Español.
-- **Arquitectura**: Uso obligatorio de `SoftDeletes` y la entidad centralizada `Institution`.
-- **Contexto**: Referencias indexadas a los documentos de `ia_docs/` para garantizar que la IA comprenda el negocio antes de proponer cambios.
-
-##### 4.2 — Integración de Laravel Boost (MCP)
-
-Se ha instalado y configurado `laravel/boost` para exponer un servidor MCP (Model Context Protocol). Esta integración técnica dota a los agentes de IA (Antigravity, Cursor, Windsurf) de capacidades de introspección profunda:
-
-- **Base de Datos**: Inspección del esquema y ejecución de queries de lectura.
-- **Rutas**: Listado de endpoints, nombres y middleware asociados.
-- **Tinker**: Ejecución de código PHP en caliente para validar lógica de modelos y controladores.
-
-```bash
-# Instalación del puente IA
-composer require laravel/boost --dev
-php artisan boost:install
-```
-
----
-
-Ejecución final requerida para cerrar este hito con estado saludable:
-
-```bash
-php artisan optimize:clear
-php artisan migrate:fresh --seed
-php artisan test
-```
-
-> **ENTREGA:** La entidad central `Institution` y la tabla hiper-extendida `users` conviven y automatizan parámetros administrativos. El proyecto queda técnicamente "blindado" para el desarrollo asistido por IA mediante `AGENTS.md` y `Laravel Boost`. Se han establecido fundaciones que deberán restringirse estrictamente en el **Hito 2 (RBAC)**.
 
 ### Hito 2 — Roles Técnicos (Spatie)
 
-#### 1 — Lineamientos de arquitectura
-
-> El Hito 2 se centra exclusivamente en la infraestructura técnica necesaria para el Hito 3 (Autenticación Contextual). No se implementarán políticas de acceso complejas todavía. La seguridad se construirá de forma incremental en cada hito subsiguiente.
-
-##### 1.1 Estructura técnica de roles (Spatie)
-
-Se definen los 4 roles básicos del sistema para permitir la lógica de "Login con Contexto". La autenticación no se basa en permisos individuales en este punto, sino en la pertenencia a un rol y su jerarquía de prioridad.
-
-**Roles base:**
-
-- `admin` (Jerarquía 1 - Máxima)
-- `profesor` (Jerarquía 2)
-- `alumno` (Jerarquía 3)
-- `representante` (Jerarquía 4 - Mínima)
-
-> **Regla de Negocio (Login)**: Si un usuario posee múltiples roles y no especifica un `context` al loguearse, el sistema asignará automáticamente el rol de mayor jerarquía disponible según la lista anterior.
-
-### [v] Hito 3 — Autenticación Personalizada (Login con Contexto)
-
 **Estado:** Finalizado ✅
-**Logros:**
 
-- **Login en Español**: Interfaz traducida íntegramente (`auth/login.tsx`).
-- **Selector de Contexto**: Soporte para parámetro `context` opcional.
-- **Jerarquía de Roles**: Implementación de prioridad automática (`admin` > `profesor` > `alumno` > `representante`).
-- **Seguridad de Contexto**: Validación agresiva en el Listener `SetActiveRoleContext`. El sistema rechaza contextos no autorizados con un error de validación.
-- **Rol por Defecto**: El registro público (`/register`) asigna automáticamente el rol `alumno`.
-- **Persistencia**: Middleware `EnsureRoleContext` para mantener el rol activo ante pérdidas de sesión.
-- **Integración React**: Los componentes reciben `auth.active_role` y `auth.available_roles` vía Inertia.
-- **Calidad**: Suite `LoginContextTest` con cobertura de casos base y seguridad (6/6 PASS).
+Define la infraestructura técnica de roles para permitir la lógica de "Login con Contexto".
+
+#### Roles creados
+
+| Rol             | Jerarquía  | Descripción                                     |
+| --------------- | ---------- | ----------------------------------------------- |
+| `admin`         | 1 (máxima) | Control total del sistema                       |
+| `profesor`      | 2          | Registra jornadas, toma asistencia, carga horas |
+| `alumno`        | 3          | Solo lectura de su propio historial             |
+| `representante` | 4 (mínima) | Solo lectura del representado                   |
+
+#### Backend
+
+- **`database/seeders/RoleAndPermissionSeeder.php`:** Crea los 4 roles base y 46 permisos organizados por módulo
+- **Permisos definidos:** `users.*`, `roles.*`, `permissions.*`, `academic_years.*`, `school_terms.*`, `grades.*`, `sections.*`, `enrollments.*`, `assignments.*`, `academic_info.view`, `health_conditions.*`, `student_health.*`
+- **Asignación:** `admin` recibe los 46 permisos; `profesor` recibe `users.view`, `enrollments.view`, `assignments.view`, `academic_info.view`
+
+#### ENTREGA
+
+- 4 roles base creados y seedeados
+- 46 permisos definidos y organizados por módulo
+- Admin con todos los permisos asignados
+
+#### Roles y Permisos
+
+Este hito es **exclusivamente** de infraestructura de permisos. Se definen TODOS los permisos del sistema de una vez, organizados por módulo:
+
+**Permisos creados (46 en total):**
+
+| Módulo            | Permisos                                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| Usuarios          | `users.view`, `users.create`, `users.edit`, `users.delete`                                                 |
+| Roles             | `roles.view`, `roles.create`, `roles.edit`, `roles.delete`                                                 |
+| Permisos          | `permissions.view`, `permissions.create`, `permissions.edit`, `permissions.delete`                         |
+| Años académicos   | `academic_years.view`, `academic_years.create`, `academic_years.edit`, `academic_years.delete`             |
+| Lapsos            | `school_terms.view`, `school_terms.create`, `school_terms.edit`, `school_terms.delete`                     |
+| Grados            | `grades.view`, `grades.create`, `grades.edit`, `grades.delete`                                             |
+| Secciones         | `sections.view`, `sections.create`, `sections.edit`, `sections.delete`                                     |
+| Inscripciones     | `enrollments.view`, `enrollments.create`, `enrollments.edit`, `enrollments.delete`                         |
+| Asignaciones      | `assignments.view`, `assignments.create`, `assignments.edit`, `assignments.delete`                         |
+| Info académica    | `academic_info.view`                                                                                       |
+| Condiciones salud | `health_conditions.view`, `health_conditions.create`, `health_conditions.edit`, `health_conditions.delete` |
+| Salud estudiantes | `student_health.view`, `student_health.create`, `student_health.edit`, `student_health.delete`             |
+
+**Asignación por rol:**
+
+| Rol             | Permisos heredados                                                         |
+| --------------- | -------------------------------------------------------------------------- |
+| `admin`         | **Todos los 46 permisos**                                                  |
+| `profesor`      | `users.view`, `enrollments.view`, `assignments.view`, `academic_info.view` |
+| `alumno`        | Ninguno (solo lectura de su propio perfil)                                 |
+| `representante` | Ninguno (solo lectura de su representado)                                  |
+
+> **NOTA:** Los permisos de hitos futuros (9-14) se agregarán progresivamente al `RoleAndPermissionSeeder` cuando se implementen. Por ahora solo existen los listados arriba.
 
 ---
 
----
-
-### [v] Hito 4 — CRUD de Usuarios y Seguridad Blindada
+### Hito 3 — Autenticación Personalizada
 
 **Estado:** Finalizado ✅
 
-Este hito transformó la gestión básica de usuarios en un sistema robusto, multi-rol y altamente seguro, sentando las bases para el control administrativo de la institución.
+Implementa login con contexto de rol y soporte multi-rol.
 
-**Logros:**
+#### Backend
 
-- **Soporte Multi-rol**: Migración exitosa a `syncRoles()` permitiendo que un usuario posea múltiples identidades (ej: Profesor + Representante).
-- **CRUD Administrativo**: Se implementó la creación y edición de usuarios con limpieza automática de campos condicionales (`is_transfer`, `institution_origin`).
-- **Vista de Detalles (Show)**: Se creó una ficha de usuario de solo lectura para consulta rápida sin riesgo de edición accidental.
-- **Refinamiento de Autorización (Seguridad Capa 2)**:
-    - **Controladores Protegidos**: Uso de `Gate::authorize()` en todos los métodos de escritura (`store`, `update`, `delete`).
-    - **Alineación de Requests**: `UpdateUserRequest` ahora delega a `UserPolicy`, permitiendo el autocontrol de perfil de forma segura.
-    - **Frontend Inteligente**: Los botones de acción y enlaces del sidebar se ocultan dinámicamente según los permisos del usuario logueado.
-- **Consistencia Visual**: Todas las vistas del módulo (`index`, `show`, `edit`) se refactorizaron para seguir el estándar de diseño de "secciones y badges" introducido en Permisos.
-- **Integridad post-eliminación**: Implementación de índices únicos parciales en PostgreSQL para permitir el re-registro de usuarios previamente borrados (SoftDelete).
-- **Calidad y Verificación**:
-    - Suite `UserManagementTest` (CRUD base).
-    - Suite `AuthorizationVulnerabilityTest` (Seguridad y bloqueos).
+- **Middleware `EnsureRoleContext`:** Inicializa `active_role` en sesión basado en jerarquía (admin > profesor > alumno > representante)
+- **Parámetro `context` en login:** Permite elegir rol al autenticarse si el usuario tiene múltiples roles
+- **Validación de contexto:** El backend rechaza contextos no autorizados
+- **`HandleInertiaRequests`:** Comparte `auth.active_role`, `auth.available_roles` y permisos a Inertia
+
+#### Frontend
+
+- **`resources/js/pages/auth/login.tsx`:** Login traducido al español con selector opcional de contexto
+- **`resources/js/pages/auth/two-factor-challenge.tsx`:** Challenge 2FA
+
+#### Tests
+
+- `tests/Feature/Auth/LoginContextTest.php` — Contexto, jerarquía, seguridad
+- `tests/Feature/Auth/AuthenticationTest.php` — Login/logout base
+- `tests/Feature/Auth/TwoFactorChallengeTest.php` — 2FA
+
+#### ENTREGA
+
+- Login funcional con selector de contexto
+- Jerarquía automática de roles al login
+- Middleware que mantiene el contexto activo
+- Datos de rol disponibles en todas las páginas vía Inertia
+
+#### Roles y Permisos
+
+> **Sin permisos nuevos.** Este hito usa la infraestructura del Hito 2 pero no agrega permisos. Lo que hace es:
+
+- **Jerarquía de contexto:** `admin` > `profesor` > `alumno` > `representante`
+- **Multi-rol:** Un usuario puede tener varios roles y elegir con cuál operar
+- **Middleware `EnsureRoleContext`:** Valida que el contexto elegido sea un rol que el usuario realmente tiene
+
+---
+
+### Hito 4 — CRUD de Usuarios y RBAC
+
+**Estado:** Finalizado ✅
+
+Gestión integral de usuarios con seguridad blindada y panel de roles/permisos.
+
+#### Entidades creadas
+
+| Entidad      | Propósito                          |
+| ------------ | ---------------------------------- |
+| `UserPolicy` | Control de acceso granular por rol |
+
+#### Backend
+
+- **`UserController`:** CRUD completo (index, create, store, show, edit, update, destroy)
+- **`RoleController`:** Listado, show y edición de permisos por rol (sin crear/eliminar roles)
+- **`PermissionController`:** Listado informativo de permisos y su matriz de roles
+- **`StoreUserRequest`, `UpdateUserRequest`:** Validaciones con reglas condicionales por rol
+- **`UpdateRoleRequest`:** Validación de sincronización de permisos
+- **`UserPolicy`:** Métodos `viewAny`, `view`, `create`, `update`, `delete`, `restore`, `forceDelete`
+- **`Gate::authorize()`:** Protección en todos los métodos de escritura
+
+#### Frontend
+
+- **`resources/js/pages/admin/users/index.tsx`:** Listado con DataTable, búsqueda, paginación
+- **`resources/js/pages/admin/users/create.tsx`:** Formulario de creación multi-rol
+- **`resources/js/pages/admin/users/edit.tsx`:** Edición con sección de permisos directos
+- **`resources/js/pages/admin/users/show.tsx`:** Vista de solo lectura con toda la info del usuario
+- **`resources/js/pages/admin/roles/index.tsx`:** Listado de roles con permisos agrupados (tarjetas colapsables)
+- **`resources/js/pages/admin/roles/show.tsx`:** Detalle de rol
+- **`resources/js/pages/admin/roles/edit.tsx`:** Edición de permisos por rol
+- **`resources/js/pages/admin/permissions/index.tsx`:** Matriz informativa de permisos
+
+#### Sidebar
+
+- **`resources/js/components/app-sidebar.tsx`:** Navegación basada en permisos
+- Items visibles solo si el usuario tiene el permiso correspondiente
+
+#### Tests
+
+- `tests/Feature/Admin/UserManagementTest.php` — CRUD base
+- `tests/Feature/Admin/UserShowTest.php` — Vista de detalles
+- `tests/Feature/Admin/AuthorizationVulnerabilityTest.php` — Seguridad y bloqueos
+- `tests/Feature/Admin/RoleManagementTest.php` — CRUD restringido de roles
+- `tests/Feature/Admin/PermissionBasedAccessTest.php` — Herencia y permisos directos
+- `tests/Feature/Admin/PermissionManagementTest.php` — Gestión de permisos
+- `tests/Feature/Authorization/BasicRoleTest.php` — Roles base
+
+#### ENTREGA
+
+- CRUD completo de usuarios con validaciones por rol
+- Panel de roles con edición de permisos (sin crear/eliminar roles)
+- Panel informativo de permisos
+- Sección de permisos directos en edición de usuario
+- Vista de detalles de usuario (solo lectura)
+- Sidebar con navegación condicional por permisos
+- Seguridad de doble capa (backend Gate + frontend conditional rendering)
+
+#### Roles y Permisos
+
+**Permisos utilizados:**
+
+| Permiso            | Protege                  | Roles que lo tienen |
+| ------------------ | ------------------------ | ------------------- |
+| `users.view`       | Listado de usuarios      | `admin`, `profesor` |
+| `users.create`     | Crear usuarios           | `admin`             |
+| `users.edit`       | Editar usuarios          | `admin`             |
+| `users.delete`     | Eliminar usuarios        | `admin`             |
+| `roles.view`       | Listado de roles         | `admin`             |
+| `roles.edit`       | Editar permisos de roles | `admin`             |
+| `permissions.view` | Matriz de permisos       | `admin`             |
+
+**UserPolicy:**
+
+| Método        | Lógica                                                 |
+| ------------- | ------------------------------------------------------ |
+| `viewAny`     | Admin ve todos, profesor ve solo alumnos               |
+| `view`        | Admin ve cualquiera, profesor ve alumnos de su sección |
+| `create`      | Solo admin                                             |
+| `update`      | Admin siempre, profesor solo alumnos de su sección     |
+| `delete`      | Solo admin                                             |
+| `restore`     | Solo admin                                             |
+| `forceDelete` | Solo admin                                             |
+
+**Protección en controladores:** Todos los métodos de escritura usan `Gate::authorize('permiso')`.
+
+**Frontend:** Los botones y enlaces del sidebar se ocultan si el usuario no tiene el permiso correspondiente (`can('permiso')` en React).
 
 ---
 
 ### Hito 5 — Estructura Académica
 
-> **Contexto**: Definición de Años Escolares, Secciones y Grados.
+**Estado:** Finalizado ✅
 
-- Modelos y migraciones para `SchoolYear`, `Section`, `Grade`.
-- Gestión de "Año Escolar Activo".
+Define la jerarquía académica: Años Escolares, Tipos de Lapso, Lapsos, Grados y Secciones.
+
+#### Entidades creadas
+
+| Modelo         | Tabla            | Relaciones                                                               |
+| -------------- | ---------------- | ------------------------------------------------------------------------ |
+| `AcademicYear` | `academic_years` | HasMany: SchoolTerm, Grade, Section, Enrollment, TeacherAssignment       |
+| `SchoolTerm`   | `school_terms`   | BelongsTo: AcademicYear, TermType                                        |
+| `TermType`     | `term_types`     | Catálogo de tipos de lapso (ej: "1er Lapso")                             |
+| `Grade`        | `grades`         | BelongsTo: AcademicYear; HasMany: Section, Enrollment, TeacherAssignment |
+| `Section`      | `sections`       | BelongsTo: AcademicYear, Grade; HasMany: Enrollment, TeacherAssignment   |
+
+**Cascada de soft deletes:** `AcademicYear` → `SchoolTerm` + `Grade` → `Section` → `Enrollment` + `TeacherAssignment`
+
+#### Backend
+
+- **`AcademicYearController`:** CRUD completo con lógica de "único año activo" (al activar uno, desactiva los demás)
+- **`SchoolTermController`:** CRUD con numeración automática (`term_number`) y validación de no superposición de fechas
+- **`TermTypeController`:** CRUD del catálogo de tipos de lapso
+- **`GradeController`:** CRUD con campo `order` para ordenamiento correcto
+- **`SectionController`:** CRUD con índice único `academic_year_id + grade_id + name`
+- **`StoreAcademicYearRequest`, `UpdateAcademicYearRequest`:** Validaciones de unicidad y fechas
+- **`StoreSchoolTermRequest`, `UpdateSchoolTermRequest`:** Validación de no superposición de fechas, máximo 3 lapsos
+- **`StoreGradeRequest`, `UpdateGradeRequest`:** Validaciones de orden
+- **`StoreSectionRequest`, `UpdateSectionRequest`:** Validaciones de unicidad jerárquica
+
+#### Frontend
+
+- **`resources/js/pages/admin/academic-years/index.tsx`:** Listado con DataTable, badge de año activo
+- **`resources/js/pages/admin/academic-years/edit.tsx`:** Formulario de edición
+- **`resources/js/pages/admin/academic-years/show.tsx`:** Vista de detalles
+- **`resources/js/pages/admin/school-terms/index.tsx`:** Listado con filtros por año
+- **`resources/js/pages/admin/school-terms/edit.tsx`:** Formulario de edición
+- **`resources/js/pages/admin/grades/index.tsx`:** Listado con filtros por año
+- **`resources/js/pages/admin/grades/edit.tsx`:** Formulario de edición
+- **`resources/js/pages/admin/sections/index.tsx`:** Listado con filtros por año y grado
+- **`resources/js/pages/admin/sections/edit.tsx`:** Formulario de edición
+- **`resources/js/pages/admin/sections/show.tsx`:** Vista de detalles
+- **`resources/js/pages/admin/term-types/index.tsx`:** Listado de tipos de lapso
+
+#### Datos de prueba
+
+- **AcademicYearSeeder, GradeSeeder, SectionSeeder, SchoolTermSeeder, TermTypeSeeder:** Generan estructura base
+- **Factories:** AcademicYearFactory, GradeFactory, SectionFactory, SchoolTermFactory
+
+#### Tests
+
+- `tests/Feature/Admin/AcademicYearControllerTest.php`
+- `tests/Feature/Admin/SchoolTermControllerTest.php`
+- `tests/Feature/Admin/GradeControllerTest.php`
+- `tests/Feature/Admin/SectionControllerTest.php`
+
+#### ENTREGA
+
+- Jerarquía académica completa (año → lapso/grado → sección)
+- Catálogo de tipos de lapso administrable
+- Lógica de "único año activo"
+- Numeración automática de lapsos
+- Validaciones de unicidad y no superposición
+- Seeder operativo con estructura base
+
+#### Roles y Permisos
+
+**Permisos utilizados:**
+
+| Permiso                 | Protege                    | Roles que lo tienen |
+| ----------------------- | -------------------------- | ------------------- |
+| `academic_years.view`   | Listado de años académicos | `admin`             |
+| `academic_years.create` | Crear años académicos      | `admin`             |
+| `academic_years.edit`   | Editar años académicos     | `admin`             |
+| `academic_years.delete` | Eliminar años académicos   | `admin`             |
+| `school_terms.view`     | Listado de lapsos          | `admin`             |
+| `school_terms.create`   | Crear lapsos               | `admin`             |
+| `school_terms.edit`     | Editar lapsos              | `admin`             |
+| `school_terms.delete`   | Eliminar lapsos            | `admin`             |
+| `grades.view`           | Listado de grados          | `admin`             |
+| `grades.create`         | Crear grados               | `admin`             |
+| `grades.edit`           | Editar grados              | `admin`             |
+| `grades.delete`         | Eliminar grados            | `admin`             |
+| `sections.view`         | Listado de secciones       | `admin`             |
+| `sections.create`       | Crear secciones            | `admin`             |
+| `sections.edit`         | Editar secciones           | `admin`             |
+| `sections.delete`       | Eliminar secciones         | `admin`             |
+
+> Todos los permisos de estructura académica son exclusivos de `admin`. Ni profesor, alumno ni representante tienen acceso de gestión a estas entidades.
 
 ---
 
 ### Hito 6 — Inscripciones y Asignaciones
 
-> **Contexto**: Vinculación de usuarios con la estructura académica.
+**Estado:** Finalizado ✅
 
-- Tabla `enrollments` (Estudiante <-> Sección).
-- Tabla `teacher_assignments` (Docente <-> Sección).
-- **Importante**: Aquí nace la "autoridad" del docente sobre el estudiante.
+Vincula usuarios con la estructura académica y permite la promoción masiva de alumnos.
 
----
+#### Entidades creadas
 
-### Hito 7 — Representantes y RBAC Final (Seguridad Blindada)
+| Modelo              | Tabla                 | Relaciones                                              |
+| ------------------- | --------------------- | ------------------------------------------------------- |
+| `Enrollment`        | `enrollments`         | BelongsTo: AcademicYear, Grade, Section, User (student) |
+| `TeacherAssignment` | `teacher_assignments` | BelongsTo: AcademicYear, Grade, Section, User (teacher) |
 
-#### 1 — Lineamientos de arquitectura
+**Desnormalización:** Ambas tablas incluyen `academic_year_id`, `grade_id`, `section_id` para evitar JOINs en consultas frecuentes.
 
-> En este hito se completa la malla de seguridad. Con las relaciones familiares y académicas ya existentes, se implementan las Policies complejas que cruzan datos de múltiples tablas.
+#### Backend
 
-##### 1.1 Estructura completa de Roles y Permisos (Final)
+- **`EnrollmentController`:** Listado, creación individual, panel de promoción masiva, eliminación
+- **`TeacherAssignmentController`:** Listado, creación, eliminación
+- **`PromoteEnrollmentsRequest`:** Validación de promoción masiva (año activo, unicidad, roles)
+- **`StoreEnrollmentRequest`:** Validación de inscripción individual
+- **`StoreTeacherAssignmentRequest`:** Validación de asignación docente
+- **Reglas de negocio RN-1 a RN-6:** Validadas en backend y reflejadas en frontend
 
-**Role-Permission Matrix (Capa 2 — Policies)**
+#### Frontend
 
-- **admin**: Posee todos los permisos.
-- **profesor**:
-    - `users:create` (solo estudiantes).
-    - `users:view-any` (solo estudiantes de su sección).
-    - `users:edit-any` (solo estudiantes de su sección).
-    - `institution:view`.
-- **alumno**:
-    - `users:view-any` (sus docentes y su representante).
-    - `users:view-self`.
-    - `institution:view`.
-- **representante**:
-    - `users:view-any` (su representado).
-    - `users:edit-any` (su representado - datos limitados).
-    - `institution:view`.
+- **`resources/js/pages/admin/enrollments/index.tsx`:** Listado de inscripciones con DataTable
+- **`resources/js/pages/admin/enrollments/create.tsx`:** Formulario de inscripción individual con autocompletado
+- **`resources/js/pages/admin/enrollments/promote.tsx`:** Panel de promoción masiva con dos paneles (origen/destino)
+- **`resources/js/pages/admin/assignments/index.tsx`:** Listado de asignaciones docentes
+- **`resources/js/pages/admin/assignments/create.tsx`:** Formulario de asignación docente
+- **`resources/js/pages/admin/academic-info/index.tsx`:** Vista general de información académica (dashboard)
 
-#### 2. Implementación de Policies de Relación
+#### Datos de prueba
 
-##### 2.1 UserPolicy — Resolución de alcances
+- **EnrollmentFactory, TeacherAssignmentFactory**
 
-```php
-public function update(User $auth, User $target): bool
-{
-    // Un docente solo edita estudiantes de su sección activa
-    if ($auth->hasRole('profesor') && $target->hasRole('alumno')) {
-        return $this->shareActiveSection($auth, $target);
-    }
-    return false;
-}
-```
+#### Tests
 
-##### 2.2 HourPolicy — Seguridad Socioproductiva
-
-Aquí se integra la lógica de: "Solo el docente puede registrar horas si el estudiante está en su sección activa".
-
-```php
-private function shareActiveSection(User $docente, User $student): bool
-{
-    return DB::table('teacher_assignments as ta')
-        ->join('enrollments as e', 'ta.section_id', '=', 'e.section_id')
-        ->where('ta.user_id', $docente->id)
-        ->where('e.user_id', $student->id)
-        ->exists();
-}
-```
-
----
-
-### Hito 4.2 — Gestión de Roles y Permisos (RBAC Extendido)
-
-Este sub-hito completa la infraestructura de control de acceso permitiendo la gestión visual de los permisos asignados a cada rol y la asignación de permisos directos a usuarios individuales, sin permitir la creación/eliminación de las entidades base desde la UI por seguridad.
-
-#### Archivos involucrados
-
-| Archivo                                               | Acción    | Motivo                                        |
-| ----------------------------------------------------- | --------- | --------------------------------------------- |
-| `app/Http/Controllers/Admin/RoleController.php`       | Crear     | Listado y asignación de permisos a roles      |
-| `app/Http/Controllers/Admin/PermissionController.php` | Crear     | Listado informativo de permisos y roles       |
-| `app/Http/Requests/Admin/UpdateRoleRequest.php`       | Crear     | Validación de sincronización de permisos      |
-| `resources/js/pages/admin/roles/index.tsx`            | Crear     | UI de listado de roles con permisos agrupados |
-| `resources/js/pages/admin/roles/edit.tsx`             | Crear     | UI de edición de permisos por rol             |
-| `resources/js/pages/admin/permissions/index.tsx`      | Crear     | UI informativa de matriz de permisos          |
-| `resources/js/pages/admin/users/edit.tsx`             | Modificar | Sección de permisos directos para el usuario  |
-| `tests/Feature/Admin/RoleManagementTest.php`          | Crear     | Tests de CRUD restringido de roles            |
-| `tests/Feature/Admin/PermissionBasedAccessTest.php`   | Crear     | Tests de herencia y permisos directos         |
-| `resources/js/pages/admin/users/show.tsx`             | Crear     | Vista de solo lectura de detalles del usuario |
-| `tests/Feature/Admin/UserShowTest.php`                | Crear     | Tests de acceso a la vista de detalles        |
-
-#### Pasos de Implementación
-
-1. **Backend**: Se implementaron controladores que utilizan `Spatie` para sincronizar permisos y se añadió el método `show` para visualizar perfiles detallados. Se restringió la creación/eliminación de roles para mantener la integridad del código que depende de nombres de roles fijos.
-2. **Frontend**: Se crearon vistas en React utilizando componentes de `shadcn/ui` (Checkbox, Badge, Card) para visualizar los permisos agrupados por módulos (ej: `users.*`, `roles.*`) y una vista dedicada de detalles (`show.tsx`).
-3. **Persistencia**: Se habilitó la carga expansiva (`load('roles.permissions', 'permissions')`) para que la UI pueda discernir entre permisos heredados del rol (deshabilitados en edición de usuario) y permisos directos.
+- `tests/Feature/Admin/EnrollmentControllerTest.php`
+- `tests/Feature/Admin/TeacherAssignmentControllerTest.php`
+- `tests/Feature/Admin/AcademicStructureOverviewTest.php`
 
 #### ENTREGA
 
-- Panel de Roles donde se pueden editar los permisos de `admin`, `profesor`, etc.
-- Panel de Permisos para ver qué roles tienen acceso a qué funcionalidades.
-- Sección "Permisos Directos" en la edición de cada usuario.
-- **Vista de Detalles de Usuario**: Permite consultar toda la información de un usuario sin entrar en modo edición, con visualización clara de sus capacidades.
-- **Vista de Detalles de Rol**: Permite visualizar los permisos asociados a cada rol de forma organizada por módulos.
-- **Navegación Mejorada**: Se añadieron enlaces directos a la gestión de roles y permisos en la barra lateral.
-- **Roles Múltiples**: Soporte completo para asignar varios roles a un mismo usuario desde los formularios de creación y edición.
-- Cobertura de tests completa para todos los escenarios de acceso y gestión de roles/permisos.
+- Inscripción individual de nuevos ingresos
+- Panel de promoción masiva con sugerencia inteligente de grado (order + 1)
+- Asignación de profesores a secciones
+- Validaciones robustas (año activo, unicidad, roles, integridad jerárquica)
+- Vista general de información académica
+
+#### Roles y Permisos
+
+**Permisos utilizados:**
+
+| Permiso              | Protege                                | Roles que lo tienen |
+| -------------------- | -------------------------------------- | ------------------- |
+| `enrollments.view`   | Listado de inscripciones               | `admin`, `profesor` |
+| `enrollments.create` | Crear inscripciones / promover alumnos | `admin`             |
+| `enrollments.edit`   | Editar inscripciones                   | `admin`             |
+| `enrollments.delete` | Eliminar inscripciones                 | `admin`             |
+| `assignments.view`   | Listado de asignaciones docentes       | `admin`, `profesor` |
+| `assignments.create` | Asignar profesores a secciones         | `admin`             |
+| `assignments.edit`   | Editar asignaciones                    | `admin`             |
+| `assignments.delete` | Eliminar asignaciones                  | `admin`             |
+| `academic_info.view` | Vista general de info académica        | `admin`, `profesor` |
+
+**Nota:** El profesor puede **ver** inscripciones y asignaciones pero no crearlas ni editarlas. Solo el admin puede inscribir alumnos y asignar profesores.
 
 ---
 
-### Hito 5 — Estructura Académica (Base Jerárquica)
+### Hito 7 — Representantes
 
-**Contexto**: Definición de la jerarquía que organiza la vida escolar: Años Escolares, Lapsos, Grados y Secciones.
+**Estado:** Finalizado ✅
 
-#### Archivos involucrados
+Vinculación familiar entre representantes y estudiantes.
 
-| Archivo                                   | Acción | Motivo                                    |
-| ----------------------------------------- | ------ | ----------------------------------------- |
-| `app/Models/AcademicYear.php`             | Crear  | Entidad raíz del ciclo escolar            |
-| `app/Models/SchoolTerm.php`               | Crear  | División temporal (Lapsos)                |
-| `app/Models/Grade.php`                    | Crear  | Grados académicos (1ero a 5to)            |
-| `app/Models/Section.php`                  | Crear  | Grupos específicos de alumnos             |
-| `app/Http/Controllers/Admin/*`            | Crear  | Controladores para gestión administrativa |
-| `app/Http/Requests/Admin/*`               | Crear  | Validaciones jerárquicas y de unicidad    |
-| `database/seeders/AcademicYearSeeder.php` | Crear  | Estructura base para desarrollo           |
+#### Entidades creadas
 
-#### Pasos de Implementación
+| Modelo                  | Tabla                             | Relaciones                                                         |
+| ----------------------- | --------------------------------- | ------------------------------------------------------------------ |
+| `RelationshipType`      | `relationship_types`              | Catálogo de parentesco (Padre, Madre, Tutor legal, Otro)           |
+| `StudentRepresentative` | `student_representatives` (Pivot) | BelongsTo: User (student), User (representative), RelationshipType |
 
-1.  **Modelos y Migraciones**: Se crearon las 4 entidades base con `SoftDeletes`. Se implementó la denormalización de `academic_year_id` en la tabla `sections` para optimizar consultas de filtrado por año sin múltiples joins.
-2.  **Lógica de Negocio**:
-    - Se implementó un "único año activo" a nivel de controlador (`AcademicYearController`), asegurando que al activar uno, los demás se desactiven automáticamente.
-    - Se definieron relaciones Eloquent completas (HasMany, BelongsTo) para navegar la jerarquía.
-3.  **Seguridad (Permissions)**: Se agregaron 16 nuevos permisos al `RoleAndPermissionSeeder` cubriendo el CRUD de cada una de las 4 nuevas entidades, asignados por defecto al rol `admin`.
-4.  **Backend (Controllers & Requests)**: Se implementaron controladores que manejan el filtrado por `academic_year_id` y `grade_id` mediante query strings, facilitando la navegación recursiva en el frontend.
+#### Backend
+
+- **`RepresentativeController`:** Store y destroy de representantes desde perfil de estudiante
+- **Relación muchos-a-muchos en User:** `representatives()` y `representedStudents()` con `relationship_type` como pivot data
+- **Índice único:** `student_id + representative_id` para evitar duplicados
+
+#### Frontend
+
+- **`resources/js/pages/admin/users/partials/assign-representative-modal.tsx`:** Modal de asignación desde perfil admin
+- **`resources/js/pages/settings/profile.tsx`:** Pestañas dinámicas:
+    - "Mis Representantes" (visible solo para alumnos)
+    - "Mis Representados" (visible solo para representantes)
+
+#### Datos de prueba
+
+- **RelationshipTypeSeeder:** Padre, Madre, Tutor legal, Otro
+
+#### Tests
+
+- `tests/Feature/Reproduction/CreateRepresentativeTest.php`
 
 #### ENTREGA
 
-- Estructura académica completa en base de datos.
-- Seeder operativo que genera el año actual con 3 lapsos, 5 grados y 2 secciones por grado.
-- API/Controllers listos para ser consumidos por Inertia.
-- Validaciones robustas que impiden solapamientos y mantienen la integridad referencial.
+- Catálogo de tipos de parentesco configurable
+- Asignación de representantes desde perfil de estudiante
+- Visualización de representantes/representados en `/settings/profile` según rol
+
+#### Roles y Permisos
+
+> **Sin permisos nuevos.** La gestión de representantes usa los permisos existentes de usuarios (`users.edit` para admin).
+
+**Acceso por rol:**
+
+| Rol             | Puede ver representantes                           | Puede asignar representantes |
+| --------------- | -------------------------------------------------- | ---------------------------- |
+| `admin`         | Sí (desde perfil de alumno)                        | Sí                           |
+| `profesor`      | No                                                 | No                           |
+| `alumno`        | Sí (solo los suyos en `/settings/profile`)         | No                           |
+| `representante` | Sí (solo sus representados en `/settings/profile`) | No                           |
+
+---
+
+### Hito 8 — Información de Salud
+
+**Estado:** Finalizado ✅
+
+Condiciones médicas de estudiantes con soporte de archivos adjuntos.
+
+#### Entidades creadas
+
+| Modelo                | Tabla                    | Relaciones                                                                      | Traits                                            |
+| --------------------- | ------------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `HealthCondition`     | `health_conditions`      | HasMany: StudentHealthRecord                                                    | SoftDeletes, SoftCascadeTrait                     |
+| `StudentHealthRecord` | `student_health_records` | BelongsTo: User (student), HealthCondition, User (receivedBy); MorphMany: Media | SoftDeletes, SoftCascadeTrait, InteractsWithMedia |
+
+**Cascada de soft deletes:** `HealthCondition` → `StudentHealthRecord` → `Media` (eliminación física)
+
+#### Backend
+
+- **`HealthConditionController`:** CRUD del catálogo (index, store, update, destroy)
+- **`StudentHealthRecordController`:** Store, update, destroy de registros médicos
+- **`StoreHealthConditionRequest`, `UpdateHealthConditionRequest`:** Validaciones del catálogo
+- **`StoreStudentHealthRecordRequest`, `UpdateStudentHealthRecordRequest`:** Validaciones con existencia de estudiante, condición, y usuario receptor
+- **Eliminación de archivos físicos:** Al soft delete de un registro, los archivos adjuntos se eliminan físicamente (no se recuperan al restaurar)
+
+#### Frontend
+
+- **`resources/js/pages/admin/health-conditions/index.tsx`:** Listado de condiciones con DataTable
+- **`resources/js/pages/admin/users/partials/health-record-modal.tsx`:** Modal de creación/edición con subida de archivos
+- **`resources/js/pages/settings/profile.tsx`:** Pestaña "Salud" visible solo para alumnos
+
+#### Datos de prueba
+
+- **HealthConditionSeeder:** Condiciones base (asma, diabetes, epilepsia, etc.)
+- **HealthConditionFactory, StudentHealthRecordFactory**
+
+#### Tests
+
+- `tests/Feature/Admin/HealthConditionTest.php` (pendiente de crear)
+- `tests/Feature/Admin/StudentHealthRecordTest.php` (pendiente de crear)
+
+#### ENTREGA
+
+- Catálogo de condiciones de salud administrable
+- Modal de registros médicos con subida de documentos
+- Pestaña "Salud" en perfil de alumno
+- Eliminación en cascada de archivos físicos
+
+#### Roles y Permisos
+
+**Permisos utilizados:**
+
+| Permiso                    | Protege                    | Roles que lo tienen |
+| -------------------------- | -------------------------- | ------------------- |
+| `health_conditions.view`   | Listado de condiciones     | `admin`             |
+| `health_conditions.create` | Crear condiciones          | `admin`             |
+| `health_conditions.edit`   | Editar condiciones         | `admin`             |
+| `health_conditions.delete` | Eliminar condiciones       | `admin`             |
+| `student_health.view`      | Ver registros médicos      | `admin`             |
+| `student_health.create`    | Crear registros médicos    | `admin`             |
+| `student_health.edit`      | Editar registros médicos   | `admin`             |
+| `student_health.delete`    | Eliminar registros médicos | `admin`             |
+
+**Acceso por rol:**
+
+| Rol             | Ve catálogo condiciones | Crea/edita registros | Ve su propia salud                       |
+| --------------- | ----------------------- | -------------------- | ---------------------------------------- |
+| `admin`         | Sí                      | Sí                   | Sí (desde perfil de alumno)              |
+| `profesor`      | No                      | No                   | No                                       |
+| `alumno`        | No                      | No                   | Sí (solo la suya en `/settings/profile`) |
+| `representante` | No                      | No                   | Sí (solo la de su representado)          |
+
+> **Nota:** Los permisos de salud son exclusivos de `admin` actualmente. En el futuro, el rol `profesor` podría recibir `student_health.view` y `student_health.create` para registrar condiciones de alumnos bajo su cargo (como dice la matriz de permisos en las especificaciones).
+
+---
+
+## Mejoras Visuales y de Consistencia (Transversal)
+
+**Contexto:** Después de completar los hitos 0-8, se realizó una refactorización visual masiva para estandarizar la apariencia y usabilidad de toda la aplicación administrativa.
+
+### Componentes reutilizables creados
+
+| Componente     | Archivo                                        | Propósito                                                                  |
+| -------------- | ---------------------------------------------- | -------------------------------------------------------------------------- |
+| `DataTable`    | `resources/js/components/ui/data-table.tsx`    | Tabla con paginación Inertia, numeración, selector de registros por página |
+| `TableFilters` | `resources/js/components/ui/table-filters.tsx` | Filtros de búsqueda con debounce                                           |
+| `useDebounce`  | `resources/js/hooks/use-debounce.ts`           | Hook personalizado para debounce                                           |
+
+### Páginas refactorizadas
+
+Todas las páginas administrativas fueron actualizadas para usar `DataTable` y `TableFilters`:
+
+- `/admin/users` — Listado con búsqueda y paginación
+- `/admin/enrollments` — Listado de inscripciones
+- `/admin/sections` — Listado con filtros por año y grado
+- `/admin/academic-years` — Listado con badge de año activo
+- `/admin/school-terms` — Listado con filtros por año
+- `/admin/grades` — Listado con filtros por año
+- `/admin/health-conditions` — Listado de condiciones de salud
+- `/admin/term-types` — Listado de tipos de lapso
+- `/admin/roles` — Tarjetas colapsables con permisos agrupados
+- `/admin/permissions` — Matriz informativa
+
+### Mejoras en formularios
+
+- Diseño basado en Cards con headers consistentes (iconos, padding, esquinas redondeadas)
+- Eliminación de restricciones `max-w-2xl` para aprovechar ancho disponible
+- Botones "Volver" redirigen correctamente al listado de cada entidad
+
+### Mejoras en paginación
+
+- Navegación directa a cualquier página (no solo anterior/siguiente)
+- Selector de cantidad de registros por página
+- Funcionamiento correcto con Inertia.js sin recarga completa
+- Numeración de filas correcta considerando la página actual
+
+### ENTREGA
+
+- Interfaz uniforme en toda la aplicación administrativa
+- Componentes reutilizables para tablas y filtros
+- Formularios estandarizados con diseño moderno
+- Experiencia de usuario consistente en todos los módulos
+
+---
+
+## Hitos Pendientes (9-15)
+
+### Hito 9 — Catálogos de Configuración
+
+**Enfoque:** Categorías de actividades y ubicaciones.
+
+Entidades esperadas:
+
+- `ActivityCategory` — Catálogo de tipos de actividad (desmalezamiento, limpieza, siembra, riego, etc.)
+- `Location` — Catálogo de ubicaciones donde se realizan jornadas (huerto escolar, cancha, comunidad, etc.)
+
+Ambas entidades serán referenciadas por las jornadas de campo (Hito 10).
+
+#### Roles y Permisos (esperados)
+
+| Permiso                      | Protege                | Roles que lo tendrán |
+| ---------------------------- | ---------------------- | -------------------- |
+| `activity_categories.view`   | Listado de categorías  | `admin`              |
+| `activity_categories.create` | Crear categorías       | `admin`              |
+| `activity_categories.edit`   | Editar categorías      | `admin`              |
+| `activity_categories.delete` | Eliminar categorías    | `admin`              |
+| `locations.view`             | Listado de ubicaciones | `admin`, `profesor`  |
+| `locations.create`           | Crear ubicaciones      | `admin`              |
+| `locations.edit`             | Editar ubicaciones     | `admin`              |
+| `locations.delete`           | Eliminar ubicaciones   | `admin`              |
+
+---
+
+### Hito 10 — Jornadas de Campo
+
+**Enfoque:** Registro central de actividades de campo.
+
+Entidad esperada:
+
+- `FieldSession` — Jornadas con `start_datetime`, `end_datetime`, `base_hours`, `status` (realized/cancelled), FK a profesor responsable, categoría de actividad y ubicación.
+
+#### Roles y Permisos (esperados)
+
+| Permiso                 | Protege             | Roles que lo tendrán                   |
+| ----------------------- | ------------------- | -------------------------------------- |
+| `field_sessions.view`   | Listado de jornadas | `admin`, `profesor`                    |
+| `field_sessions.create` | Crear jornadas      | `admin`, `profesor`                    |
+| `field_sessions.edit`   | Editar jornadas     | `admin`, `profesor` (solo las propias) |
+| `field_sessions.delete` | Eliminar jornadas   | `admin`                                |
+
+**Regla de propiedad:** Solo el profesor responsable de una jornada (`user_id`) o un admin puede editarla. Un profesor puede ver las jornadas de otros pero no modificarlas.
+
+---
+
+### Hito 11 — Asistencia y Subactividades
+
+**Enfoque:** Acreditación de horas y evidencias.
+
+Entidades esperadas:
+
+- `Attendance` — Registro binario de asistencia por estudiante en cada jornada
+- `AttendanceActivity` — Subactividades con horas distribuidas por tipo de actividad
+
+#### Roles y Permisos (esperados)
+
+| Permiso                        | Protege                  | Roles que lo tendrán                    |
+| ------------------------------ | ------------------------ | --------------------------------------- |
+| `attendances.view`             | Ver asistencia           | `admin`, `profesor`                     |
+| `attendances.create`           | Registrar asistencia     | `admin`, `profesor` (solo sus jornadas) |
+| `attendances.edit`             | Editar asistencia        | `admin`, `profesor` (solo sus jornadas) |
+| `attendances.delete`           | Eliminar asistencia      | `admin`                                 |
+| `attendance_activities.view`   | Ver subactividades       | `admin`, `profesor`                     |
+| `attendance_activities.create` | Registrar subactividades | `admin`, `profesor` (solo sus jornadas) |
+| `attendance_activities.edit`   | Editar subactividades    | `admin`, `profesor` (solo sus jornadas) |
+| `attendance_activities.delete` | Eliminar subactividades  | `admin`                                 |
+
+---
+
+### Hito 12 — Horas Externas
+
+**Enfoque:** Acreditación de horas previas para estudiantes transferidos.
+
+#### Roles y Permisos (esperados)
+
+| Permiso                 | Protege                 | Roles que lo tendrán |
+| ----------------------- | ----------------------- | -------------------- |
+| `external_hours.view`   | Ver horas externas      | `admin`              |
+| `external_hours.create` | Cargar horas externas   | `admin`              |
+| `external_hours.edit`   | Editar horas externas   | `admin`              |
+| `external_hours.delete` | Eliminar horas externas | `admin`              |
+
+> Solo `admin` puede cargar horas externas porque es un proceso formal que requiere verificación de documentación.
+
+---
+
+### Hito 13 — Acumulados y Dashboards
+
+**Enfoque:** Progreso visual y KPIs de horas acumuladas por estudiante.
+
+#### Roles y Permisos (esperados)
+
+| Permiso                  | Protege                | Roles que lo tendrán                           |
+| ------------------------ | ---------------------- | ---------------------------------------------- |
+| `dashboard.view`         | Dashboard principal    | `admin`, `profesor`                            |
+| `accumulated_hours.view` | Ver acumulados propios | `admin`, `profesor`, `alumno`, `representante` |
+
+**Acceso por rol:**
+
+| Rol             | Qué ve                                           |
+| --------------- | ------------------------------------------------ |
+| `admin`         | Dashboard global con KPIs de toda la institución |
+| `profesor`      | Dashboard de sus secciones y alumnos asignados   |
+| `alumno`        | Solo su propio progreso de horas                 |
+| `representante` | Progreso de su representado                      |
+
+---
+
+### Hito 14 — Reportes en PDF
+
+**Enfoque:** Generación de certificados y listados de horas.
+
+#### Roles y Permisos (esperados)
+
+| Permiso            | Protege          | Roles que lo tendrán                           |
+| ------------------ | ---------------- | ---------------------------------------------- |
+| `reports.view`     | Generar reportes | `admin`, `profesor`                            |
+| `reports.download` | Descargar PDFs   | `admin`, `profesor`, `alumno`, `representante` |
+
+**Acceso por rol:**
+
+| Rol             | Qué puede descargar                                       |
+| --------------- | --------------------------------------------------------- |
+| `admin`         | Todos los reportes (listados, certificados, estadísticas) |
+| `profesor`      | Reportes de sus secciones                                 |
+| `alumno`        | Solo su certificado de horas                              |
+| `representante` | Certificado de horas de su representado                   |
+
+---
+
+### Hito 15 — Revisión y Estabilización
+
+**Enfoque:** QA final, seeders demo, documentación completa.
+
+#### Roles y Permisos
+
+> **Sin permisos nuevos.** Este hito es de estabilización. Se verifican todos los permisos implementados en hitos anteriores con tests de autorización integrales.
+
+**Tests de autorización esperados:**
+
+1. **Admin:** Puede acceder a TODO
+2. **Profesor:** Solo ve lo de sus secciones, no puede gestionar estructura académica
+3. **Alumno:** Solo ve su propio perfil, horas y salud
+4. **Representante:** Solo ve la info de su representado
+5. **Usuario sin rol:** No ve nada del panel admin

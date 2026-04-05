@@ -19,10 +19,102 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+        $user->load([
+            'roles.permissions',
+            'healthRecords.condition',
+            'healthRecords.media',
+        ]);
+
+        $roles = $user->roles->pluck('name')->toArray();
+        $isAlumno = in_array('alumno', $roles);
+        $isRepresentante = in_array('representante', $roles);
+        $isAdminOrProfesor = in_array('admin', $roles) || in_array('profesor', $roles);
+
+        // Load representatives with relationship types
+        $representatives = $isAlumno
+            ? \DB::table('student_representatives')
+                ->join('users', 'users.id', '=', 'student_representatives.representative_id')
+                ->leftJoin('relationship_types', 'relationship_types.id', '=', 'student_representatives.relationship_type_id')
+                ->where('student_representatives.student_id', $user->id)
+                ->whereNull('student_representatives.deleted_at')
+                ->select('users.id', 'users.name', 'users.cedula', 'users.phone', 'relationship_types.name as relationship_type_name')
+                ->get()
+                ->map(fn ($r) => (array) $r)
+            : [];
+
+        // Load represented students with relationship types
+        $representedStudents = $isRepresentante
+            ? \DB::table('student_representatives')
+                ->join('users', 'users.id', '=', 'student_representatives.student_id')
+                ->leftJoin('relationship_types', 'relationship_types.id', '=', 'student_representatives.relationship_type_id')
+                ->where('student_representatives.representative_id', $user->id)
+                ->whereNull('student_representatives.deleted_at')
+                ->select('users.id', 'users.name', 'users.cedula', 'relationship_types.name as relationship_type_name')
+                ->get()
+                ->map(fn ($r) => (array) $r)
+            : [];
+
+        // Group permissions by module
+        $rolePermissions = [];
+        $user->roles->each(function ($role) use (&$rolePermissions) {
+            $role->permissions->each(function ($permission) use (&$rolePermissions) {
+                $module = explode('.', $permission->name)[0];
+                if (! isset($rolePermissions[$module])) {
+                    $rolePermissions[$module] = [];
+                }
+                $rolePermissions[$module][] = $permission->name;
+            });
+        });
+        // Unique permissions
+        foreach ($rolePermissions as $module => $perms) {
+            $rolePermissions[$module] = array_unique($perms);
+        }
+
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
-            'avatar_url' => $request->user()->avatar_url,
+            'avatar_url' => $user->avatar_url,
+            'userRoles' => $roles,
+            'userPermissions' => $rolePermissions,
+            'isAlumno' => $isAlumno,
+            'isRepresentante' => $isRepresentante,
+            'showRolesAndPermissions' => $isAdminOrProfesor,
+            'canDeleteAccount' => in_array('admin', $roles),
+            'userData' => [
+                'cedula' => $user->cedula,
+                'phone' => $user->phone,
+                'address' => $user->address,
+                'is_transfer' => $user->is_transfer,
+                'institution_origin' => $user->institution_origin,
+                'is_active' => $user->is_active,
+            ],
+            'representatives' => $isAlumno ? $user->representatives->map(fn ($r) => [
+                'id' => $r->id,
+                'name' => $r->name,
+                'cedula' => $r->cedula,
+                'phone' => $r->phone,
+                'relationship_type_name' => $r->pivot->relationshipType?->name ?? 'No especificado',
+            ])->values() : [],
+            'representedStudents' => $isRepresentante ? $user->representedStudents->map(fn ($s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'cedula' => $s->cedula,
+                'relationship_type_name' => $s->pivot->relationshipType?->name ?? 'No especificado',
+            ])->values() : [],
+            'healthRecords' => $isAlumno ? $user->healthRecords->map(fn ($r) => [
+                'id' => $r->id,
+                'condition' => $r->condition?->name,
+                'received_at' => $r->received_at?->format('d/m/Y H:i'),
+                'received_at_location' => $r->received_at_location,
+                'observations' => $r->observations,
+                'media' => $r->media->map(fn ($m) => [
+                    'id' => $m->id,
+                    'file_name' => $m->file_name,
+                    'url' => $m->getUrl(),
+                    'description' => $m->getCustomProperty('description', ''),
+                ])->values(),
+            ])->values() : [],
         ]);
     }
 
@@ -48,6 +140,11 @@ class ProfileController extends Controller
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
         $user = $request->user();
+
+        // Only admins can delete their own accounts
+        if (! $user->hasRole('admin')) {
+            abort(403, 'Solo los administradores pueden eliminar cuentas. Contacte a un administrador.');
+        }
 
         Auth::logout();
 

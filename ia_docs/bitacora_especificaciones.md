@@ -2,14 +2,20 @@
 
 ## Especificaciones del Sistema
 
-**Versión 6.3** (Hitos 0-7 Completados)
+**Versión 7.0** (Hitos 0-8 Completados)
 
 _Sistema de registro, seguimiento y reporte de horas prácticas acumuladas en la asignatura Socioproductiva._
 
-> **Estado de implementación (2026-04-03):**
+> **Estado de implementación (2026-04-04):**
 >
-> - ✅ Hitos 0-7 completados (Usuarios, Auth, RBAC, Estructura Académica, Inscripciones, Representantes)
-> - 📋 Hitos 8-15 pendientes (Salud, Catálogos, Jornadas, Asistencia, Horas, Reportes)
+> - ✅ Hitos 0-8 completados (Usuarios, Auth, RBAC, Estructura Académica, Inscripciones, Representantes, Salud)
+> - 📋 Hitos 9-15 pendientes (Catálogos, Jornadas, Asistencia, Horas, Reportes)
+>
+> **Estadísticas del proyecto:**
+>
+> - 13 modelos, 18 controladores, 22 form requests, 1 policy, 3 middleware custom
+> - 23 migraciones, 13 seeders, 9 factories, 28 feature tests
+> - 41 páginas React, 28 componentes UI, 46 permisos, 4 roles
 
 ---
 
