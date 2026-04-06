@@ -50,7 +50,7 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 | 8    | Información de salud             | Condiciones médicas y soportes                  | ✅     |
 | 9    | Catálogos de configuración       | Actividades y ubicaciones                       | ✅     |
 | 10   | Jornadas de campo                | Registro central de actividades                 | ✅     |
-| 11   | Asistencia y subactividades      | Acreditación de horas y evidencias              | 🔲     |
+| 11   | Asistencia y subactividades      | Acreditación de horas y evidencias              | ✅     |
 | 12   | Horas externas                   | Acreditación para transferidos                  | 🔲     |
 | 13   | Acumulados y dashboards          | Progreso visual y KPIs                          | 🔲     |
 | 14   | Reportes en PDF                  | Generación de certificados y listados           | 🔲     |
@@ -58,32 +58,33 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 
 > **Nota de progreso (2026-04-05):**
 >
-> - Hitos 0-9 completados
+> - Hitos 0-11 completados
 > - Hito 7 simplificado: solo asignación de representantes desde perfil de estudiante
 > - Hito 8 completado: Información de salud con archivos adjuntos y eliminación en cascada
 > - Hito 9 completado: Catálogos de configuración (actividades y ubicaciones) con CRUD para admin y profesor
-> - Mejoras visuales globales: componentes DataTable, TableFilters, formularios estandarizados
-> - Próximos hitos pendientes: 10-15
+> - Hito 10 completado: Jornadas de campo con registro central de actividades
+> - Hito 11 completado: Asistencia y subactividades con ownership, alertas de horas, asignación rápida y gestión completa de evidencias
+> - Próximos hitos pendientes: 12-15
 
 ---
 
 ## Estadísticas Actuales del Proyecto
 
-| Categoría          | Cantidad                                   |
-| ------------------ | ------------------------------------------ |
-| Modelos            | 15                                         |
-| Controladores      | 20 (1 base + 16 admin + 3 settings)        |
-| Form Requests      | 26 (22 admin + 4 settings)                 |
-| Policies           | 1 (UserPolicy)                             |
-| Middleware custom  | 3                                          |
-| Migraciones        | 25                                         |
-| Seeders            | 15                                         |
-| Factories          | 11                                         |
-| Feature Tests      | 30                                         |
-| Páginas React      | 43                                         |
-| Componentes UI     | 28                                         |
-| Permisos definidos | 54                                         |
-| Roles definidos    | 4 (admin, profesor, alumno, representante) |
+| Categoría          | Cantidad                                                   |
+| ------------------ | ---------------------------------------------------------- |
+| Modelos            | 15                                                         |
+| Controladores      | 20 (1 base + 16 admin + 3 settings)                        |
+| Form Requests      | 26 (22 admin + 4 settings)                                 |
+| Policies           | 3 (UserPolicy, AttendancePolicy, AttendanceActivityPolicy) |
+| Middleware custom  | 3                                                          |
+| Migraciones        | 25                                                         |
+| Seeders            | 15                                                         |
+| Factories          | 11                                                         |
+| Feature Tests      | 30                                                         |
+| Páginas React      | 43                                                         |
+| Componentes UI     | 28                                                         |
+| Permisos definidos | 54                                                         |
+| Roles definidos    | 4 (admin, profesor, alumno, representante)                 |
 
 ---
 
@@ -934,23 +935,31 @@ field_sessions:
 
 **Enfoque:** Acreditación de horas y evidencias.
 
-Entidades esperadas:
+**Estado:** ✅ Completado con verificación contra especificaciones (2026-04-05)
+
+**Correcciones post-verificación:**
+
+- Los permisos de delete para `attendances` y `attendance_activities` fueron extendidos a profesor con ownership (solo propias jornadas) — esto permite la autogestión del profesor en su día a día. Eliminar usuarios y otros datos críticos sigue siendo solo admin.
+
+Entidades implementadas:
 
 - `Attendance` — Registro binario de asistencia por estudiante en cada jornada
-- `AttendanceActivity` — Subactividades con horas distribuidas por tipo de actividad
+- `AttendanceActivity` — Subactividades con horas distribuidas por tipo de actividad, con soporte para evidencias (Media Library)
 
-#### Roles y Permisos (esperados)
+#### Roles y Permisos (implementados)
 
 | Permiso                        | Protege                  | Roles que lo tendrán                    |
 | ------------------------------ | ------------------------ | --------------------------------------- |
 | `attendances.view`             | Ver asistencia           | `admin`, `profesor`                     |
 | `attendances.create`           | Registrar asistencia     | `admin`, `profesor` (solo sus jornadas) |
 | `attendances.edit`             | Editar asistencia        | `admin`, `profesor` (solo sus jornadas) |
-| `attendances.delete`           | Eliminar asistencia      | `admin`                                 |
+| `attendances.delete`           | Eliminar asistencia      | `admin`, `profesor` (solo sus jornadas) |
 | `attendance_activities.view`   | Ver subactividades       | `admin`, `profesor`                     |
 | `attendance_activities.create` | Registrar subactividades | `admin`, `profesor` (solo sus jornadas) |
 | `attendance_activities.edit`   | Editar subactividades    | `admin`, `profesor` (solo sus jornadas) |
-| `attendance_activities.delete` | Eliminar subactividades  | `admin`                                 |
+| `attendance_activities.delete` | Eliminar subactividades  | `admin`, `profesor` (solo sus jornadas) |
+
+> **Nota de diseño:** Los permisos de delete fueron extendidos a profesor con ownership para permitir autogestión. Solo datos críticos (usuarios, roles, estructura académica) son exclusivamente admin.
 
 ---
 

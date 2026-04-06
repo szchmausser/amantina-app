@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
+    AlertTriangle,
     ArrowLeft,
     ArrowRight,
-    CheckCircle2,
     Clock,
     UserCheck,
     UserX,
 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +20,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    ActivityDialog,
+    DeleteConfirmDialog,
+    QuickAssignDialog,
+} from './components/Dialogs';
+import {
+    AvailableStudentList,
+    RegisteredStudentCard,
+} from './components/StudentCards';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -41,16 +51,18 @@ interface GroupedStudents {
     students: Student[];
 }
 
+interface Activity {
+    id: number;
+    activity_category: ActivityCategory | null;
+    hours: number;
+    notes?: string;
+}
+
 interface AttendanceStudent extends Student {
     attendance_id?: number;
     attended?: boolean;
     total_hours?: number;
-    activities?: {
-        id: number;
-        activity_category: ActivityCategory;
-        hours: number;
-        notes?: string;
-    }[];
+    activities?: Activity[];
 }
 
 interface FieldSession {
@@ -70,6 +82,7 @@ interface Props {
     attendances: AttendanceStudent[];
     activityCategories: ActivityCategory[];
     baseHours: number;
+    isAdmin: boolean;
 }
 
 export default function AttendanceIndex({
@@ -78,19 +91,18 @@ export default function AttendanceIndex({
     attendances,
     activityCategories,
     baseHours,
+    isAdmin,
 }: Props) {
-    const { errors } = usePage().props;
+    const { flash } = usePage().props as {
+        flash?: { warning?: string; success?: string };
+    };
 
-    // State for the two-column layout
-    const [availableStudents, setAvailableStudents] = useState<Student[]>([]);
     const [registeredStudents, setRegisteredStudents] =
         useState<AttendanceStudent[]>(attendances);
 
-    // Filter state
     const [selectedGradeId, setSelectedGradeId] = useState<string>('all');
     const [selectedSectionId, setSelectedSectionId] = useState<string>('all');
 
-    // Bulk actions state
     const [selectedAvailableIds, setSelectedAvailableIds] = useState<number[]>(
         [],
     );
@@ -99,7 +111,29 @@ export default function AttendanceIndex({
     >([]);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // Get unique grades from groupedStudents
+    const [expandedStudentId, setExpandedStudentId] = useState<number | null>(
+        null,
+    );
+
+    const [showActivityDialog, setShowActivityDialog] = useState(false);
+    const [editingActivity, setEditingActivity] = useState<Activity | null>(
+        null,
+    );
+    const [activityStudentId, setActivityStudentId] = useState<number | null>(
+        null,
+    );
+    const [activityCategoryId, setActivityCategoryId] = useState<string>('');
+    const [activityHours, setActivityHours] = useState<string>('');
+    const [activityNotes, setActivityNotes] = useState('');
+
+    const [showQuickAssign, setShowQuickAssign] = useState(false);
+    const [quickCategoryId, setQuickCategoryId] = useState<string>('');
+    const [quickHours, setQuickHours] = useState<string>('');
+    const [quickStudentIds, setQuickStudentIds] = useState<number[]>([]);
+
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteStudentId, setDeleteStudentId] = useState<number | null>(null);
+
     const grades = [
         ...new Map(
             groupedStudents.map((s) => [
@@ -109,7 +143,6 @@ export default function AttendanceIndex({
         ).values(),
     ];
 
-    // Filter sections based on selected grade
     const sections =
         selectedGradeId === 'all'
             ? [
@@ -128,7 +161,6 @@ export default function AttendanceIndex({
                   )
                   .map((s) => ({ id: s.section_id, name: s.section_name }));
 
-    // Get filtered students (excluding already registered)
     const filteredStudents = groupedStudents
         .filter(
             (s) =>
@@ -142,7 +174,6 @@ export default function AttendanceIndex({
             (student) => !registeredStudents.some((r) => r.id === student.id),
         );
 
-    // Move students from available to registered
     const handleMoveToRegistered = async () => {
         if (selectedAvailableIds.length === 0) return;
 
@@ -157,7 +188,6 @@ export default function AttendanceIndex({
                 },
                 {
                     onSuccess: () => {
-                        // Update local state
                         const newRegistered = filteredStudents
                             .filter((s) => selectedAvailableIds.includes(s.id))
                             .map((s) => ({
@@ -172,13 +202,6 @@ export default function AttendanceIndex({
                         ]);
                         setSelectedAvailableIds([]);
                     },
-                    onError: (errors) => {
-                        console.error('Error registering attendance:', errors);
-                        alert(
-                            'Error al registrar asistencia: ' +
-                                JSON.stringify(errors),
-                        );
-                    },
                 },
             );
         } finally {
@@ -186,7 +209,6 @@ export default function AttendanceIndex({
         }
     };
 
-    // Move students from registered to available (mark as absent)
     const handleMoveToAvailable = async () => {
         if (selectedRegisteredIds.length === 0) return;
 
@@ -194,9 +216,7 @@ export default function AttendanceIndex({
         try {
             await router.post(
                 `/admin/field-sessions/${fieldSession.id}/attendance/bulk-absent`,
-                {
-                    student_ids: selectedRegisteredIds,
-                },
+                { student_ids: selectedRegisteredIds },
                 {
                     onSuccess: () => {
                         setRegisteredStudents(
@@ -213,17 +233,215 @@ export default function AttendanceIndex({
         }
     };
 
-    // Toggle student selection in available column
-    const toggleAvailableStudent = (id: number) => {
-        setSelectedAvailableIds((prev) =>
-            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    const handleDeleteAttendance = async () => {
+        if (deleteStudentId === null) return;
+        const student = registeredStudents.find(
+            (s) => s.id === deleteStudentId,
         );
+        if (!student?.attendance_id) return;
+
+        router.delete(`/admin/attendance/${student.attendance_id}`, {
+            onSuccess: () => {
+                setRegisteredStudents(
+                    registeredStudents.filter((s) => s.id !== deleteStudentId),
+                );
+                setShowDeleteConfirm(false);
+                setDeleteStudentId(null);
+            },
+        });
     };
 
-    // Toggle student selection in registered column
-    const toggleRegisteredStudent = (id: number) => {
-        setSelectedRegisteredIds((prev) =>
-            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    const openActivityDialog = (studentId: number, activity?: Activity) => {
+        setActivityStudentId(studentId);
+        if (activity) {
+            setEditingActivity(activity);
+            setActivityCategoryId(
+                activity.activity_category?.id.toString() ?? '',
+            );
+            setActivityHours(activity.hours.toString());
+            setActivityNotes(activity.notes ?? '');
+        } else {
+            setEditingActivity(null);
+            setActivityCategoryId('');
+            setActivityHours('');
+            setActivityNotes('');
+        }
+        setShowActivityDialog(true);
+    };
+
+    const handleSaveActivity = async () => {
+        if (!activityStudentId || !activityCategoryId || !activityHours) return;
+
+        const student = registeredStudents.find(
+            (s) => s.id === activityStudentId,
+        );
+        if (!student?.attendance_id) return;
+
+        const payload = {
+            activity_category_id: parseInt(activityCategoryId),
+            hours: parseFloat(activityHours),
+            notes: activityNotes || null,
+        };
+
+        if (editingActivity) {
+            router.put(
+                `/admin/attendance-activities/${editingActivity.id}`,
+                payload,
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        setRegisteredStudents((prev) =>
+                            prev.map((s) => {
+                                if (s.id !== activityStudentId) return s;
+                                const updatedActivities =
+                                    s.activities?.map((a) =>
+                                        a.id === editingActivity.id
+                                            ? {
+                                                  ...a,
+                                                  activity_category:
+                                                      activityCategories.find(
+                                                          (c) =>
+                                                              c.id ===
+                                                              parseInt(
+                                                                  activityCategoryId,
+                                                              ),
+                                                      ) ?? a.activity_category,
+                                                  hours: parseFloat(
+                                                      activityHours,
+                                                  ),
+                                                  notes:
+                                                      activityNotes ||
+                                                      undefined,
+                                              }
+                                            : a,
+                                    ) ?? [];
+                                return {
+                                    ...s,
+                                    activities: updatedActivities,
+                                    total_hours: updatedActivities.reduce(
+                                        (sum, a) => sum + a.hours,
+                                        0,
+                                    ),
+                                };
+                            }),
+                        );
+                        setShowActivityDialog(false);
+                    },
+                },
+            );
+        } else {
+            router.post(
+                '/admin/attendance-activities',
+                { attendance_id: student.attendance_id, ...payload },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        setRegisteredStudents((prev) =>
+                            prev.map((s) => {
+                                if (s.id !== activityStudentId) return s;
+                                const newActivity: Activity = {
+                                    id: Date.now(),
+                                    activity_category:
+                                        activityCategories.find(
+                                            (c) =>
+                                                c.id ===
+                                                parseInt(activityCategoryId),
+                                        ) ?? null,
+                                    hours: parseFloat(activityHours),
+                                    notes: activityNotes || undefined,
+                                };
+                                const updatedActivities = [
+                                    ...(s.activities ?? []),
+                                    newActivity,
+                                ];
+                                return {
+                                    ...s,
+                                    activities: updatedActivities,
+                                    total_hours: updatedActivities.reduce(
+                                        (sum, a) => sum + a.hours,
+                                        0,
+                                    ),
+                                };
+                            }),
+                        );
+                        setShowActivityDialog(false);
+                    },
+                },
+            );
+        }
+    };
+
+    const handleDeleteActivity = async (
+        studentId: number,
+        activityId: number,
+    ) => {
+        router.delete(`/admin/attendance-activities/${activityId}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setRegisteredStudents((prev) =>
+                    prev.map((s) => {
+                        if (s.id !== studentId) return s;
+                        const updatedActivities =
+                            s.activities?.filter((a) => a.id !== activityId) ??
+                            [];
+                        return {
+                            ...s,
+                            activities: updatedActivities,
+                            total_hours: updatedActivities.reduce(
+                                (sum, a) => sum + a.hours,
+                                0,
+                            ),
+                        };
+                    }),
+                );
+            },
+        });
+    };
+
+    const handleQuickAssign = async () => {
+        if (quickStudentIds.length === 0 || !quickCategoryId || !quickHours)
+            return;
+
+        const data = quickStudentIds.map((userId) => ({
+            user_id: userId,
+            activity_category_id: parseInt(quickCategoryId),
+            hours: parseFloat(quickHours),
+        }));
+
+        router.post(
+            `/admin/field-sessions/${fieldSession.id}/attendance/bulk-assign-hours`,
+            { data },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setRegisteredStudents((prev) =>
+                        prev.map((s) => {
+                            if (!quickStudentIds.includes(s.id)) return s;
+                            return {
+                                ...s,
+                                attended: true,
+                                activities: [
+                                    {
+                                        id: Date.now() + s.id,
+                                        activity_category:
+                                            activityCategories.find(
+                                                (c) =>
+                                                    c.id ===
+                                                    parseInt(quickCategoryId),
+                                            ) ?? null,
+                                        hours: parseFloat(quickHours),
+                                    },
+                                ],
+                                total_hours: parseFloat(quickHours),
+                            };
+                        }),
+                    );
+                    setQuickStudentIds([]);
+                    setQuickCategoryId('');
+                    setQuickHours('');
+                    setShowQuickAssign(false);
+                },
+            },
         );
     };
 
@@ -237,34 +455,13 @@ export default function AttendanceIndex({
         { title: 'Asistencia', href: '#' },
     ];
 
-    const getAttendanceStatus = (student: AttendanceStudent) => {
-        if (!student.attended) {
-            return {
-                color: 'bg-red-100 text-red-800',
-                label: 'Ausente',
-                icon: UserX,
-            };
-        }
-        if (student.total_hours && student.total_hours > 0) {
-            return {
-                color: 'bg-green-100 text-green-800',
-                label: `${student.total_hours}h`,
-                icon: Clock,
-            };
-        }
-        return {
-            color: 'bg-yellow-100 text-yellow-800',
-            label: 'Sin horas',
-            icon: UserCheck,
-        };
-    };
+    const registeredCount = registeredStudents.filter((s) => s.attended).length;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Asistencia - ${fieldSession.name}`} />
 
             <div className="flex flex-col gap-6 p-4 lg:p-8">
-                {/* Header */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button
@@ -284,21 +481,32 @@ export default function AttendanceIndex({
                                 Registro de Asistencia
                             </h1>
                             <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                                {fieldSession.name} - {fieldSession.base_hours}h
-                                programadas
+                                {fieldSession.name} - {baseHours}h programadas
                             </p>
                         </div>
                     </div>
-                    <Badge variant="outline">
-                        {fieldSession.status.name === 'planned'
-                            ? 'Planificada'
-                            : fieldSession.status.name === 'realized'
-                              ? 'Realizada'
-                              : 'Cancelada'}
-                    </Badge>
+                    <div className="flex items-center gap-3">
+                        <Badge variant="outline">
+                            {registeredCount}/{registeredStudents.length}{' '}
+                            registrados
+                        </Badge>
+                        <Badge variant="outline">
+                            {fieldSession.status.name === 'planned'
+                                ? 'Planificada'
+                                : fieldSession.status.name === 'realized'
+                                  ? 'Realizada'
+                                  : 'Cancelada'}
+                        </Badge>
+                    </div>
                 </div>
 
-                {/* Filters */}
+                {flash?.warning && (
+                    <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription>{flash.warning}</AlertDescription>
+                    </Alert>
+                )}
+
                 <div className="flex gap-4">
                     <Select
                         value={selectedGradeId}
@@ -343,11 +551,19 @@ export default function AttendanceIndex({
                             ))}
                         </SelectContent>
                     </Select>
+
+                    <Button
+                        variant="outline"
+                        onClick={() => setShowQuickAssign(true)}
+                        disabled={registeredStudents.length === 0}
+                        className="ml-auto"
+                    >
+                        <Clock className="mr-2 h-4 w-4" />
+                        Asignación Rápida
+                    </Button>
                 </div>
 
-                {/* Two Column Layout */}
                 <div className="grid gap-6 md:grid-cols-2">
-                    {/* Available Students Column */}
                     <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-base">
@@ -364,60 +580,23 @@ export default function AttendanceIndex({
                                     No hay estudiantes disponibles
                                 </div>
                             ) : (
-                                <div className="space-y-1">
-                                    {filteredStudents.map((student) => {
-                                        const isSelected =
-                                            selectedAvailableIds.includes(
-                                                student.id,
-                                            );
-                                        return (
-                                            <div
-                                                key={student.id}
-                                                className={`flex items-center gap-3 rounded-lg p-2 transition-colors ${
-                                                    isSelected
-                                                        ? 'bg-primary/10'
-                                                        : 'hover:bg-neutral-50'
-                                                }`}
-                                            >
-                                                <Checkbox
-                                                    checked={isSelected}
-                                                    onCheckedChange={() =>
-                                                        toggleAvailableStudent(
-                                                            student.id,
-                                                        )
-                                                    }
-                                                />
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-medium">
-                                                        {student.name}
-                                                    </p>
-                                                    <p className="text-xs text-neutral-500">
-                                                        {student.cedula}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-
-                            <div className="mt-4 flex justify-end">
-                                <Button
-                                    onClick={handleMoveToRegistered}
-                                    disabled={
-                                        selectedAvailableIds.length === 0 ||
-                                        isProcessing
+                                <AvailableStudentList
+                                    students={filteredStudents}
+                                    selectedIds={selectedAvailableIds}
+                                    onToggle={(id) =>
+                                        setSelectedAvailableIds((prev) =>
+                                            prev.includes(id)
+                                                ? prev.filter((i) => i !== id)
+                                                : [...prev, id],
+                                        )
                                     }
-                                    className="gap-2"
-                                >
-                                    <ArrowRight className="h-4 w-4" />
-                                    Registrar ({selectedAvailableIds.length})
-                                </Button>
-                            </div>
+                                    onBulkRegister={handleMoveToRegistered}
+                                    isProcessing={isProcessing}
+                                />
+                            )}
                         </CardContent>
                     </Card>
 
-                    {/* Registered Students Column */}
                     <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-base">
@@ -434,48 +613,49 @@ export default function AttendanceIndex({
                                     No hay estudiantes registrados
                                 </div>
                             ) : (
-                                <div className="space-y-1">
-                                    {registeredStudents.map((student) => {
-                                        const isSelected =
-                                            selectedRegisteredIds.includes(
+                                <div className="space-y-2">
+                                    {registeredStudents.map((student) => (
+                                        <RegisteredStudentCard
+                                            key={student.id}
+                                            student={student}
+                                            isSelected={selectedRegisteredIds.includes(
                                                 student.id,
-                                            );
-                                        const status =
-                                            getAttendanceStatus(student);
-                                        const StatusIcon = status.icon;
-
-                                        return (
-                                            <div
-                                                key={student.id}
-                                                className={`flex items-center gap-3 rounded-lg p-2 transition-colors ${
-                                                    isSelected
-                                                        ? 'bg-primary/10'
-                                                        : 'hover:bg-neutral-50'
-                                                }`}
-                                            >
-                                                <Checkbox
-                                                    checked={isSelected}
-                                                    onCheckedChange={() =>
-                                                        toggleRegisteredStudent(
-                                                            student.id,
-                                                        )
-                                                    }
-                                                />
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-medium">
-                                                        {student.name}
-                                                    </p>
-                                                    <p className="text-xs text-neutral-500">
-                                                        {student.cedula}
-                                                    </p>
-                                                </div>
-                                                <Badge className={status.color}>
-                                                    <StatusIcon className="mr-1 h-3 w-3" />
-                                                    {status.label}
-                                                </Badge>
-                                            </div>
-                                        );
-                                    })}
+                                            )}
+                                            isExpanded={
+                                                expandedStudentId === student.id
+                                            }
+                                            baseHours={baseHours}
+                                            isAdmin={isAdmin}
+                                            activityCategories={
+                                                activityCategories
+                                            }
+                                            onToggle={(id) =>
+                                                setSelectedRegisteredIds(
+                                                    (prev) =>
+                                                        prev.includes(id)
+                                                            ? prev.filter(
+                                                                  (i) =>
+                                                                      i !== id,
+                                                              )
+                                                            : [...prev, id],
+                                                )
+                                            }
+                                            onExpand={setExpandedStudentId}
+                                            onDeleteAttendance={(id) => {
+                                                setDeleteStudentId(id);
+                                                setShowDeleteConfirm(true);
+                                            }}
+                                            onAddActivity={(id) =>
+                                                openActivityDialog(id)
+                                            }
+                                            onEditActivity={(id, act) =>
+                                                openActivityDialog(id, act)
+                                            }
+                                            onDeleteActivity={
+                                                handleDeleteActivity
+                                            }
+                                        />
+                                    ))}
                                 </div>
                             )}
 
@@ -498,6 +678,49 @@ export default function AttendanceIndex({
                     </Card>
                 </div>
             </div>
+
+            <ActivityDialog
+                open={showActivityDialog}
+                onOpenChange={setShowActivityDialog}
+                isEditing={editingActivity !== null}
+                activityCategoryId={activityCategoryId}
+                onCategoryChange={setActivityCategoryId}
+                activityHours={activityHours}
+                onHoursChange={setActivityHours}
+                activityNotes={activityNotes}
+                onNotesChange={setActivityNotes}
+                onSave={handleSaveActivity}
+                categories={activityCategories}
+            />
+
+            <QuickAssignDialog
+                open={showQuickAssign}
+                onOpenChange={setShowQuickAssign}
+                quickCategoryId={quickCategoryId}
+                onCategoryChange={setQuickCategoryId}
+                quickHours={quickHours}
+                onHoursChange={setQuickHours}
+                quickStudentIds={quickStudentIds}
+                onToggleStudent={(id) =>
+                    setQuickStudentIds((prev) =>
+                        prev.includes(id)
+                            ? prev.filter((i) => i !== id)
+                            : [...prev, id],
+                    )
+                }
+                onAssign={handleQuickAssign}
+                categories={activityCategories}
+                students={registeredStudents}
+            />
+
+            <DeleteConfirmDialog
+                open={showDeleteConfirm}
+                onOpenChange={(open) => {
+                    setShowDeleteConfirm(open);
+                    if (!open) setDeleteStudentId(null);
+                }}
+                onConfirm={handleDeleteAttendance}
+            />
         </AppLayout>
     );
 }

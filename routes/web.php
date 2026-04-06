@@ -52,6 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('field-sessions/{field_session}/attendance', [AttendanceController::class, 'index'])->name('field-sessions.attendance');
         Route::post('field-sessions/{field_session}/attendance', [AttendanceController::class, 'store'])->name('field-sessions.attendance.store');
         Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
+        Route::delete('attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
         Route::post('field-sessions/{field_session}/attendance/bulk-absent', [AttendanceController::class, 'bulkAbsent'])->name('field-sessions.attendance.bulk-absent');
         Route::post('field-sessions/{field_session}/attendance/bulk-assign-hours', [AttendanceController::class, 'bulkAssignHours'])->name('field-sessions.attendance.bulk-assign-hours');
         Route::post('field-sessions/{field_session}/attendance/quick-assign-hours', [AttendanceController::class, 'quickAssignHours'])->name('field-sessions.attendance.quick-assign-hours');

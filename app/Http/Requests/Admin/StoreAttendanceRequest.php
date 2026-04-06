@@ -12,9 +12,7 @@ class StoreAttendanceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // Check if user has attendances.create permission OR field_sessions permission
-        return $this->user()->can('attendances.create')
-            || $this->user()->can('field_sessions.create');
+        return $this->user()->can('attendances.create');
     }
 
     /**

@@ -27,7 +27,7 @@ class AttendanceFactory extends Factory
 
         return [
             'field_session_id' => $fieldSession->id,
-            'user_id' => User::role('estudiante')->first() ?? User::factory()->create(),
+            'user_id' => User::role('alumno')->first() ?? User::factory()->create(),
             'academic_year_id' => $academicYear->id,
             'attended' => true,
             'notes' => null,

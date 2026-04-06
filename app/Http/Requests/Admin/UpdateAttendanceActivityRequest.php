@@ -12,7 +12,7 @@ class UpdateAttendanceActivityRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('attendance_activities.update');
+        return $this->user()->can('attendance_activities.edit');
     }
 
     /**
