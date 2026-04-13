@@ -51,8 +51,8 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 | 9    | Catálogos de configuración       | Actividades y ubicaciones                       | ✅     |
 | 10   | Jornadas de campo                | Registro central de actividades                 | ✅     |
 | 11   | Asistencia y subactividades      | Acreditación de horas y evidencias              | ✅     |
-| 12   | Horas externas                   | Acreditación para transferidos                  | 🔲     |
-| 13   | Acumulados y dashboards          | Progreso visual y KPIs                          | 🔲     |
+| 12   | Acumulados y dashboards          | Progreso visual y KPIs                          | ✅     |
+| 13   | Horas externas                   | Acreditación para transferidos                  | 🔲     |
 | 14   | Reportes en PDF                  | Generación de certificados y listados           | 🔲     |
 | 15   | Revisión y estabilización        | QA final y seeders demo                         | 🔲     |
 
@@ -62,9 +62,10 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 > - Hito 7 simplificado: solo asignación de representantes desde perfil de estudiante
 > - Hito 8 completado: Información de salud con archivos adjuntos y eliminación en cascada
 > - Hito 9 completado: Catálogos de configuración (actividades y ubicaciones) con CRUD para admin y profesor
-> - Hito 10 completado: Jornadas de campo con registro central de actividades
+> - Hito 10 completado: Journadas de campo con registro central de actividades
 > - Hito 11 completado: Asistencia y subactividades con ownership, alertas de horas, asignación rápida y gestión completa de evidencias
-> - Próximos hitos pendientes: 12-15
+> - Hito 12 completado: Acumulados y dashboards (HourAccumulatorService, DashboardController, dashboards por rol)
+> - Próximos hitos: 13 (Horas Externas), 14 (Reportes PDF), 15 (Estabilización)
 
 ---
 
@@ -72,18 +73,19 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 
 | Categoría          | Cantidad                                                   |
 | ------------------ | ---------------------------------------------------------- |
-| Modelos            | 15                                                         |
-| Controladores      | 20 (1 base + 16 admin + 3 settings)                        |
-| Form Requests      | 26 (22 admin + 4 settings)                                 |
+| Modelos            | 19                                                         |
+| Controladores      | 24 (1 base + 19 admin + 3 settings + 1 dashboard)          |
+| Servicios          | 1 (HourAccumulatorService)                                 |
+| Form Requests      | 34                                                         |
 | Policies           | 3 (UserPolicy, AttendancePolicy, AttendanceActivityPolicy) |
 | Middleware custom  | 3                                                          |
-| Migraciones        | 25                                                         |
+| Migraciones        | 29                                                         |
 | Seeders            | 15                                                         |
-| Factories          | 11                                                         |
-| Feature Tests      | 30                                                         |
-| Páginas React      | 43                                                         |
+| Factories          | 15                                                         |
+| Feature Tests      | 35                                                         |
+| Páginas React      | 50                                                         |
 | Componentes UI     | 28                                                         |
-| Permisos definidos | 54                                                         |
+| Permisos definidos | 86                                                         |
 | Roles definidos    | 4 (admin, profesor, alumno, representante)                 |
 
 ---
@@ -963,9 +965,11 @@ Entidades implementadas:
 
 ---
 
-### Hito 12 — Horas Externas
+### Hito 13 — Horas Externas
 
 **Enfoque:** Acreditación de horas previas para estudiantes transferidos.
+
+**Estado:** 🔲 Pendiente
 
 #### Roles y Permisos (esperados)
 
@@ -980,15 +984,19 @@ Entidades implementadas:
 
 ---
 
-### Hito 13 — Acumulados y Dashboards
+### Hito 12 — Acumulados y Dashboards
 
 **Enfoque:** Progreso visual y KPIs de horas acumuladas por estudiante.
 
-#### Roles y Permisos (esperados)
+**Estado:** ✅ Completado
+
+**Diseño aditivo:** El cálculo de horas es `total = horas_jornadas + horas_externas`, donde `horas_externas = 0` hasta implementar Hito 13.
+
+#### Roles y Permisos (implementados)
 
 | Permiso                  | Protege                | Roles que lo tendrán                           |
 | ------------------------ | ---------------------- | ---------------------------------------------- |
-| `dashboard.view`         | Dashboard principal    | `admin`, `profesor`                            |
+| `dashboard.view`         | Dashboard principal    | `admin`, `profesor`, `alumno`, `representante` |
 | `accumulated_hours.view` | Ver acumulados propios | `admin`, `profesor`, `alumno`, `representante` |
 
 **Acceso por rol:**
@@ -999,6 +1007,18 @@ Entidades implementadas:
 | `profesor`      | Dashboard de sus secciones y alumnos asignados   |
 | `alumno`        | Solo su propio progreso de horas                 |
 | `representante` | Progreso de su representado                      |
+
+#### Archivos creados
+
+- `app/Http/Controllers/DashboardController.php` — Routing basado en roles
+- `app/Services/HourAccumulatorService.php` — Cálculo centralizado de horas
+- `app/Policies/DashboardPolicy.php` — Policy para autorización
+- `resources/js/pages/admin/dashboard.tsx` — Dashboard admin
+- `resources/js/pages/teacher/dashboard.tsx` — Dashboard profesor
+- `resources/js/pages/student/dashboard.tsx` — Dashboard estudiante
+- `resources/js/pages/representative/dashboard.tsx` — Dashboard representante
+- `tests/Feature/DashboardControllerTest.php` — Tests de funcionalidad
+- `tests/Unit/HourAccumulatorServiceTest.php` — Tests del servicio
 
 ---
 

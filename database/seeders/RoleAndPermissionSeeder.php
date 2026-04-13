@@ -84,6 +84,9 @@ class RoleAndPermissionSeeder extends Seeder
             'attendance_activities.create',
             'attendance_activities.edit',
             'attendance_activities.delete',
+            // Dashboard y acumulados (Hito 12)
+            'dashboard.view',
+            'accumulated_hours.view',
         ];
 
         foreach ($permissions as $permission) {
@@ -131,6 +134,22 @@ class RoleAndPermissionSeeder extends Seeder
                     'attendance_activities.create',
                     'attendance_activities.edit',
                     'attendance_activities.delete',
+                    'dashboard.view',
+                    'accumulated_hours.view',
+                ]);
+            }
+
+            if ($roleName === 'alumno') {
+                $role->syncPermissions([
+                    'dashboard.view',
+                    'accumulated_hours.view',
+                ]);
+            }
+
+            if ($roleName === 'representante') {
+                $role->syncPermissions([
+                    'dashboard.view',
+                    'accumulated_hours.view',
                 ]);
             }
         }

@@ -89,6 +89,8 @@ La decisión de fijar el contexto para toda la sesión, en lugar de permitir cam
 | Ver novedades de otros alumnos          | No     | No                | Sí              | Sí            |
 | Ver información de salud propia         | Sí     | Sí (representado) | Sí              | Sí            |
 | Registrar información de salud          | No     | No                | Sí (a su cargo) | Sí            |
+| Ver dashboard                           | Sí     | Sí                | Sí              | Sí            |
+| Ver acumulados propios                  | Sí     | Sí (representado) | Sí              | Sí            |
 | Generar reportes                        | No     | No                | Parcial         | Sí            |
 | Gestión de configuración / Institución  | No     | No                | No              | Sí            |
 | Gestión de Roles y Permisos             | No     | No                | No              | Sí            |
@@ -483,7 +485,59 @@ Horas restantes:
 
 La vista del estudiante al loguearse muestra permanentemente: horas acumuladas en el año activo, horas acumuladas por lapso dentro del año activo, horas acumuladas en años anteriores, total histórico acumulado y horas restantes para completar el cupo. Esta información es el propósito final del sistema y debe ser siempre visible y precisa.
 
-### 12. Configuración del Sistema
+### 12. Dashboards y Progreso Visual
+
+El sistema ofrece dashboards personalizados según el rol del usuario, proporcionando una visualización clara del progreso de horas acumuladas.
+
+#### 12.1 Dashboard del Administrador
+
+KPIs institucionales completos:
+
+- Cumplimiento global de horas (porcentaje de estudiantes que cumplen el cupo)
+- Ranking de secciones por promedio de progreso
+- Comparación de horas por lapsos
+- Estadísticas de sesiones completadas vs canceladas
+- Distribución de horas por categoría de actividad
+- Distribución de horas por ubicación
+- Carga de trabajo por profesor
+- Comparación año tras año
+
+#### 12.2 Dashboard del Profesor
+
+Vista enfocada en sus secciones asignadas:
+
+- Lista de secciones con estudiantes y progreso individual
+- Estadísticas de sesiones propias (completadas, canceladas, horas generadas)
+- Asistencia pendiente por registrar
+- Estudiantes con baja asistencia (< 3 sesiones)
+- Distribución de horas por categoría
+- Recordatorios de salud de estudiantes
+
+#### 12.3 Dashboard del Estudiante
+
+Progreso personal:
+
+- Barra de progreso visual (horas acumuladas vs requerido)
+- Desglose por año escolar
+- Desglose por lapsos
+- Historial de sesiones recientes
+- Proyección de cierre (fecha estimada para cumplir cupo)
+- Participación por categoría de actividad
+
+#### 12.4 Dashboard del Representante
+
+Seguimiento del estudiante representado:
+
+- Nombre y progreso del estudiante
+- Tendencia de últimas 4 semanas
+- Próxima sesión programada
+- Recordatorio de condiciones de salud
+
+#### 12.5 Servicio Centralizado
+
+El `HourAccumulatorService` centraliza todos los cálculos de horas, asegurando consistencia entre los dashboards y el resto del sistema. El diseño aditivo permite futuras extensiones (ej: horas externas para estudiantes transferidos).
+
+### 13. Configuración del Sistema
 
 El módulo de configuración gestiona todos los catálogos y parámetros que definen el comportamiento del sistema. Solo los administradores tienen acceso a este módulo.
 
@@ -499,28 +553,28 @@ El módulo de configuración gestiona todos los catálogos y parámetros que def
 | Condiciones de salud              | `health_conditions`   | CRUD con activación/desactivación. Catálogo de condiciones médicas conocidas.                            |
 | **Datos Institucionales (Nuevo)** | `institution`         | Datos de la sede institucional (`name`, `address`, `email`, `phone`, `code`). **(Hito 1 / RBAC Hito 2)** |
 
-### 13. Reportes y Estadísticas
+### 14. Reportes y Estadísticas
 
 Los reportes son generados automáticamente en esta primera fase, sin configuración por parte del usuario. La decisión de empezar con reportes predefinidos en lugar de reportes dinámicos es de alcance: los reportes dinámicos requieren una capa de UI significativamente más compleja y no son necesarios para la funcionalidad core del sistema.
 
-Todos los reportes pueden segmentarse por lapso además de por año escolar, gracias a la tabla `school_terms` y la FK `school_term_id` en `field_sessions`. Esto fue un requerimiento explícito del cliente: la información debe poder consultarse y reportarse por lapso de forma independiente.
+Todos los reportes pueden segmentarse por lapse además de por año escolar, gracias a la tabla `school_terms` y la FK `school_term_id` en `field_sessions`. Esto fue un requerimiento explícito del cliente: la información debe poder consultarse y reportarse por lapse de forma independiente.
 
 | Reporte                            | Segmentación           | Destinatario                |
 | ---------------------------------- | ---------------------- | --------------------------- |
-| Resumen de horas del estudiante    | Año escolar / Lapso    | Estudiante, Profesor, Admin |
+| Resumen de horas del estudiante    | Año escolar / Lapse    | Estudiante, Profesor, Admin |
 | Asistencia por jornada             | Por jornada específica | Profesor, Admin             |
-| Historial completo de horas en PDF | Año escolar / Lapso    | Profesor, Admin             |
-| Horas por grado y sección          | Año escolar / Lapso    | Admin                       |
-| Novedades e incidencias            | Por periodo / Lapso    | Admin                       |
-| Analítica de cumplimiento          | Año escolar / Lapso    | Admin                       |
+| Historial completo de horas en PDF | Año escolar / Lapse    | Profesor, Admin             |
+| Horas por grado y sección          | Año escolar / Lapse    | Admin                       |
+| Novedades e incidencias            | Por periodo / Lapse    | Admin                       |
+| Analítica de cumplimiento          | Año escolar / Lapse    | Admin                       |
 
 > **Fase 2 (fuera de alcance actual):** Reportes dinámicos con filtros configurables por el usuario.
 
-### 14. Modelo de Datos
+### 15. Modelo de Datos
 
 El modelo de datos fue definido iterativamente y cada decisión tiene un razonamiento detallado en las secciones anteriores. A continuación se presenta la estructura final de cada tabla con sus campos y la justificación de los más relevantes.
 
-#### 13.1 Convenciones Generales
+#### 15.1 Convenciones Generales
 
 | Convención          | Descripción                                                                |
 | ------------------- | -------------------------------------------------------------------------- |
@@ -532,7 +586,7 @@ El modelo de datos fue definido iterativamente y cada decisión tiene un razonam
 | Roles y permisos    | Spatie Laravel Permissions. Soporta múltiples roles por usuario.           |
 | Desnormalización    | Aplicada selectivamente en campos estables de alta frecuencia de consulta. |
 
-#### 13.2 Tablas con Archivos Adjuntos (Spatie Media Library)
+#### 15.2 Tablas con Archivos Adjuntos (Spatie Media Library)
 
 | Modelo                | Propósito del adjunto                                               |
 | --------------------- | ------------------------------------------------------------------- |
@@ -541,7 +595,7 @@ El modelo de datos fue definido iterativamente y cada decisión tiene un razonam
 | `ExternalHour`        | Documento de respaldo de horas externas de otra institución         |
 | `StudentHealthRecord` | Soportes médicos que respaldan la condición de salud del estudiante |
 
-#### 13.3 Estructura de Tablas
+#### 15.3 Estructura de Tablas
 
 ```sql
 users
@@ -708,7 +762,7 @@ external_hours
   -- Archivos adjuntos vía Spatie Media Library
 ```
 
-#### 13.4 Mapa de Relaciones
+#### 15.4 Mapa de Relaciones
 
 ```text
 academic_years

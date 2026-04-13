@@ -103,6 +103,7 @@ export default function Profile({
     representatives,
     representedStudents,
     healthRecords,
+    hourHistory,
 }: {
     mustVerifyEmail: boolean;
     status?: string;
@@ -811,6 +812,7 @@ export default function Profile({
                                                                                         {
                                                                                             activity.hours
                                                                                         }
+
                                                                                         h{' '}
                                                                                         {activity.activity_category ||
                                                                                             ''}
