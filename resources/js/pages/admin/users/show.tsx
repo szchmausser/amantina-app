@@ -37,6 +37,19 @@ import AssignRepresentativeModal from './partials/assign-representative-modal';
 import HealthRecordModal from './partials/health-record-modal';
 import { router } from '@inertiajs/react';
 
+interface CurrentEnrollment {
+    id: number;
+    academic_year: {
+        name: string;
+    };
+    grade: {
+        name: string;
+    };
+    section: {
+        name: string;
+    };
+}
+
 interface Props {
     user: User & {
         roles: any[];
@@ -46,10 +59,24 @@ interface Props {
         health_records: any[];
         avatar_url?: string | null;
     };
+    currentEnrollment?: CurrentEnrollment | null;
     relationshipTypes: any[];
     availableRepresentatives: any[];
     healthConditions: any[];
     hourHistory?: HourHistoryItem[];
+    hourStats?: {
+        current_year: {
+            hours: number;
+            required: number;
+            percentage: number;
+            year_name: string;
+        };
+        total: {
+            hours: number;
+            required: number;
+            percentage: number;
+        };
+    } | null;
 }
 
 interface HourHistoryActivity {
@@ -63,6 +90,7 @@ interface HourHistoryFieldSession {
     name: string;
     start_datetime: string | null;
     status: string | null;
+    academic_year_id: number;
 }
 
 interface HourHistoryItem {
@@ -70,6 +98,7 @@ interface HourHistoryItem {
     attended: boolean;
     notes: string | null;
     created_at: string;
+    total_hours: number;
     fieldSession: HourHistoryFieldSession | null;
     activities: HourHistoryActivity[];
 }
@@ -82,9 +111,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Show({
     user,
+    currentEnrollment,
     relationshipTypes,
     availableRepresentatives,
     healthConditions,
+    hourHistory,
+    hourStats,
 }: Props) {
     const { auth } = usePage<any>().props;
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -310,13 +342,41 @@ export default function Show({
                                                 </p>
                                             </div>
                                         )}
-                                        <div className="col-span-full rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800/50">
-                                            <p className="text-xs text-neutral-500 italic">
-                                                * El grado y sección se
-                                                gestionan en el módulo de
-                                                Inscripciones.
-                                            </p>
-                                        </div>
+                                        {currentEnrollment ? (
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                                    Grado y Sección
+                                                </p>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="font-medium"
+                                                    >
+                                                        {currentEnrollment.grade
+                                                            ?.name || '—'}
+                                                    </Badge>
+                                                    <span className="text-sm font-medium">
+                                                        Sección{' '}
+                                                        {currentEnrollment
+                                                            .section?.name || '—'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-neutral-500">
+                                                    Año Escolar:{' '}
+                                                    {currentEnrollment
+                                                        .academic_year?.name ||
+                                                        '—'}
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="col-span-full rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800/50">
+                                                <p className="text-xs text-neutral-500 italic">
+                                                    * El grado y sección se
+                                                    gestionan en el módulo de
+                                                    Inscripciones.
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -763,6 +823,114 @@ export default function Show({
                     {/* Tab: Horas (solo para alumnos) */}
                     {isAlumno && hourHistory && (
                         <TabsContent value="horas" className="space-y-6">
+                            {/* Estadísticas de Horas */}
+                            {hourStats && (
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    {/* Año Actual */}
+                                    <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                        <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                            <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300">
+                                                {hourStats.current_year.year_name}
+                                            </h3>
+                                        </div>
+                                        <div className="p-6">
+                                            <div className="mb-4 flex items-end justify-between">
+                                                <div>
+                                                    <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+                                                        {hourStats.current_year.hours.toFixed(1)}h
+                                                    </p>
+                                                    <p className="text-sm text-neutral-500">
+                                                        de {hourStats.current_year.required}h requeridas
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className={`text-2xl font-bold ${
+                                                        hourStats.current_year.percentage >= 100
+                                                            ? 'text-green-600'
+                                                            : hourStats.current_year.percentage >= 75
+                                                            ? 'text-blue-600'
+                                                            : hourStats.current_year.percentage >= 50
+                                                            ? 'text-amber-600'
+                                                            : 'text-red-600'
+                                                    }`}>
+                                                        {hourStats.current_year.percentage.toFixed(0)}%
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {/* Barra de progreso */}
+                                            <div className="relative h-3 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
+                                                <div
+                                                    className={`h-full transition-all duration-500 ${
+                                                        hourStats.current_year.percentage >= 100
+                                                            ? 'bg-green-500'
+                                                            : hourStats.current_year.percentage >= 75
+                                                            ? 'bg-blue-500'
+                                                            : hourStats.current_year.percentage >= 50
+                                                            ? 'bg-amber-500'
+                                                            : 'bg-red-500'
+                                                    }`}
+                                                    style={{
+                                                        width: `${Math.min(hourStats.current_year.percentage, 100)}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Acumulado Total */}
+                                    <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                        <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                            <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300">
+                                                Acumulado General
+                                            </h3>
+                                        </div>
+                                        <div className="p-6">
+                                            <div className="mb-4 flex items-end justify-between">
+                                                <div>
+                                                    <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+                                                        {hourStats.total.hours.toFixed(1)}h
+                                                    </p>
+                                                    <p className="text-sm text-neutral-500">
+                                                        de {hourStats.total.required}h totales
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className={`text-2xl font-bold ${
+                                                        hourStats.total.percentage >= 100
+                                                            ? 'text-green-600'
+                                                            : hourStats.total.percentage >= 75
+                                                            ? 'text-blue-600'
+                                                            : hourStats.total.percentage >= 50
+                                                            ? 'text-amber-600'
+                                                            : 'text-red-600'
+                                                    }`}>
+                                                        {hourStats.total.percentage.toFixed(0)}%
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {/* Barra de progreso */}
+                                            <div className="relative h-3 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
+                                                <div
+                                                    className={`h-full transition-all duration-500 ${
+                                                        hourStats.total.percentage >= 100
+                                                            ? 'bg-green-500'
+                                                            : hourStats.total.percentage >= 75
+                                                            ? 'bg-blue-500'
+                                                            : hourStats.total.percentage >= 50
+                                                            ? 'bg-amber-500'
+                                                            : 'bg-red-500'
+                                                    }`}
+                                                    style={{
+                                                        width: `${Math.min(hourStats.total.percentage, 100)}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Historial de Horas */}
                             <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                                 <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <Clock className="h-4 w-4 text-green-600" />
@@ -779,7 +947,7 @@ export default function Show({
                                                     className="p-4 px-6"
                                                 >
                                                     <div className="flex items-start justify-between">
-                                                        <div className="flex items-start gap-3">
+                                                        <div className="flex items-start gap-3 flex-1">
                                                             <div
                                                                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
                                                                     item.attended
@@ -861,12 +1029,27 @@ export default function Show({
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className="text-xs"
-                                                        >
-                                                            {item.created_at}
-                                                        </Badge>
+                                                        <div className="flex flex-col items-end gap-2 ml-4">
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="text-xs"
+                                                            >
+                                                                {item.created_at}
+                                                            </Badge>
+                                                            {/* Resultado de la jornada */}
+                                                            <Badge
+                                                                className={`text-sm font-bold ${
+                                                                    item.total_hours > 0
+                                                                        ? 'bg-green-500 text-white hover:bg-green-600'
+                                                                        : item.total_hours < 0
+                                                                        ? 'bg-red-500 text-white hover:bg-red-600'
+                                                                        : 'bg-neutral-300 text-neutral-700 hover:bg-neutral-400 dark:bg-neutral-700 dark:text-neutral-300'
+                                                                }`}
+                                                            >
+                                                                {item.total_hours > 0 && '+'}
+                                                                {item.total_hours}h
+                                                            </Badge>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}

@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\HealthCondition;
 use App\Models\RelationshipType;
 use App\Models\User;
+use App\Services\HourAccumulatorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -101,7 +103,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user): Response
+    public function show(User $user, HourAccumulatorService $hourAccumulator): Response
     {
         Gate::authorize('view', $user);
 
@@ -114,7 +116,14 @@ class UserController extends Controller
             'healthRecords.condition',
             'healthRecords.receivedBy',
             'healthRecords.media',
+            'enrollments' => function ($query) {
+                $query->with('academicYear', 'grade', 'section')
+                    ->whereHas('academicYear', fn ($q) => $q->where('is_active', true))
+                    ->orderBy('created_at', 'desc');
+            },
         ]);
+
+        $currentEnrollment = $user->enrollments->first();
 
         $representatives = \DB::table('student_representatives')
             ->join('users as reps', 'reps.id', '=', 'student_representatives.representative_id')
@@ -147,8 +156,48 @@ class UserController extends Controller
 
         $user->setRelation('representatives', $representatives);
 
+        // Obtener estadísticas de horas si es alumno
+        $hourStats = null;
+        if ($user->hasRole('alumno')) {
+            $activeYear = AcademicYear::active()->first();
+            
+            // Horas del año actual
+            $currentYearData = $hourAccumulator->getStudentTotalHours($user->id, $activeYear?->id);
+            
+            // Horas totales de todos los años
+            $allYears = AcademicYear::all();
+            $totalHoursAllYears = 0;
+            $totalQuotaAllYears = 0;
+            
+            foreach ($allYears as $year) {
+                $yearData = $hourAccumulator->getStudentTotalHours($user->id, $year->id);
+                $totalHoursAllYears += $yearData['total_hours'];
+                $totalQuotaAllYears += $year->required_hours;
+            }
+            
+            $totalPercentage = $totalQuotaAllYears > 0 
+                ? ($totalHoursAllYears / $totalQuotaAllYears) * 100 
+                : 0;
+
+            $hourStats = [
+                'current_year' => [
+                    'hours' => $currentYearData['total_hours'] ?? 0,
+                    'required' => $activeYear?->required_hours ?? 0,
+                    'percentage' => $currentYearData['percentage'] ?? 0,
+                    'year_name' => $activeYear?->name ?? 'N/A',
+                ],
+                'total' => [
+                    'hours' => $totalHoursAllYears,
+                    'required' => $totalQuotaAllYears,
+                    'percentage' => round($totalPercentage, 2),
+                ],
+            ];
+        }
+
         return Inertia::render('admin/users/show', [
             'user' => $user,
+            'currentEnrollment' => $currentEnrollment,
+            'hourStats' => $hourStats,
             'relationshipTypes' => RelationshipType::where('is_active', true)->get(),
             'availableRepresentatives' => $representativeRole
                 ? User::role('representante')->get(['id', 'name', 'cedula'])
@@ -157,28 +206,37 @@ class UserController extends Controller
             'hourHistory' => $user->hasRole('alumno')
                 ? Attendance::where('user_id', $user->id)
                     ->with(['fieldSession' => function ($query) {
-                        $query->with('status');
+                        $query->with(['status', 'academicYear']);
                     }, 'attendanceActivities.activityCategory'])
-                    ->orderBy('created_at', 'desc')
+                    ->orderBy('created_at', 'asc') // Más antigua a más reciente
                     ->limit(50)
                     ->get()
-                    ->map(fn ($a) => [
-                        'id' => $a->id,
-                        'attended' => $a->attended,
-                        'notes' => $a->notes,
-                        'created_at' => $a->created_at->format('d/m/Y H:i'),
-                        'fieldSession' => $a->fieldSession ? [
-                            'id' => $a->fieldSession->id,
-                            'name' => $a->fieldSession->name,
-                            'start_datetime' => $a->fieldSession->start_datetime?->format('d/m/Y'),
-                            'status' => $a->fieldSession->status?->name,
-                        ] : null,
-                        'activities' => $a->attendanceActivities->map(fn ($act) => [
-                            'id' => $act->id,
-                            'hours' => (float) $act->hours,
-                            'activity_category' => $act->activityCategory?->name,
-                        ])->values(),
-                    ])
+                    ->map(function ($a) {
+                        // Calcular total de horas de esta asistencia
+                        $totalHours = $a->attended
+                            ? $a->attendanceActivities->sum('hours')
+                            : 0;
+
+                        return [
+                            'id' => $a->id,
+                            'attended' => $a->attended,
+                            'notes' => $a->notes,
+                            'created_at' => $a->created_at->format('d/m/Y H:i'),
+                            'total_hours' => (float) $totalHours, // Total de horas de esta jornada
+                            'fieldSession' => $a->fieldSession ? [
+                                'id' => $a->fieldSession->id,
+                                'name' => $a->fieldSession->name,
+                                'start_datetime' => $a->fieldSession->start_datetime?->format('d/m/Y'),
+                                'status' => $a->fieldSession->status?->name,
+                                'academic_year_id' => $a->fieldSession->academic_year_id,
+                            ] : null,
+                            'activities' => $a->attendanceActivities->map(fn ($act) => [
+                                'id' => $act->id,
+                                'hours' => (float) $act->hours,
+                                'activity_category' => $act->activityCategory?->name,
+                            ])->values(),
+                        ];
+                    })
                 : [],
         ]);
     }
