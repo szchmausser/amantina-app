@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SchoolTermController;
 use App\Http\Controllers\Admin\SectionController;
 use App\Http\Controllers\Admin\StudentHealthRecordController;
+use App\Http\Controllers\Admin\StudentPdfController;
 use App\Http\Controllers\Admin\TeacherAssignmentController;
 use App\Http\Controllers\Admin\TermTypeController;
 use App\Http\Controllers\Admin\UserController;
@@ -33,6 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin Routes
     Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', UserController::class);
+        Route::get('users/{user}/pdf', StudentPdfController::class)->name('users.pdf');
         Route::resource('roles', RoleController::class)->only(['index', 'show', 'edit', 'update']);
         Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
 

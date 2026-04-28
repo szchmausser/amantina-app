@@ -28,6 +28,7 @@ import {
     index as userIndex,
     edit as userEdit,
     show as userShowDetail,
+    pdf as userPdf,
 } from '@/routes/admin/users';
 import { destroy as unlinkRepresentative } from '@/routes/admin/student-representatives';
 import { store as linkRepresentative } from '@/routes/admin/student-representatives';
@@ -227,15 +228,29 @@ export default function Show({
                             </div>
                         </div>
                     </div>
-                    {(hasPermission('users.edit') ||
-                        (auth.user && auth.user.id === user.id)) && (
-                        <Button asChild>
-                            <Link href={userEdit(user.id).url}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar Perfil
-                            </Link>
-                        </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {isAlumno && (
+                            <Button variant="outline" asChild>
+                                <a
+                                    href={userPdf(user.id).url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Exportar PDF
+                                </a>
+                            </Button>
+                        )}
+                        {(hasPermission('users.edit') ||
+                            (auth.user && auth.user.id === user.id)) && (
+                            <Button asChild>
+                                <Link href={userEdit(user.id).url}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Editar Perfil
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Tabs */}
@@ -318,19 +333,6 @@ export default function Show({
                                         </h2>
                                     </div>
                                     <div className="grid gap-6 p-6 md:grid-cols-2">
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                                Tipo de Ingreso
-                                            </p>
-                                            <Badge
-                                                variant="outline"
-                                                className="font-medium"
-                                            >
-                                                {user.is_transfer
-                                                    ? 'Transferido'
-                                                    : 'Regular'}
-                                            </Badge>
-                                        </div>
                                         {user.is_transfer && (
                                             <div className="space-y-1">
                                                 <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
@@ -358,7 +360,8 @@ export default function Show({
                                                     <span className="text-sm font-medium">
                                                         Sección{' '}
                                                         {currentEnrollment
-                                                            .section?.name || '—'}
+                                                            .section?.name ||
+                                                            '—'}
                                                     </span>
                                                 </div>
                                                 <p className="text-xs text-neutral-500">
@@ -830,30 +833,56 @@ export default function Show({
                                     <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                                         <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                             <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300">
-                                                {hourStats.current_year.year_name}
+                                                {
+                                                    hourStats.current_year
+                                                        .year_name
+                                                }
                                             </h3>
                                         </div>
                                         <div className="p-6">
                                             <div className="mb-4 flex items-end justify-between">
                                                 <div>
                                                     <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-                                                        {hourStats.current_year.hours.toFixed(1)}h
+                                                        {hourStats.current_year.hours.toFixed(
+                                                            1,
+                                                        )}
+                                                        h
                                                     </p>
                                                     <p className="text-sm text-neutral-500">
-                                                        de {hourStats.current_year.required}h requeridas
+                                                        de{' '}
+                                                        {
+                                                            hourStats
+                                                                .current_year
+                                                                .required
+                                                        }
+                                                        h requeridas
                                                     </p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className={`text-2xl font-bold ${
-                                                        hourStats.current_year.percentage >= 100
-                                                            ? 'text-green-600'
-                                                            : hourStats.current_year.percentage >= 75
-                                                            ? 'text-blue-600'
-                                                            : hourStats.current_year.percentage >= 50
-                                                            ? 'text-amber-600'
-                                                            : 'text-red-600'
-                                                    }`}>
-                                                        {hourStats.current_year.percentage.toFixed(0)}%
+                                                    <p
+                                                        className={`text-2xl font-bold ${
+                                                            hourStats
+                                                                .current_year
+                                                                .percentage >=
+                                                            100
+                                                                ? 'text-green-600'
+                                                                : hourStats
+                                                                        .current_year
+                                                                        .percentage >=
+                                                                    75
+                                                                  ? 'text-blue-600'
+                                                                  : hourStats
+                                                                          .current_year
+                                                                          .percentage >=
+                                                                      50
+                                                                    ? 'text-amber-600'
+                                                                    : 'text-red-600'
+                                                        }`}
+                                                    >
+                                                        {hourStats.current_year.percentage.toFixed(
+                                                            0,
+                                                        )}
+                                                        %
                                                     </p>
                                                 </div>
                                             </div>
@@ -861,13 +890,20 @@ export default function Show({
                                             <div className="relative h-3 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
                                                 <div
                                                     className={`h-full transition-all duration-500 ${
-                                                        hourStats.current_year.percentage >= 100
+                                                        hourStats.current_year
+                                                            .percentage >= 100
                                                             ? 'bg-green-500'
-                                                            : hourStats.current_year.percentage >= 75
-                                                            ? 'bg-blue-500'
-                                                            : hourStats.current_year.percentage >= 50
-                                                            ? 'bg-amber-500'
-                                                            : 'bg-red-500'
+                                                            : hourStats
+                                                                    .current_year
+                                                                    .percentage >=
+                                                                75
+                                                              ? 'bg-blue-500'
+                                                              : hourStats
+                                                                      .current_year
+                                                                      .percentage >=
+                                                                  50
+                                                                ? 'bg-amber-500'
+                                                                : 'bg-red-500'
                                                     }`}
                                                     style={{
                                                         width: `${Math.min(hourStats.current_year.percentage, 100)}%`,
@@ -888,23 +924,44 @@ export default function Show({
                                             <div className="mb-4 flex items-end justify-between">
                                                 <div>
                                                     <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-                                                        {hourStats.total.hours.toFixed(1)}h
+                                                        {hourStats.total.hours.toFixed(
+                                                            1,
+                                                        )}
+                                                        h
                                                     </p>
                                                     <p className="text-sm text-neutral-500">
-                                                        de {hourStats.total.required}h totales
+                                                        de{' '}
+                                                        {
+                                                            hourStats.total
+                                                                .required
+                                                        }
+                                                        h totales
                                                     </p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className={`text-2xl font-bold ${
-                                                        hourStats.total.percentage >= 100
-                                                            ? 'text-green-600'
-                                                            : hourStats.total.percentage >= 75
-                                                            ? 'text-blue-600'
-                                                            : hourStats.total.percentage >= 50
-                                                            ? 'text-amber-600'
-                                                            : 'text-red-600'
-                                                    }`}>
-                                                        {hourStats.total.percentage.toFixed(0)}%
+                                                    <p
+                                                        className={`text-2xl font-bold ${
+                                                            hourStats.total
+                                                                .percentage >=
+                                                            100
+                                                                ? 'text-green-600'
+                                                                : hourStats
+                                                                        .total
+                                                                        .percentage >=
+                                                                    75
+                                                                  ? 'text-blue-600'
+                                                                  : hourStats
+                                                                          .total
+                                                                          .percentage >=
+                                                                      50
+                                                                    ? 'text-amber-600'
+                                                                    : 'text-red-600'
+                                                        }`}
+                                                    >
+                                                        {hourStats.total.percentage.toFixed(
+                                                            0,
+                                                        )}
+                                                        %
                                                     </p>
                                                 </div>
                                             </div>
@@ -912,13 +969,18 @@ export default function Show({
                                             <div className="relative h-3 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
                                                 <div
                                                     className={`h-full transition-all duration-500 ${
-                                                        hourStats.total.percentage >= 100
+                                                        hourStats.total
+                                                            .percentage >= 100
                                                             ? 'bg-green-500'
-                                                            : hourStats.total.percentage >= 75
-                                                            ? 'bg-blue-500'
-                                                            : hourStats.total.percentage >= 50
-                                                            ? 'bg-amber-500'
-                                                            : 'bg-red-500'
+                                                            : hourStats.total
+                                                                    .percentage >=
+                                                                75
+                                                              ? 'bg-blue-500'
+                                                              : hourStats.total
+                                                                      .percentage >=
+                                                                  50
+                                                                ? 'bg-amber-500'
+                                                                : 'bg-red-500'
                                                     }`}
                                                     style={{
                                                         width: `${Math.min(hourStats.total.percentage, 100)}%`,
@@ -947,7 +1009,7 @@ export default function Show({
                                                     className="p-4 px-6"
                                                 >
                                                     <div className="flex items-start justify-between">
-                                                        <div className="flex items-start gap-3 flex-1">
+                                                        <div className="flex flex-1 items-start gap-3">
                                                             <div
                                                                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
                                                                     item.attended
@@ -1012,6 +1074,7 @@ export default function Show({
                                                                                         {
                                                                                             activity.hours
                                                                                         }
+
                                                                                         h{' '}
                                                                                         {activity.activity_category ||
                                                                                             ''}
@@ -1029,25 +1092,33 @@ export default function Show({
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <div className="flex flex-col items-end gap-2 ml-4">
+                                                        <div className="ml-4 flex flex-col items-end gap-2">
                                                             <Badge
                                                                 variant="outline"
                                                                 className="text-xs"
                                                             >
-                                                                {item.created_at}
+                                                                {
+                                                                    item.created_at
+                                                                }
                                                             </Badge>
                                                             {/* Resultado de la jornada */}
                                                             <Badge
                                                                 className={`text-sm font-bold ${
-                                                                    item.total_hours > 0
+                                                                    item.total_hours >
+                                                                    0
                                                                         ? 'bg-green-500 text-white hover:bg-green-600'
-                                                                        : item.total_hours < 0
-                                                                        ? 'bg-red-500 text-white hover:bg-red-600'
-                                                                        : 'bg-neutral-300 text-neutral-700 hover:bg-neutral-400 dark:bg-neutral-700 dark:text-neutral-300'
+                                                                        : item.total_hours <
+                                                                            0
+                                                                          ? 'bg-red-500 text-white hover:bg-red-600'
+                                                                          : 'bg-neutral-300 text-neutral-700 hover:bg-neutral-400 dark:bg-neutral-700 dark:text-neutral-300'
                                                                 }`}
                                                             >
-                                                                {item.total_hours > 0 && '+'}
-                                                                {item.total_hours}h
+                                                                {item.total_hours >
+                                                                    0 && '+'}
+                                                                {
+                                                                    item.total_hours
+                                                                }
+                                                                h
                                                             </Badge>
                                                         </div>
                                                     </div>
