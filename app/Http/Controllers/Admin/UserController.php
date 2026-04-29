@@ -258,6 +258,7 @@ class UserController extends Controller
                                 'start_datetime' => $a->fieldSession->start_datetime?->format('d/m/Y'),
                                 'status' => $a->fieldSession->status?->name,
                                 'academic_year_id' => $a->fieldSession->academic_year_id,
+                                'academic_year_name' => $a->fieldSession->academicYear?->name ?? '—',
                             ] : null,
                             'activities' => $a->attendanceActivities->map(fn ($act) => [
                                 'id' => $act->id,

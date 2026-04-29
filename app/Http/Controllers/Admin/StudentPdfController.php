@@ -107,6 +107,12 @@ class StudentPdfController extends Controller
             })
             ->toArray();
 
+        // --- Agrupar historial por año académico (del más reciente al más antiguo) ---
+        $hourHistoryGrouped = collect($hourHistory)
+            ->groupBy('fieldSession.academic_year_name')
+            ->sortKeysDesc()
+            ->toArray();
+
         // --- Horas externas ordenadas cronológicamente por período ---
         $externalHours = ExternalHour::where('user_id', $user->id)
             ->with('admin:id,name')
@@ -130,7 +136,7 @@ class StudentPdfController extends Controller
             'institution',
             'currentEnrollment',
             'hourStats',
-            'hourHistory',
+            'hourHistoryGrouped',
             'externalHours',
             'generatedAt',
         ))->render();

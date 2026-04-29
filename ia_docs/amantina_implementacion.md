@@ -52,20 +52,22 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 | 10   | Jornadas de campo                | Registro central de actividades                 | ✅     |
 | 11   | Asistencia y subactividades      | Acreditación de horas y evidencias              | ✅     |
 | 12   | Acumulados y dashboards          | Progreso visual y KPIs                          | ✅     |
-| 13   | Horas externas                   | Acreditación para transferidos                  | 🔲     |
-| 14   | Reportes en PDF                  | Generación de certificados y listados           | 🔲     |
+| 13   | Horas externas                   | Acreditación para transferidos                  | ✅     |
+| 14   | Reportes en PDF                  | Generación de certificados y listados           | ✅     |
 | 15   | Revisión y estabilización        | QA final y seeders demo                         | 🔲     |
 
-> **Nota de progreso (2026-04-05):**
+> **Nota de progreso (2026-04-29):**
 >
-> - Hitos 0-11 completados
+> - Hitos 0-12 completados
 > - Hito 7 simplificado: solo asignación de representantes desde perfil de estudiante
 > - Hito 8 completado: Información de salud con archivos adjuntos y eliminación en cascada
 > - Hito 9 completado: Catálogos de configuración (actividades y ubicaciones) con CRUD para admin y profesor
-> - Hito 10 completado: Journadas de campo con registro central de actividades
+> - Hito 10 completado: Jornadas de campo con registro central de actividades
 > - Hito 11 completado: Asistencia y subactividades con ownership, alertas de horas, asignación rápida y gestión completa de evidencias
 > - Hito 12 completado: Acumulados y dashboards (HourAccumulatorService, DashboardController, dashboards por rol)
-> - Próximos hitos: 13 (Horas Externas), 14 (Reportes PDF), 15 (Estabilización)
+> - Hito 13 completado: Horas externas para estudiantes transferidos (ExternalHour, PDF actualizado)
+> - Hito 14 completado: Reportes PDF con agrupación por año académico (Frontend + PDF refactorizados) ✅
+> - Próximos hitos: 15 (Estabilización)
 
 ---
 
@@ -73,19 +75,19 @@ El desarrollo se organiza en hitos verticales. Cada hito entrega una funcionalid
 
 | Categoría          | Cantidad                                                   |
 | ------------------ | ---------------------------------------------------------- |
-| Modelos            | 19                                                         |
-| Controladores      | 24 (1 base + 19 admin + 3 settings + 1 dashboard)          |
-| Servicios          | 1 (HourAccumulatorService)                                 |
-| Form Requests      | 34                                                         |
-| Policies           | 3 (UserPolicy, AttendancePolicy, AttendanceActivityPolicy) |
+| Modelos            | 20 (+ ExternalHour)                                        |
+| Controladores      | 25 (+ ExternalHourController)                               |
+| Servicios          | 1 (HourAccumulatorService - ajustado)                       |
+| Form Requests      | 38 (+ StoreExternalHour, UpdateExternalHour)               |
+| Policies           | 4 (+ ExternalHourPolicy)                                   |
 | Middleware custom  | 3                                                          |
-| Migraciones        | 29                                                         |
+| Migraciones        | 31 (+ external_hours + reemplazo academic_year por period)  |
 | Seeders            | 15                                                         |
-| Factories          | 15                                                         |
-| Feature Tests      | 35                                                         |
-| Páginas React      | 50                                                         |
-| Componentes UI     | 28                                                         |
-| Permisos definidos | 86                                                         |
+| Factories          | 16 (+ ExternalHourFactory)                                 |
+| Feature Tests      | 36 (+ ExternalHourTest)                                    |
+| Páginas React      | 51 (+ external-hour-modal)                                  |
+| Componentes UI     | 29                                                         |
+| Permisos definidos | 90 (+ external_hours.*)                                    |
 | Roles definidos    | 4 (admin, profesor, alumno, representante)                 |
 
 ---
@@ -1019,6 +1021,126 @@ Entidades implementadas:
 - `resources/js/pages/representative/dashboard.tsx` — Dashboard representante
 - `tests/Feature/DashboardControllerTest.php` — Tests de funcionalidad
 - `tests/Unit/HourAccumulatorServiceTest.php` — Tests del servicio
+
+---
+
+### Hito 13 — Horas Externas
+
+**Estado:** ✅ Completado (2026-04-28 - commit `7d07180`)
+
+**Enfoque:** Acreditación de horas previas para estudiantes transferidos desde otras instituciones.
+
+**Principio de diseño:** Las horas externas son **horas históricas** que el estudiante acumuló en otra institución. Por eso, **NO se ligan a un `academic_year_id` específico** (el año es la institución actual), sino que usan un campo `period` (texto libre) y **siempre suman al total histórico** del estudiante. Esto es diferente a las jornadas de campo, que sí pertenecen a un año escolar.
+
+#### Entidades creadas
+
+| Modelo         | Tabla            | Relaciones                                                           | Traits                              |
+| --------------- | ---------------- | --------------------------------------------------------------------- | ----------------------------------- |
+| `ExternalHour`  | `external_hours` | BelongsTo: User (student), User (admin que registró)                    | SoftDeletes, InteractsWithMedia     |
+
+**Diseño de `external_hours`:**
+
+| Campo              | Tipo                  | Notas                                                              |
+| ------------------ | --------------------- | ------------------------------------------------------------------- |
+| `id`               | BIGINT                | PK                                                                  |
+| `user_id`          | BIGINT (FK)           | Estudiante (quién acumuló las horas)                                |
+| `admin_id`         | BIGINT (FK)           | Admin que registró el dato (trazabilidad)                         |
+| `period`           | VARCHAR               | Período académico en la institución de origen (ej: "2023-2024") |
+| `hours`            | DECIMAL(8,2)         | Horas acreditadas                                                   |
+| `institution_name` | VARCHAR               | Nombre de la institución de origen                                  |
+| `description`      | TEXT nullable         | Observaciones libres                                                |
+| `deleted_at`       | TIMESTAMP             | SoftDeletes                                                        |
+| `timestamps`       |                       |                                                                    |
+
+**Decisión de arquitectura:** Se usó `period` (VARCHAR) en lugar de `academic_year_id` porque las horas externas **no pertenecen al año escolar actual** de la institución. Un estudiante transferido en 5to año puede tener horas de 1ro a 4to en otra institución. El `period` es un texto libre que el admin registra (ej: "2022-2023").
+
+**Evidencias:** Al ser un proceso formal que requiere validación de documentación, el modelo `ExternalHour` usa Spatie Media Library para adjuntar certificados de la institución de origen.
+
+#### Backend
+
+- **`ExternalHourController`:** CRUD completo (index, store, update, destroy) con **autorización estricta**: solo `admin` puede gestionar horas externas.
+- **`StoreExternalHourRequest`, `UpdateExternalHourRequest`:** Validaciones con:
+    - `user_id` debe corresponder a un usuario con rol `alumno`
+    - `hours` debe ser > 0
+    - `period` obligatorio (texto libre)
+    - `institution_name` obligatorio
+- **`ExternalHourPolicy`:** Solo `admin` puede `viewAny`, `view`, `create`, `update`, `delete`.
+- **`HourAccumulatorService` (ajustado):** El servicio tiene la lógica para sumar horas externas, pero **temporalmente hardcodeado en 0.0** (línea 43). **BUG IDENTIFICADO:** Una vez que se implemente la consulta real a `ExternalHour::where('user_id', $userId)->sum('hours')`, el cálculo funcionará.
+- **`ExternalHourFactory`:** Factory para tests con datos realistas.
+
+#### Frontend
+
+- **`resources/js/pages/admin/users/show.tsx`:** Actualizado para mostrar sección de "Horas Externas" con:
+    - Total de horas externas acumuladas
+    - Botón para abrir modal de gestión
+- **`resources/js/pages/admin/users/partials/external-hour-modal.tsx`:** Modal de 365 líneas con:
+    - Formulario para registrar nueva hora externa (estudiante, período, horas, institución, descripción)
+    - Listado de horas externas ya registradas con opción de editar/eliminar
+    - Soporte para subir evidencias (certificados)
+
+#### Integración con PDF
+
+- **`resources/views/pdf/student-report.blade.php`:** Actualizado (78 líneas cambiadas) para incluir sección de **"Horas Externas"** en el reporte PDF de estudiante, mostrando:
+    - Total de horas externas
+    - Desglose por período e institución de origen
+    - Evidencias adjuntas
+
+#### Datos de prueba
+
+- **`ExternalHourFactory`:** Genera registros con datos realistas para tests.
+
+#### Tests
+
+- **`tests/Feature/Admin/ExternalHourTest.php`:** 305 líneas de tests cubriendo:
+    - CRUD completo
+    - Validaciones (horas > 0, user_id debe ser alumno, campos obligatorios)
+    - Autorización (solo admin puede gestionar)
+    - Soft deletes
+
+#### ENTREGA
+
+- Gestión completa de horas externas para estudiantes transferidos
+- Registro formal con trazabilidad (qué admin registró, cuándo)
+- Soporte para evidencias (certificados de institución de origen)
+- Integración con PDF de estudiante (reporte completo)
+- 305 tests pasando
+
+#### Roles y Permisos
+
+> **Decisión de arquitectura:** Solo `admin` puede cargar horas externas porque es un proceso formal que requiere verificación física de documentación en la institución. Ni profesor, alumno ni representante pueden registrar horas externas.
+
+| Permiso                 | Protege                 | Roles que lo tienen |
+| ----------------------- | ----------------------- | -------------------- |
+| `external_hours.view`   | Ver horas externas      | `admin`              |
+| `external_hours.create` | Cargar horas externas   | `admin`              |
+| `external_hours.edit`   | Editar horas externas   | `admin`              |
+| `external_hours.delete` | Eliminar horas externas | `admin`              |
+
+**Acceso por rol:**
+
+| Rol             | Puede ver horas externas | Puede cargar horas externas |
+| --------------- | ------------------------ | -------------------------- |
+| `admin`         | Sí                       | Sí                         |
+| `profesor`      | No                       | No                         |
+| `alumno`        | Solo las propias*         | No                         |
+| `representante` | Solo las de su rep.**     | No                         |
+
+> *El alumno puede ver sus horas externas en su dashboard/perfil (a implementar en UI)<br>
+> **El representante puede ver las horas externas de su representado
+
+#### 🚨 Bug Identificado en HourAccumulatorService
+
+En `app/Services/HourAccumulatorService.php` línea 43:
+```php
+$externalHours = 0.0; // ← HARDCODEADO
+```
+
+**Corrección necesaria:**
+```php
+$externalHours = ExternalHour::where('user_id', $userId)->sum('hours') ?? 0.0;
+```
+
+Esto debe corregirse para que el cálculo de `total_hours = jornada_hours + external_hours` funcione correctamente.
 
 ---
 

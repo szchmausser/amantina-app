@@ -168,6 +168,29 @@ export default function Show({
     const isAlumno = roles.includes('alumno');
     const isRepresentante = roles.includes('representante');
 
+    // Group hourHistory by academic year (most recent first)
+    const groupedHistory = useMemo(() => {
+        if (!hourHistory || hourHistory.length === 0) return null;
+
+        const grouped: Record<string, typeof hourHistory> = {};
+        hourHistory.forEach((item) => {
+            const yearName = item.fieldSession?.academic_year_name || 'Sin año';
+            if (!grouped[yearName]) {
+                grouped[yearName] = [];
+            }
+            grouped[yearName].push(item);
+        });
+
+        // Sort years: most recent first
+        const sortedYears = Object.keys(grouped).sort((a, b) => {
+            if (a === 'Sin año') return 1;
+            if (b === 'Sin año') return -1;
+            return b.localeCompare(a); // Descending
+        });
+
+        return { grouped, sortedYears };
+    }, [hourHistory]);
+
     const handleUnlink = (pivotId: number) => {
         if (
             confirm(
@@ -1195,141 +1218,144 @@ export default function Show({
                                         Historial de Horas Socioproductivas
                                     </h2>
                                 </div>
-                                <div className="p-0">
-                                    {hourHistory.length > 0 ? (
-                                        <div className="divide-y divide-sidebar-border/70">
-                                            {hourHistory.map((item) => (
-                                                <div
-                                                    key={item.id}
-                                                    className="p-4 px-6"
-                                                >
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex flex-1 items-start gap-3">
-                                                            <div
-                                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                                                                    item.attended
-                                                                        ? 'bg-green-50 dark:bg-green-900/20'
-                                                                        : 'bg-red-50 dark:bg-red-900/20'
-                                                                }`}
-                                                            >
-                                                                {item.attended ? (
-                                                                    <Clock className="h-4 w-4 text-green-600" />
-                                                                ) : (
-                                                                    <UserIcon className="h-4 w-4 text-red-600" />
-                                                                )}
-                                                            </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                                                                    {item
-                                                                        .fieldSession
-                                                                        ?.name ||
-                                                                        'Jornada'}
-                                                                </p>
-                                                                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
-                                                                    {item
-                                                                        .fieldSession
-                                                                        ?.start_datetime && (
-                                                                        <span className="flex items-center gap-1">
-                                                                            <Calendar className="h-3 w-3" />
-                                                                            {
-                                                                                item
-                                                                                    .fieldSession
-                                                                                    .start_datetime
-                                                                            }
-                                                                        </span>
-                                                                    )}
-                                                                    <span
-                                                                        className={`flex items-center gap-1 ${
-                                                                            item.attended
-                                                                                ? 'text-green-600'
-                                                                                : 'text-red-600'
-                                                                        }`}
-                                                                    >
-                                                                        {item.attended
-                                                                            ? 'Asistió'
-                                                                            : 'Ausente'}
-                                                                    </span>
-                                                                </div>
-                                                                {item.activities &&
-                                                                    item
-                                                                        .activities
-                                                                        .length >
-                                                                        0 && (
-                                                                        <div className="mt-2 flex flex-wrap gap-2">
-                                                                            {item.activities.map(
-                                                                                (
-                                                                                    activity,
-                                                                                ) => (
-                                                                                    <Badge
-                                                                                        key={
-                                                                                            activity.id
-                                                                                        }
-                                                                                        className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                                                                    >
-                                                                                        {
-                                                                                            activity.hours
-                                                                                        }
-
-                                                                                        h{' '}
-                                                                                        {activity.activity_category ||
-                                                                                            ''}
-                                                                                    </Badge>
-                                                                                ),
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-                                                                {item.notes && (
-                                                                    <p className="mt-1 text-xs text-neutral-400 italic">
-                                                                        {
-                                                                            item.notes
-                                                                        }
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <div className="ml-4 flex flex-col items-end gap-2">
-                                                            <Badge
-                                                                variant="outline"
-                                                                className="text-xs"
-                                                            >
-                                                                {
-                                                                    item.created_at
-                                                                }
-                                                            </Badge>
-                                                            {/* Resultado de la jornada */}
-                                                            <Badge
-                                                                className={`text-sm font-bold ${
-                                                                    item.total_hours >
-                                                                    0
-                                                                        ? 'bg-green-500 text-white hover:bg-green-600'
-                                                                        : item.total_hours <
-                                                                            0
-                                                                          ? 'bg-red-500 text-white hover:bg-red-600'
-                                                                          : 'bg-neutral-300 text-neutral-700 hover:bg-neutral-400 dark:bg-neutral-700 dark:text-neutral-300'
-                                                                }`}
-                                                            >
-                                                                {item.total_hours >
-                                                                    0 && '+'}
-                                                                {
-                                                                    item.total_hours
-                                                                }
-                                                                h
-                                                            </Badge>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="py-12 text-center text-neutral-400">
-                                            <Clock className="mx-auto mb-2 h-10 w-10 opacity-20" />
-                                            <p className="text-sm italic">
-                                                Este estudiante no tiene horas
-                                                registradas aún.
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
+                                 <div className="p-0">
+                                     {groupedHistory && groupedHistory.sortedYears.length > 0 ? (
+                                         <div className="divide-y divide-sidebar-border/70">
+                                             {groupedHistory.sortedYears.map((yearName) => (
+                                                 <div key={yearName}>
+                                                     {/* Year Header */}
+                                                     <div className="bg-neutral-100/50 px-6 py-2 dark:bg-neutral-800/30">
+                                                         <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
+                                                             {yearName}
+                                                         </span>
+                                                     </div>
+                                                     {/* Sessions for this year */}
+                                                     {groupedHistory.grouped[yearName].map((item) => (
+                                                         <div
+                                                             key={item.id}
+                                                             className="p-4 px-6"
+                                                         >
+                                                             <div className="flex items-start justify-between">
+                                                                 <div className="flex flex-1 items-start gap-3">
+                                                                     <div
+                                                                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                                                                             item.attended
+                                                                                 ? 'bg-green-50 dark:bg-green-900/20'
+                                                                                 : 'bg-red-50 dark:bg-red-50 dark:bg-red-900/20'
+                                                                         }`}
+                                                                     >
+                                                                         {item.attended ? (
+                                                                             <Clock className="h-4 w-4 text-green-600" />
+                                                                         ) : (
+                                                                             <UserIcon className="h-4 w-4 text-red-600" />
+                                                                         )}
+                                                                     </div>
+                                                                     <div className="min-w-0 flex-1">
+                                                                         <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                                                                             {
+                                                                                 item.fieldSession
+                                                                                     ?.name ||
+                                                                                     'Jornada'}
+                                                                             <span className="ml-2 text-[10px] font-normal text-neutral-400">
+                                                                                 ({item.fieldSession?.academic_year_name || 'Sin año'})
+                                                                             </span>
+                                                                         </p>
+                                                                         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                                                             {item.fieldSession && (
+                                                                                 <span className="flex items-center gap-1">
+                                                                                     <Calendar className="h-3 w-3" />
+                                                                                     {item.fieldSession.start_datetime}
+                                                                                 </span>
+                                                                             )}
+                                                                             <span
+                                                                                 className={`flex items-center gap-1 ${
+                                                                                     item.attended
+                                                                                         ? 'text-green-600'
+                                                                                         : 'text-red-600'
+                                                                                 }`}
+                                                                             >
+                                                                                 {item.attended
+                                                                                     ? 'Asistió'
+                                                                                     : 'Ausente'}
+                                                                             </span>
+                                                                         </div>
+                                                                         {item.activities &&
+                                                                             item.activities.length >
+                                                                                 0 && (
+                                                                                 <div className="mt-2 flex flex-wrap gap-2">
+                                                                                     {item.activities.map(
+                                                                                         (
+                                                                                             activity,
+                                                                                         ) => (
+                                                                                             <Badge
+                                                                                                 key={
+                                                                                                     activity.id
+                                                                                                 }
+                                                                                                 className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                                                                             >
+                                                                                                 {
+                                                                                                     activity.hours
+                                                                                                 }{' '}
+                                                                                                 {activity.activity_category ||
+                                                                                                     ''}
+                                                                                             </Badge>
+                                                                                         ),
+                                                                                     )}
+                                                                                 </div>
+                                                                             )}
+                                                                         {item.notes && (
+                                                                             <p className="mt-1 text-xs text-neutral-400 italic">
+                                                                                 {
+                                                                                     item.notes
+                                                                                 }
+                                                                             </p>
+                                                                         )}
+                                                                     </div>
+                                                                 </div>
+                                                                 <div className="ml-4 flex flex-col items-end gap-2">
+                                                                     <Badge
+                                                                         variant="outline"
+                                                                         className="text-xs"
+                                                                     >
+                                                                         {
+                                                                             item.created_at
+                                                                         }
+                                                                     </Badge>
+                                                                     {/* Resultado de la jornada */}
+                                                                     <Badge
+                                                                         className={`text-sm font-bold ${
+                                                                             item.total_hours >
+                                                                             0
+                                                                                 ? 'bg-green-500 text-white hover:bg-green-600'
+                                                                                 : item.total_hours <
+                                                                                     0
+                                                                                 ? 'bg-red-500 text-white hover:bg-red-600'
+                                                                                 : 'bg-neutral-300 text-neutral-700 hover:bg-neutral-400'
+                                                                         }`}
+                                                                     >
+                                                                         {item.total_hours >
+                                                                             0 && '+'}
+                                                                         {
+                                                                             item.total_hours
+                                                                         }{' '}
+                                                                     </Badge>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     ))}
+                                                 </div>
+                                             ))}
+                                         </div>
+                                     ) : (
+                                         <div className="py-12 text-center text-neutral-400">
+                                             <Clock className="mx-auto mb-2 h-10 w-10 opacity-20" />
+                                             <p className="text-sm italic">
+                                                 Este estudiante no tiene horas
+                                                 registradas aún.
+                                             </p>
+                                         </div>
+                                     )}
+                                 </div>
                             </div>
                         </TabsContent>
                     )}

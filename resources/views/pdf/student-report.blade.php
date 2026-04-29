@@ -452,7 +452,7 @@ table.hist tbody td.tc { text-align: center; }
         <div class="annex-title">Historial de Horas Socioproductivas</div>
         <div class="annex-sub">
             Registro detallado de jornadas e incidencia en el acumulado.
-            &nbsp; Jornadas: <strong>{{ count($hourHistory) }}</strong>
+             &nbsp; Jornadas: <strong>{{ collect($hourHistoryGrouped)->flatten(1)->count() }}</strong>
             @if(count($externalHours) > 0)
                 &nbsp;&bull;&nbsp; Registros externos: <strong>{{ count($externalHours) }}</strong>
             @endif
@@ -461,9 +461,9 @@ table.hist tbody td.tc { text-align: center; }
 </tr>
 </table>
 
-{{-- TABLA HISTORIAL --}}
+{{-- TABLA HISTORIAL AGRUPADA POR AÑO --}}
 @php $runningTotal = 0.0; $externalTotal = 0.0; @endphp
-@if(count($hourHistory) > 0)
+@if(!empty($hourHistoryGrouped) && is_array($hourHistoryGrouped) && count($hourHistoryGrouped) > 0)
 @php $runningTotal = 0.0; @endphp
 <table class="hist">
 <thead>
@@ -478,55 +478,65 @@ table.hist tbody td.tc { text-align: center; }
 </tr>
 </thead>
 <tbody>
-@foreach($hourHistory as $index => $item)
-@php
-    $runningTotal += $item['total_hours'];
-    $sName = $item['fieldSession']['name']           ?? 'Jornada sin nombre';
-    $sDate = $item['fieldSession']['start_datetime'] ?? $item['created_at'];
-    $sYear = $item['fieldSession']['academic_year_name'] ?? '—';
-@endphp
-<tr>
-    <td class="tc" style="color:#9ca3af; font-size:7pt;">{{ $index + 1 }}</td>
-    <td>{{ $sName }}</td>
-    <td>{{ $sDate }}</td>
-    <td>{{ $sYear }}</td>
-    <td class="tc">
-        @if($item['attended'])
-            <span class="att-y">&#10003;&nbsp;Asistió</span>
-        @else
-            <span class="att-n">&#10007;&nbsp;Ausente</span>
-        @endif
-    </td>
-    <td>
-        @if($item['attended'] && count($item['activities']) > 0)
-            @foreach($item['activities'] as $act)
-            <div class="act-row">
-                &bull; {{ $act['activity_category'] ?? 'Sin categoría' }}:
-                <strong>{{ number_format($act['hours'], 1) }}h</strong>
-                @if(!empty($act['notes']))
-                    <span style="color:#9ca3af;">({{ $act['notes'] }})</span>
-                @endif
+@php $counter = 1; @endphp
+@foreach($hourHistoryGrouped as $yearName => $items)
+    {{-- Year Header Row --}}
+    <tr style="background:#f2f8f4;">
+        <td colspan="7" style="padding:4pt 5pt; font-weight:bold; color:#1a5c2e; font-size:7.5pt; text-transform:uppercase; letter-spacing:0.5pt;">
+            {{ $yearName }}
+        </td>
+    </tr>
+    {{-- Sessions for this year --}}
+    @foreach($items as $item)
+    @php
+        $runningTotal += $item['total_hours'];
+        $sName = $item['fieldSession']['name']           ?? 'Jornada sin nombre';
+        $sDate = $item['fieldSession']['start_datetime'] ?? $item['created_at'];
+        $sYear = $item['fieldSession']['academic_year_name'] ?? '—';
+    @endphp
+    <tr>
+        <td class="tc" style="color:#9ca3af; font-size:7pt;">{{ $counter++ }}</td>
+        <td>{{ $sName }}</td>
+        <td>{{ $sDate }}</td>
+        <td>{{ $sYear }}</td>
+        <td class="tc">
+            @if($item['attended'])
+                <span class="att-y">&#10003;&nbsp;Asistió</span>
+            @else
+                <span class="att-n">&#10007;&nbsp;Ausente</span>
+            @endif
+        </td>
+        <td>
+            @if($item['attended'] && count($item['activities']) > 0)
+                @foreach($item['activities'] as $act)
+                <div class="act-row">
+                    &bull; {{ $act['activity_category'] ?? 'Sin categoría' }}:
+                    <strong>{{ number_format($act['hours'], 1) }}h</strong>
+                    @if(!empty($act['notes']))
+                        <span style="color:#9ca3af;">({{ $act['notes'] }})</span>
+                    @endif
+                </div>
+                @endforeach
+            @elseif(!$item['attended'])
+                <span style="color:#9ca3af; font-style:italic;">Sin horas (ausencia)</span>
+            @else
+                <span style="color:#9ca3af; font-style:italic;">Sin actividades</span>
+            @endif
+            @if(!empty($item['notes']))
+            <div style="font-size:7pt; color:#9ca3af; font-style:italic; margin-top:1pt;">
+                Obs: {{ $item['notes'] }}
             </div>
-            @endforeach
-        @elseif(!$item['attended'])
-            <span style="color:#9ca3af; font-style:italic;">Sin horas (ausencia)</span>
-        @else
-            <span style="color:#9ca3af; font-style:italic;">Sin actividades</span>
-        @endif
-        @if(!empty($item['notes']))
-        <div style="font-size:7pt; color:#9ca3af; font-style:italic; margin-top:1pt;">
-            Obs: {{ $item['notes'] }}
-        </div>
-        @endif
-    </td>
-    <td class="tc">
-        @if($item['total_hours'] > 0)
-            <span class="h-pos">+{{ number_format($item['total_hours'], 1) }}h</span>
-        @else
-            <span class="h-nil">—</span>
-        @endif
-    </td>
-</tr>
+            @endif
+        </td>
+        <td class="tc">
+            @if($item['total_hours'] > 0)
+                <span class="h-pos">+{{ number_format($item['total_hours'], 1) }}h</span>
+            @else
+                <span class="h-nil">—</span>
+            @endif
+        </td>
+    </tr>
+    @endforeach
 @endforeach
 </tbody>
 </table>
