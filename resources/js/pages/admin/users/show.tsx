@@ -17,6 +17,7 @@ import {
     Calendar,
     MapPin,
     Paperclip,
+    Building2,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,9 @@ import type { BreadcrumbItem, User } from '@/types';
 import { useState } from 'react';
 import AssignRepresentativeModal from './partials/assign-representative-modal';
 import HealthRecordModal from './partials/health-record-modal';
+import ExternalHourModal, {
+    ExternalHourItem,
+} from './partials/external-hour-modal';
 import { router } from '@inertiajs/react';
 
 interface CurrentEnrollment {
@@ -78,6 +82,8 @@ interface Props {
             percentage: number;
         };
     } | null;
+    externalHours?: ExternalHourItem[];
+    academicYears?: { id: number; name: string }[];
 }
 
 interface HourHistoryActivity {
@@ -118,11 +124,17 @@ export default function Show({
     healthConditions,
     hourHistory,
     hourStats,
+    externalHours = [],
+    academicYears = [],
 }: Props) {
     const { auth } = usePage<any>().props;
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
     const [editingHealthRecord, setEditingHealthRecord] = useState<any>(null);
+    const [isExternalHourModalOpen, setIsExternalHourModalOpen] =
+        useState(false);
+    const [editingExternalHour, setEditingExternalHour] =
+        useState<ExternalHourItem | null>(null);
     const [activeTab, setActiveTab] = useState('general');
     const getInitials = useInitials();
 
@@ -992,6 +1004,189 @@ export default function Show({
                                 </div>
                             )}
 
+                            {/* Horas Externas Acreditadas */}
+                            <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                    <div className="flex items-center gap-2">
+                                        <Building2 className="h-4 w-4 text-indigo-500" />
+                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                            Horas Externas Acreditadas
+                                        </h2>
+                                    </div>
+                                    {hasPermission('external_hours.create') && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 text-[10px] font-bold uppercase"
+                                            onClick={() => {
+                                                setEditingExternalHour(null);
+                                                setIsExternalHourModalOpen(
+                                                    true,
+                                                );
+                                            }}
+                                        >
+                                            <Plus className="mr-1.5 h-3 w-3" />
+                                            Agregar
+                                        </Button>
+                                    )}
+                                </div>
+                                <div className="p-0">
+                                    {externalHours.length > 0 ? (
+                                        <div className="divide-y divide-sidebar-border/70">
+                                            {externalHours.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="p-4 px-6 transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
+                                                >
+                                                    <div className="flex items-start justify-between gap-4">
+                                                        <div className="flex flex-1 items-start gap-3">
+                                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/20">
+                                                                <Building2 className="h-4 w-4 text-indigo-500" />
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="flex flex-wrap items-center gap-2">
+                                                                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                                                                        {
+                                                                            item.institution_name
+                                                                        }
+                                                                    </p>
+                                                                    {item.period && (
+                                                                        <Badge
+                                                                            variant="secondary"
+                                                                            className="text-xs"
+                                                                        >
+                                                                            {
+                                                                                item.period
+                                                                            }
+                                                                        </Badge>
+                                                                    )}
+                                                                    <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400">
+                                                                        {
+                                                                            item.hours
+                                                                        }
+                                                                        h
+                                                                    </Badge>
+                                                                </div>
+                                                                {item.description && (
+                                                                    <p className="mt-1 text-xs text-neutral-400 italic">
+                                                                        {
+                                                                            item.description
+                                                                        }
+                                                                    </p>
+                                                                )}
+                                                                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                                                    {item.admin && (
+                                                                        <span>
+                                                                            Cargado
+                                                                            por:{' '}
+                                                                            {
+                                                                                item
+                                                                                    .admin
+                                                                                    .name
+                                                                            }
+                                                                        </span>
+                                                                    )}
+                                                                    <span className="flex items-center gap-1">
+                                                                        <Calendar className="h-3 w-3" />
+                                                                        {new Date(
+                                                                            item.created_at,
+                                                                        ).toLocaleDateString(
+                                                                            'es-ES',
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                {item.media &&
+                                                                    item.media
+                                                                        .length >
+                                                                        0 && (
+                                                                        <div className="mt-2 flex flex-wrap gap-2">
+                                                                            {item.media.map(
+                                                                                (
+                                                                                    m,
+                                                                                ) => (
+                                                                                    <a
+                                                                                        key={
+                                                                                            m.id
+                                                                                        }
+                                                                                        href={
+                                                                                            m.original_url
+                                                                                        }
+                                                                                        target="_blank"
+                                                                                        rel="noopener noreferrer"
+                                                                                        className="inline-flex items-center gap-1 rounded border bg-neutral-50 px-2 py-1 text-xs text-neutral-600 transition-colors hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                                                                                    >
+                                                                                        <Paperclip className="h-3 w-3" />
+                                                                                        {
+                                                                                            m.name
+                                                                                        }
+                                                                                        <Download className="h-3 w-3" />
+                                                                                    </a>
+                                                                                ),
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex shrink-0 gap-1">
+                                                            {hasPermission(
+                                                                'external_hours.edit',
+                                                            ) && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-7 w-7 text-neutral-500 hover:text-blue-600"
+                                                                    onClick={() => {
+                                                                        setEditingExternalHour(
+                                                                            item,
+                                                                        );
+                                                                        setIsExternalHourModalOpen(
+                                                                            true,
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <Edit className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            )}
+                                                            {hasPermission(
+                                                                'external_hours.delete',
+                                                            ) && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                                                    onClick={() => {
+                                                                        if (
+                                                                            confirm(
+                                                                                '¿Eliminar este registro de horas externas?\n\nLos archivos adjuntos se eliminarán permanentemente.',
+                                                                            )
+                                                                        ) {
+                                                                            router.delete(
+                                                                                `/admin/external-hours/${item.id}`,
+                                                                                {
+                                                                                    preserveScroll: true,
+                                                                                },
+                                                                            );
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="px-6 py-4 text-center">
+                                            <p className="text-xs text-neutral-400 italic">
+                                                Sin horas externas acreditadas.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Historial de Horas */}
                             <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                                 <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
@@ -1249,6 +1444,18 @@ export default function Show({
                 currentUserId={auth.user.id}
                 existingRecord={editingHealthRecord}
                 isEditing={!!editingHealthRecord}
+            />
+
+            <ExternalHourModal
+                isOpen={isExternalHourModalOpen}
+                onClose={() => {
+                    setIsExternalHourModalOpen(false);
+                    setEditingExternalHour(null);
+                }}
+                studentId={user.id}
+                studentName={user.name}
+                existingRecord={editingExternalHour}
+                isEditing={!!editingExternalHour}
             />
         </AppLayout>
     );

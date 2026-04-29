@@ -452,13 +452,17 @@ table.hist tbody td.tc { text-align: center; }
         <div class="annex-title">Historial de Horas Socioproductivas</div>
         <div class="annex-sub">
             Registro detallado de jornadas e incidencia en el acumulado.
-            &nbsp; Total de registros: <strong>{{ count($hourHistory) }}</strong>
+            &nbsp; Jornadas: <strong>{{ count($hourHistory) }}</strong>
+            @if(count($externalHours) > 0)
+                &nbsp;&bull;&nbsp; Registros externos: <strong>{{ count($externalHours) }}</strong>
+            @endif
         </div>
     </td>
 </tr>
 </table>
 
 {{-- TABLA HISTORIAL --}}
+@php $runningTotal = 0.0; $externalTotal = 0.0; @endphp
 @if(count($hourHistory) > 0)
 @php $runningTotal = 0.0; @endphp
 <table class="hist">
@@ -528,14 +532,82 @@ table.hist tbody td.tc { text-align: center; }
 </table>
 
 <div class="total-row">
-    <strong>Total de horas acreditadas en historial:</strong>
-    &nbsp;
+    Subtotal jornadas:&nbsp;
     <span class="h-pos" style="font-size:9.5pt;">{{ number_format($runningTotal, 1) }}h</span>
 </div>
 
 @else
 <div class="no-data">Este estudiante no tiene jornadas registradas aún.</div>
 @endif
+
+{{-- ─── HORAS EXTERNAS ACREDITADAS ─── --}}
+@if(count($externalHours) > 0)
+@php $externalTotal = array_sum(array_column($externalHours, 'hours')); @endphp
+{{-- externalTotal already set --}}
+
+<div class="sec-title" style="margin-top:14pt;">Horas Externas Acreditadas</div>
+
+<table class="hist">
+<thead>
+<tr>
+    <th style="width:5%"  class="tc">#</th>
+    <th style="width:16%">Período</th>
+    <th style="width:35%">Institución de Origen</th>
+    <th style="width:30%">Descripción</th>
+    <th style="width:14%" class="tc">Hrs. Acred.</th>
+</tr>
+</thead>
+<tbody>
+@foreach($externalHours as $i => $ext)
+<tr>
+    <td class="tc" style="color:#9ca3af; font-size:7pt;">{{ $i + 1 }}</td>
+    <td><strong>{{ $ext['period'] }}</strong></td>
+    <td>{{ $ext['institution_name'] }}</td>
+    <td>
+        @if(!empty($ext['description']))
+            <span style="color:#4b5563;">{{ $ext['description'] }}</span>
+        @else
+            <span style="color:#9ca3af; font-style:italic;">—</span>
+        @endif
+        @if(!empty($ext['admin_name']))
+            <div style="font-size:7pt; color:#9ca3af; margin-top:1pt;">Registrado por: {{ $ext['admin_name'] }}</div>
+        @endif
+    </td>
+    <td class="tc">
+        <span class="h-pos">+{{ number_format($ext['hours'], 1) }}h</span>
+    </td>
+</tr>
+@endforeach
+</tbody>
+</table>
+
+<div class="total-row">
+    Subtotal horas externas:&nbsp;
+    <span class="h-pos" style="font-size:9.5pt;">{{ number_format($externalTotal, 1) }}h</span>
+</div>
+@endif
+
+{{-- ─── GRAN TOTAL UNIFICADO ─── --}}
+@php
+    $grandTotal = $runningTotal + (count($externalHours) > 0 ? array_sum(array_column($externalHours, 'hours')) : 0);
+@endphp
+<div style="margin-top:10pt; padding:8pt 10pt; background:#f2f8f4; border:0.8pt solid #a8d5b5; border-left:4pt solid #1a5c2e; border-radius:3pt;">
+    <table style="width:100%; border-collapse:collapse;">
+    <tr>
+        <td style="font-size:8.5pt; color:#0f3d20; font-weight:bold;">
+            Total Acumulado General
+            @if(count($externalHours) > 0)
+                <span style="font-size:7.5pt; font-weight:normal; color:#4b5563;">
+                    ({{ number_format($runningTotal, 1) }}h jornadas + {{ number_format($externalTotal, 1) }}h externas)
+                </span>
+            @endif
+        </td>
+        <td style="text-align:right; font-size:14pt; font-weight:bold; color:#1a5c2e;">
+            {{ number_format($grandTotal, 1) }}h
+        </td>
+    </tr>
+    </table>
+</div>
 
 <div class="footer">
     {{ $institution?->name ?? 'Institución Educativa' }} &nbsp;&bull;&nbsp; Sistema de Bitácora Socioproductiva

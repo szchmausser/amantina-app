@@ -87,6 +87,11 @@ class RoleAndPermissionSeeder extends Seeder
             // Dashboard y acumulados (Hito 12)
             'dashboard.view',
             'accumulated_hours.view',
+            // Horas externas (Hito 13)
+            'external_hours.view',
+            'external_hours.create',
+            'external_hours.edit',
+            'external_hours.delete',
         ];
 
         foreach ($permissions as $permission) {

@@ -108,6 +108,14 @@ class User extends Authenticatable implements HasMedia
         return $this->hasMany(StudentHealthRecord::class, 'user_id');
     }
 
+    /**
+     * Get the external hours loaded for this student.
+     */
+    public function externalHours(): HasMany
+    {
+        return $this->hasMany(ExternalHour::class, 'user_id');
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('avatar')

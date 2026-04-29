@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
 use App\Models\Attendance;
+use App\Models\ExternalHour;
 use App\Models\Institution;
 use App\Models\User;
 use App\Services\HourAccumulatorService;
@@ -48,6 +49,10 @@ class StudentPdfController extends Controller
             $totalQuotaAllYears += (float) $year->required_hours;
         }
 
+        // Horas externas: suman solo al acumulado general
+        $totalExternalHours = (float) ExternalHour::where('user_id', $user->id)->sum('hours');
+        $totalHoursAllYears += $totalExternalHours;
+
         $totalPercentage = $totalQuotaAllYears > 0
             ? ($totalHoursAllYears / $totalQuotaAllYears) * 100
             : 0.0;
@@ -66,13 +71,14 @@ class StudentPdfController extends Controller
             ],
         ];
 
-        // --- Historial completo de jornadas ---
+        // --- Historial de jornadas ordenado cronológicamente por fecha de jornada ---
         $hourHistory = Attendance::where('user_id', $user->id)
             ->with(['fieldSession' => function ($query) {
                 $query->with(['status', 'academicYear']);
             }, 'attendanceActivities.activityCategory'])
-            ->orderBy('created_at', 'asc')
             ->get()
+            ->sortByDesc(fn ($a) => $a->fieldSession?->start_datetime ?? $a->created_at)
+            ->values()
             ->map(function ($a) {
                 $totalHours = $a->attended
                     ? $a->attendanceActivities->sum('hours')
@@ -101,6 +107,22 @@ class StudentPdfController extends Controller
             })
             ->toArray();
 
+        // --- Horas externas ordenadas cronológicamente por período ---
+        $externalHours = ExternalHour::where('user_id', $user->id)
+            ->with('admin:id,name')
+            ->orderBy('period')
+            ->orderBy('created_at')
+            ->get()
+            ->map(fn ($eh) => [
+                'id' => $eh->id,
+                'period' => $eh->period,
+                'hours' => (float) $eh->hours,
+                'institution_name' => $eh->institution_name,
+                'description' => $eh->description,
+                'admin_name' => $eh->admin?->name,
+            ])
+            ->toArray();
+
         $generatedAt = now()->format('d/m/Y H:i');
 
         $html = View::make('pdf.student-report', compact(
@@ -109,6 +131,7 @@ class StudentPdfController extends Controller
             'currentEnrollment',
             'hourStats',
             'hourHistory',
+            'externalHours',
             'generatedAt',
         ))->render();
 

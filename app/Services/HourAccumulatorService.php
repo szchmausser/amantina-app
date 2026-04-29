@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AcademicYear;
 use App\Models\Attendance;
+use App\Models\ExternalHour;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -36,7 +37,9 @@ class HourAccumulatorService
 
         $jornadaHours = $this->calculateJornadaHours($userId, $yearId);
 
-        // Reserved for Hito 12 (External Hours)
+        // External hours are not tied to a specific academic year —
+        // they are prior hours from another institution and always
+        // contribute only to the all-time total, never to a single year.
         $externalHours = 0.0;
 
         $totalHours = $jornadaHours + $externalHours;

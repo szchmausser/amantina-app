@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Listeners\SetActiveRoleContext;
+use App\Models\ExternalHour;
 use App\Policies\DashboardPolicy;
+use App\Policies\ExternalHourPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Date;
@@ -39,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Register non-model policies
         Gate::policy('dashboard', DashboardPolicy::class);
+        Gate::policy(ExternalHour::class, ExternalHourPolicy::class);
 
         $this->configureDefaults();
     }

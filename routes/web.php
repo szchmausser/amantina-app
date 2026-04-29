@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ActivityCategoryController;
 use App\Http\Controllers\Admin\AttendanceActivityController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\EnrollmentController;
+use App\Http\Controllers\Admin\ExternalHourController;
 use App\Http\Controllers\Admin\FieldSessionController;
 use App\Http\Controllers\Admin\GradeController;
 use App\Http\Controllers\Admin\HealthConditionController;
@@ -84,6 +85,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('student-health-records', [StudentHealthRecordController::class, 'store'])->name('student-health-records.store');
         Route::put('student-health-records/{student_health_record}', [StudentHealthRecordController::class, 'update'])->name('student-health-records.update');
         Route::delete('student-health-records/{student_health_record}', [StudentHealthRecordController::class, 'destroy'])->name('student-health-records.destroy');
+
+        // External Hours (nested under user)
+        Route::post('users/{user}/external-hours', [ExternalHourController::class, 'store'])->name('external-hours.store');
+        Route::put('external-hours/{external_hour}', [ExternalHourController::class, 'update'])->name('external-hours.update');
+        Route::delete('external-hours/{external_hour}', [ExternalHourController::class, 'destroy'])->name('external-hours.destroy');
     });
 });
 

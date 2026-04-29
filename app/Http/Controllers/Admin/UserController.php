@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\AcademicYear;
 use App\Models\Attendance;
+use App\Models\ExternalHour;
 use App\Models\HealthCondition;
 use App\Models\RelationshipType;
 use App\Models\User;
@@ -160,23 +161,27 @@ class UserController extends Controller
         $hourStats = null;
         if ($user->hasRole('alumno')) {
             $activeYear = AcademicYear::active()->first();
-            
+
             // Horas del año actual
             $currentYearData = $hourAccumulator->getStudentTotalHours($user->id, $activeYear?->id);
-            
-            // Horas totales de todos los años
+
+            // Horas totales de todos los años (solo jornadas)
             $allYears = AcademicYear::all();
             $totalHoursAllYears = 0;
             $totalQuotaAllYears = 0;
-            
+
             foreach ($allYears as $year) {
                 $yearData = $hourAccumulator->getStudentTotalHours($user->id, $year->id);
                 $totalHoursAllYears += $yearData['total_hours'];
                 $totalQuotaAllYears += $year->required_hours;
             }
-            
-            $totalPercentage = $totalQuotaAllYears > 0 
-                ? ($totalHoursAllYears / $totalQuotaAllYears) * 100 
+
+            // Agregar horas externas al acumulado general
+            $totalExternalHours = (float) ExternalHour::where('user_id', $user->id)->sum('hours');
+            $totalHoursAllYears += $totalExternalHours;
+
+            $totalPercentage = $totalQuotaAllYears > 0
+                ? ($totalHoursAllYears / $totalQuotaAllYears) * 100
                 : 0;
 
             $hourStats = [
@@ -203,14 +208,38 @@ class UserController extends Controller
                 ? User::role('representante')->get(['id', 'name', 'cedula'])
                 : [],
             'healthConditions' => HealthCondition::where('is_active', true)->get(),
+            'academicYears' => AcademicYear::orderBy('name', 'desc')->get(['id', 'name']),
+            'externalHours' => $user->hasRole('alumno')
+                ? ExternalHour::where('user_id', $user->id)
+                    ->with(['admin:id,name', 'media'])
+                    ->latest()
+                    ->get()
+                    ->map(fn ($eh) => [
+                        'id' => $eh->id,
+                        'hours' => (float) $eh->hours,
+                        'period' => $eh->period,
+                        'institution_name' => $eh->institution_name,
+                        'description' => $eh->description,
+                        'created_at' => $eh->created_at->format('d/m/Y'),
+                        'admin' => $eh->admin
+                            ? ['id' => $eh->admin->id, 'name' => $eh->admin->name]
+                            : null,
+                        'media' => $eh->getMedia('support_documents')->map(fn ($m) => [
+                            'id' => $m->id,
+                            'name' => $m->file_name,
+                            'original_url' => $m->getUrl(),
+                            'mime_type' => $m->mime_type,
+                        ])->values()->toArray(),
+                    ])
+                : [],
             'hourHistory' => $user->hasRole('alumno')
                 ? Attendance::where('user_id', $user->id)
                     ->with(['fieldSession' => function ($query) {
                         $query->with(['status', 'academicYear']);
                     }, 'attendanceActivities.activityCategory'])
-                    ->orderBy('created_at', 'asc') // Más antigua a más reciente
-                    ->limit(50)
                     ->get()
+                    ->sortByDesc(fn ($a) => $a->fieldSession?->start_datetime ?? $a->created_at)
+                    ->values()
                     ->map(function ($a) {
                         // Calcular total de horas de esta asistencia
                         $totalHours = $a->attended
