@@ -814,8 +814,8 @@ class HourAccumulatorService
             ->where('field_session_statuses.name', 'planned')
             ->whereNull('field_sessions.deleted_at')
             ->where('field_sessions.start_datetime', '>', now())
-            ->select('name', 'start_datetime as date', 'location_name as location')
-            ->orderBy('start_datetime')
+            ->select('field_sessions.name', 'field_sessions.start_datetime as date', 'field_sessions.location_name as location')
+            ->orderBy('field_sessions.start_datetime')
             ->first();
 
         // Health reminder
