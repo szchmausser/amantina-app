@@ -61,7 +61,7 @@ Los comandos para ejecutar el proyecto son:
 
 ### 5. Convenciones de Testing
 
-- Los tests deben usar el framework por defecto de Laravel (PHPUnit). Se prefieren los Feature Tests sobre los Unit Tests para asegurar la integración completa con Inertia y la base de datos.
+- Los tests deben usar **Pest 4** como framework de testing. Se prefieren los Feature Tests sobre los Unit Tests para asegurar la integración completa con Inertia y la base de datos.
 - Cada funcionalidad debe tener al menos un test.
 - Se deben usar datos de prueba que simulen datos reales. No usar datos reales en los tests.
 - **Base de datos de pruebas separada:** Los tests usan la base de datos `amantina_app_testing` (PostgreSQL), distinta de la de desarrollo (`amantina_app`), para no afectar los datos reales. Crear la BD de pruebas una vez con: `psql -U postgres -c "CREATE DATABASE amantina_app_testing;"` (o desde pgAdmin). Las credenciales (host, usuario, contraseña) se toman del `.env`.
@@ -117,7 +117,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/pail (PAIL) - v1
 - laravel/pint (PINT) - v1
 - laravel/sail (SAIL) - v1
-- phpunit/phpunit (PHPUNIT) - v11
+- pestphp/pest (PEST) - v4
 - @inertiajs/react (INERTIA_REACT) - v2
 - react (REACT) - v19
 - tailwindcss (TAILWINDCSS) - v4
@@ -372,12 +372,16 @@ Wayfinder generates TypeScript functions for Laravel routes. Import from `@/acti
 - If you have modified any PHP files, you must run `vendor/bin/pint --dirty --format agent` before finalizing changes to ensure your code matches the project's expected style.
 - Do not run `vendor/bin/pint --test --format agent`, simply run `vendor/bin/pint --format agent` to fix any formatting issues.
 
-=== phpunit/core rules ===
+=== pest/core rules ===
 
-# PHPUnit
+# Pest 4
 
-- This application uses PHPUnit for testing. All tests must be written as PHPUnit classes. Use `php artisan make:test --phpunit {name}` to create a new test.
-- If you see a test using "Pest", convert it to PHPUnit.
+- This application uses **Pest 4** for testing. All tests must be written using Pest syntax.
+- Use `php artisan make:test --pest {name}` to create a new test (Pest is the default).
+- **Feature tests** (in `tests/Feature/`) use `RefreshDatabase` for HTTP/controller testing.
+- **Browser tests** (in `tests/Browser/`) use `DatabaseTruncation` and `Browsable` for E2E testing with Playwright.
+- Browser tests should use `visit()`, `click()`, `type()`, etc. NOT HTTP methods like `$this->get()`, `$this->post()`.
+- If you need to test HTTP endpoints directly (PUT, POST, DELETE), use Feature tests, not Browser tests.
 - Every time a test has been updated, run that singular test.
 - When the tests relating to your feature are passing, ask the user if they would like to also run the entire test suite to make sure everything is still passing.
 - Tests should cover all happy paths, failure paths, and edge cases.

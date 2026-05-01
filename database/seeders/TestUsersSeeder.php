@@ -6,9 +6,12 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 /**
- * Seeder to generate a set of demo users with different roles.
+ * Seeder to generate users with specific role distribution.
+ * Creates 99 users: 5 teachers, 9 representatives, 85 students.
+ * Combined with UserSeeder (1 admin), total = 100 users.
  */
 class TestUsersSeeder extends Seeder
 {
@@ -17,26 +20,36 @@ class TestUsersSeeder extends Seeder
      */
     public function run(): void
     {
-        /** @var array<int, string> $roles */
-        $roles = [
-            'admin',
-            'profesor',
-            'alumno',
-            'representante',
-        ];
+        $this->createUsersByRole('profesor', 5, 90000001);
+        $this->createUsersByRole('representante', 9, 90000010);
+        $this->createUsersByRole('alumno', 85, 90000020);
+    }
 
-        // Create 20 demo users, rotating through available roles.
-        for ($i = 1; $i <= 20; $i++) {
+    /**
+     * Create multiple users with a specific role.
+     */
+    private function createUsersByRole(string $role, int $count, int $startCedula): void
+    {
+        for ($i = 0; $i < $count; $i++) {
+            $cedula = (string) ($startCedula + $i);
+            $email = "user{$cedula}@amantina.test";
+
             /** @var User $user */
-            $user = User::factory()->create([
-                'cedula' => sprintf('9000%04d', $i),
-                'name' => "Usuario demo {$i}",
-                'email' => "demo{$i}@amantina.test",
-                'is_active' => true,
-            ]);
+            $user = User::updateOrCreate(
+                ['cedula' => $cedula],
+                [
+                    'name' => "Usuario {$cedula}",
+                    'email' => $email,
+                    'password' => Hash::make('password'),
+                    'phone' => '04120000000',
+                    'address' => 'Dirección de prueba',
+                    'is_active' => true,
+                    'is_transfer' => false,
+                    'institution_origin' => null,
+                ]
+            );
 
-            $roleName = $roles[($i - 1) % \count($roles)];
-            $user->assignRole($roleName);
+            $user->assignRole($role);
         }
     }
 }

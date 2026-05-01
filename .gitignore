@@ -26,3 +26,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Browser Testing
+/tests/Browser/Screenshots/
+/.temp/
+/playwright-report/
+/test-results/

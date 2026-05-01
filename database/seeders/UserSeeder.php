@@ -12,16 +12,20 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
-            'cedula' => '00000000',
-            'name' => 'Administrador',
-            'email' => 'admin@amantina.test',
-            'password' => 'password',
-            'phone' => '04121234567',
-            'address' => null,
-            'is_active' => true,
-            'is_transfer' => false,
-            'institution_origin' => null,
-        ])->assignRole('admin');
+        $user = User::updateOrCreate(
+            ['email' => 'admin@amantina.test'], // Search by unique email
+            [
+                'cedula' => '00000000',
+                'name' => 'Administrador',
+                'password' => 'password',
+                'phone' => '04121234567',
+                'address' => null,
+                'is_active' => true,
+                'is_transfer' => false,
+                'institution_origin' => null,
+            ]
+        );
+
+        $user->assignRole('admin');
     }
 }

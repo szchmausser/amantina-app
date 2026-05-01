@@ -39,4 +39,13 @@ class Enrollment extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    /**
+     * Alias for student() relationship.
+     * Some parts of the codebase use user() instead of student().
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

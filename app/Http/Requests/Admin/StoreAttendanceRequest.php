@@ -25,7 +25,7 @@ class StoreAttendanceRequest extends FormRequest
         // For bulk registration
         if ($this->has('student_ids')) {
             return [
-                'field_session_id' => ['required', 'integer', 'exists:field_sessions,id'],
+                'field_session_id' => ['sometimes', 'integer', 'exists:field_sessions,id'],
                 'student_ids' => ['required', 'array', 'min:1'],
                 'student_ids.*' => ['integer', 'exists:users,id'],
                 'attended' => ['nullable', 'boolean'],
@@ -35,11 +35,24 @@ class StoreAttendanceRequest extends FormRequest
 
         // For single registration
         return [
-            'field_session_id' => ['required', 'integer', 'exists:field_sessions,id'],
+            'field_session_id' => ['sometimes', 'integer', 'exists:field_sessions,id'],
             'user_id' => ['required', 'integer', 'exists:users,id'],
             'attended' => ['required', 'boolean'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     * If field_session_id is not in the request, get it from the route parameter.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('field_session_id') && $this->route('fieldSession')) {
+            $this->merge([
+                'field_session_id' => $this->route('fieldSession')->id,
+            ]);
+        }
     }
 
     /**

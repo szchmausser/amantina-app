@@ -281,6 +281,11 @@ class FieldSessionController extends Controller
     {
         Gate::authorize('field_sessions.delete');
 
+        // Verificar que el profesor solo pueda eliminar sus propias jornadas
+        if (! auth()->user()->hasRole('admin') && $fieldSession->user_id !== auth()->id()) {
+            abort(403, 'No tienes permiso para eliminar esta jornada.');
+        }
+
         $fieldSession->delete();
 
         return redirect()->route('admin.field-sessions.index')

@@ -8,7 +8,6 @@ use App\Http\Requests\Admin\UpdateAttendanceActivityRequest;
 use App\Models\Attendance;
 use App\Models\AttendanceActivity;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Gate;
 
 class AttendanceActivityController extends Controller
 {
@@ -59,7 +58,7 @@ class AttendanceActivityController extends Controller
      */
     public function destroy(AttendanceActivity $attendanceActivity): RedirectResponse
     {
-        Gate::authorize('attendance_activities.delete', $attendanceActivity);
+        $this->authorizeSessionAccess($attendanceActivity->attendance);
 
         $attendanceActivity->delete();
 
