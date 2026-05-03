@@ -91,6 +91,12 @@ interface Props {
             required: number;
             percentage: number;
         };
+        breakdown_by_term?: Array<{
+            termName: string;
+            totalHours: number;
+            quota: number;
+            percentage: number;
+        }>;
     } | null;
     externalHours?: ExternalHourItem[];
     academicYears?: { id: number; name: string }[];
@@ -258,13 +264,11 @@ export default function Show({
                         <Button
                             variant="ghost"
                             size="sm"
-                            asChild
+                            onClick={() => window.history.back()}
                             className="mb-2 -ml-2 h-8"
                         >
-                            <Link href={userIndex().url}>
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Volver al listado
-                            </Link>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Volver
                         </Button>
                         <div className="flex items-center gap-3">
                             {(user as any).avatar_url ? (
@@ -1062,6 +1066,44 @@ export default function Show({
                                                     }}
                                                 />
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Desglose por Lapso */}
+                            {hourStats && hourStats.breakdown_by_term && hourStats.breakdown_by_term.length > 0 && (
+                                <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                    <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                        <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300">
+                                            Desglose por Lapso ({hourStats.current_year.year_name})
+                                        </h3>
+                                    </div>
+                                    <div className="p-6">
+                                        <div className="grid gap-4 md:grid-cols-3">
+                                            {hourStats.breakdown_by_term.map((term, index) => {
+                                                const colorClass = term.percentage >= 100
+                                                    ? 'text-green-600 dark:text-green-500'
+                                                    : term.percentage >= 75
+                                                    ? 'text-blue-600 dark:text-blue-500'
+                                                    : term.percentage >= 50
+                                                    ? 'text-amber-600 dark:text-amber-500'
+                                                    : 'text-red-600 dark:text-red-500';
+
+                                                return (
+                                                    <div key={index} className="rounded-lg border bg-card p-4">
+                                                        <p className="mb-1 text-xs font-medium text-muted-foreground uppercase">
+                                                            {term.termName}
+                                                        </p>
+                                                        <p className={`text-2xl font-bold ${colorClass}`}>
+                                                            {term.totalHours}h
+                                                        </p>
+                                                        <p className="mt-1 text-xs text-muted-foreground">
+                                                            de {term.quota}h ({term.percentage.toFixed(0)}%)
+                                                        </p>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>

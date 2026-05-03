@@ -43,18 +43,18 @@ export function AppSidebar() {
 
     const mainNavItems: NavItem[] = [];
 
+    // Always show Dashboard first
+    mainNavItems.push({
+        title: 'Dashboard',
+        href: dashboard(),
+        icon: LayoutGrid,
+    });
+
     if (auth.permissions?.includes('academic_info.view')) {
         mainNavItems.push({
             title: 'Información Académica',
             href: academicInfoIndex().url,
             icon: LayoutDashboard,
-        });
-    } else {
-        // Only show default dashboard if user can't see the new one
-        mainNavItems.push({
-            title: 'Dashboard',
-            href: dashboard(),
-            icon: LayoutGrid,
         });
     }
 

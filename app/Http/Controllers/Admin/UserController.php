@@ -184,6 +184,46 @@ class UserController extends Controller
                 ? ($totalHoursAllYears / $totalQuotaAllYears) * 100
                 : 0;
 
+            // Desglose por lapso del año actual
+            $breakdownByTerm = [];
+            if ($activeYear) {
+                $terms = \DB::table('school_terms')
+                    ->where('academic_year_id', $activeYear->id)
+                    ->whereNull('deleted_at')
+                    ->select('id', 'term_type_name')
+                    ->orderBy('id')
+                    ->get();
+
+                $quotaPerTerm = $terms->count() > 0
+                    ? $activeYear->required_hours / $terms->count()
+                    : 0;
+
+                foreach ($terms as $term) {
+                    $hours = \DB::table('attendance_activities')
+                        ->join('attendances', 'attendance_activities.attendance_id', '=', 'attendances.id')
+                        ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
+                        ->where('attendances.user_id', $user->id)
+                        ->where('field_sessions.school_term_id', $term->id)
+                        ->where('attendances.attended', true)
+                        ->whereNull('attendance_activities.deleted_at')
+                        ->whereNull('attendances.deleted_at')
+                        ->whereNull('field_sessions.deleted_at')
+                        ->sum('attendance_activities.hours');
+
+                    $hoursFloat = round((float) $hours, 2);
+                    $percentage = $quotaPerTerm > 0
+                        ? ($hoursFloat / $quotaPerTerm) * 100
+                        : 0;
+
+                    $breakdownByTerm[] = [
+                        'termName' => $term->term_type_name,
+                        'totalHours' => $hoursFloat,
+                        'quota' => round($quotaPerTerm, 2),
+                        'percentage' => round($percentage, 2),
+                    ];
+                }
+            }
+
             $hourStats = [
                 'current_year' => [
                     'hours' => $currentYearData['total_hours'] ?? 0,
@@ -196,6 +236,7 @@ class UserController extends Controller
                     'required' => $totalQuotaAllYears,
                     'percentage' => round($totalPercentage, 2),
                 ],
+                'breakdown_by_term' => $breakdownByTerm,
             ];
         }
 

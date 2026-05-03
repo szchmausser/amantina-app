@@ -64,6 +64,13 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
 
     const mainNavItems: NavItem[] = [];
 
+    // Always show Dashboard first
+    mainNavItems.push({
+        title: 'Dashboard',
+        href: dashboard(),
+        icon: LayoutGrid,
+    });
+
     if (auth.permissions?.includes('academic_info.view')) {
         mainNavItems.push({
             title: 'Información Académica',

@@ -421,6 +421,35 @@ table.hist tbody td.tc { text-align: center; }
 </tr>
 </table>
 
+{{-- Desglose por Lapso --}}
+@if(!empty($hourStats['breakdown_by_term']) && count($hourStats['breakdown_by_term']) > 0)
+<div style="margin-top: 15px;">
+    <div class="sec-title">Desglose por Lapso ({{ $cy['year_name'] }})</div>
+    <table class="hcard-wrap">
+    <tr>
+        @foreach($hourStats['breakdown_by_term'] as $index => $term)
+            @php
+                $termPct = (float) ($term['percentage'] ?? 0);
+                $termColor = $termPct >= 100 ? 'green'
+                    : ($termPct >= 75  ? 'blue'
+                    : ($termPct >= 50  ? 'amber' : 'red'));
+            @endphp
+            @if($index > 0)
+                <td class="hcard-sep"></td>
+            @endif
+            <td class="hcard" style="width: {{ 100 / count($hourStats['breakdown_by_term']) }}%;">
+                <div class="hcard-title">{{ $term['termName'] }}</div>
+                <div style="padding: 15px; text-align: center;">
+                    <div class="h-num c-{{ $termColor }}" style="font-size: 28px;">{{ number_format($term['totalHours'], 1) }}h</div>
+                    <div class="h-req" style="margin-top: 4pt;">de {{ number_format($term['quota'], 0) }}h ({{ number_format($termPct, 0) }}%)</div>
+                </div>
+            </td>
+        @endforeach
+    </tr>
+    </table>
+</div>
+@endif
+
 <div class="footer">
     {{ $institution?->name ?? 'Institución Educativa' }} &nbsp;&bull;&nbsp; Sistema de Bitácora Socioproductiva
     &nbsp;&bull;&nbsp; Generado el {{ $generatedAt }}

@@ -19,7 +19,7 @@ class AcademicYearSeeder extends Seeder
             'start_date' => '2024-09-01',
             'end_date' => '2025-07-15',
             'is_active' => true,
-            'required_hours' => 600.00,
+            'required_hours' => 120.00,
         ]);
 
         // Grados y Secciones
