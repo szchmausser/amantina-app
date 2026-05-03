@@ -9,6 +9,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import {
     index as userIndex,
@@ -70,6 +80,8 @@ export default function Index({ users, filters, availableRoles }: Props) {
     const [role, setRole] = useState(filters.role || 'all');
     const [perPage, setPerPage] = useState(filters.per_page || 5);
     const [isSearching, setIsSearching] = useState(false);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
     // Trackear si es la primera carga para evitar ejecución inmediata
     const isFirstRender = useRef(true);
@@ -115,9 +127,15 @@ export default function Index({ users, filters, availableRoles }: Props) {
     };
 
     const handleDelete = (id: number) => {
-        if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-            router.delete(userDestroy(id).url);
-        }
+        setPendingDeleteId(id);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!pendingDeleteId) return;
+        router.delete(userDestroy(pendingDeleteId).url);
+        setConfirmDialogOpen(false);
+        setPendingDeleteId(null);
     };
 
     const handleClearFilters = () => {
@@ -315,6 +333,34 @@ export default function Index({ users, filters, availableRoles }: Props) {
                     emptyMessage="No se encontraron usuarios que coincidan con los criterios de búsqueda."
                 />
             </div>
+
+            {/* Confirmation Dialog */}
+            <AlertDialog
+                open={confirmDialogOpen}
+                onOpenChange={setConfirmDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Confirmar Eliminación
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            ¿Estás seguro de que deseas eliminar este usuario?
+                            Esta acción no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            data-test="confirm-delete-button"
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

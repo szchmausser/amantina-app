@@ -30,6 +30,16 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import {
@@ -167,6 +177,9 @@ export default function FieldSessionShow({
     const [activities, setActivities] = useState<ActivityItem[]>([]);
     const [isSubmittingActivities, setIsSubmittingActivities] = useState(false);
 
+    // AlertDialog state for delete confirmation
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+
     // Ref para evitar ejecución en primera renderización
     const isFirstRender = useRef(true);
 
@@ -243,13 +256,12 @@ export default function FieldSessionShow({
     };
 
     const handleDelete = () => {
-        if (
-            confirm(
-                '¿Estás seguro de que deseas eliminar esta jornada de campo?',
-            )
-        ) {
-            router.delete(`/admin/field-sessions/${fieldSession.id}`);
-        }
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        router.delete(`/admin/field-sessions/${fieldSession.id}`);
+        setConfirmDialogOpen(false);
     };
 
     // Open modal for global hours assignment
@@ -1088,6 +1100,27 @@ export default function FieldSessionShow({
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar jornada de campo?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Esta acción no se puede deshacer. La jornada de campo <strong>{fieldSession.name}</strong> será eliminada permanentemente junto con todos sus registros de asistencia.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={confirmDelete}
+                                className="bg-red-600 hover:bg-red-700"
+                                data-test="confirm-delete-button"
+                            >
+                                Eliminar
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </AppLayout>
     );

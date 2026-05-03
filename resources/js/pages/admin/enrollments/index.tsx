@@ -11,6 +11,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -91,6 +101,8 @@ export default function EnrollmentsIndex({
     ];
 
     const [perPage, setPerPage] = useState(enrollments.per_page || 10);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
     const isFirstPerPageRender = useRef(true);
     const selectedGradeIdRef = useRef(selectedGradeId);
     const selectedSectionIdRef = useRef(selectedSectionId);
@@ -120,13 +132,15 @@ export default function EnrollmentsIndex({
     }, [perPage]);
 
     const handleDelete = (id: number) => {
-        if (
-            confirm(
-                '¿Estás seguro de que deseas eliminar la inscripción de este alumno?',
-            )
-        ) {
-            router.delete(`/admin/enrollments/${id}`);
-        }
+        setPendingDeleteId(id);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!pendingDeleteId) return;
+        router.delete(`/admin/enrollments/${pendingDeleteId}`);
+        setConfirmDialogOpen(false);
+        setPendingDeleteId(null);
     };
 
     const handleFilterGrade = (val: string) => {
@@ -451,6 +465,34 @@ export default function EnrollmentsIndex({
                     />
                 </div>
             </SettingsLayout>
+
+            {/* Confirmation Dialog */}
+            <AlertDialog
+                open={confirmDialogOpen}
+                onOpenChange={setConfirmDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Confirmar Eliminación
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            ¿Estás seguro de que deseas eliminar la inscripción
+                            de este alumno? Esta acción no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            data-test="confirm-delete-button"
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

@@ -65,13 +65,31 @@ Los comandos para ejecutar el proyecto son:
 - Cada funcionalidad debe tener al menos un test.
 - Se deben usar datos de prueba que simulen datos reales. No usar datos reales en los tests.
 - **Base de datos de pruebas separada:** Los tests usan la base de datos `amantina_app_testing` (PostgreSQL), distinta de la de desarrollo (`amantina_app`), para no afectar los datos reales. Crear la BD de pruebas una vez con: `psql -U postgres -c "CREATE DATABASE amantina_app_testing;"` (o desde pgAdmin). Las credenciales (host, usuario, contraseña) se toman del `.env`.
+- **⚠️ PROTOCOLO OBLIGATORIO ANTES DE EJECUTAR TESTS:**
+  ```bash
+  php artisan config:clear
+  php artisan cache:clear
+  php artisan test --env=testing --compact tests/...
+  ```
+  O en una sola línea:
+  ```bash
+  php artisan config:clear; php artisan cache:clear; php artisan test --env=testing --compact tests/...
+  ```
+  **¿Por qué es obligatorio?** Laravel Herd cachea la configuración con `.env` (desarrollo). Sin limpiar cache, los tests usan `amantina_app` (desarrollo) en lugar de `amantina_app_testing`, causando **PÉRDIDA DE DATOS** en la base de datos de desarrollo.
 
 ### 6. Convenciones de Git
 
 - Las ramas deben seguir el formato `feature/nombre-de-la-funcionalidad` o `fix/nombre-del-fix`.
 - Los mensajes de commit deben seguir el formato Conventional Commits (ej: `feat: add new user registration endpoint`) escritos preferiblemente en inglés.
 - No generar commits ni subir a github sin consultar previamente por aprobación.
-- Antes de generar un commit, ejecutar php artisan test y asegurar que todos los tests pasen. Es obligatorio corregir cualquier fallo —ya sea un error de implementación o un efecto secundario funcional (regresión)— antes de confirmar los cambios para garantizar la estabilidad del repositorio.
+- **Antes de generar un commit, ejecutar OBLIGATORIAMENTE:**
+  ```bash
+  php artisan config:clear
+  php artisan cache:clear
+  php artisan test --env=testing
+  ```
+  Es obligatorio corregir cualquier fallo —ya sea un error de implementación o un efecto secundario funcional (regresión)— antes de confirmar los cambios para garantizar la estabilidad del repositorio.
+- **¿Por qué limpiar cache antes de tests?** Laravel Herd cachea la configuración con `.env` (desarrollo). Sin limpiar cache, los tests usan `amantina_app` (desarrollo) en lugar de `amantina_app_testing`, causando PÉRDIDA DE DATOS en la base de datos de desarrollo.
 
 ### 7. Convenciones de Seguridad
 

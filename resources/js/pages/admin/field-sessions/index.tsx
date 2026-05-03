@@ -4,6 +4,16 @@ import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -82,6 +92,8 @@ export default function FieldSessionsIndex({
 
     const [perPage, setPerPage] = useState(fieldSessions.per_page || 10);
     const isFirstPerPageRender = useRef(true);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
     useEffect(() => {
         if (isFirstPerPageRender.current) {
@@ -111,13 +123,15 @@ export default function FieldSessionsIndex({
     };
 
     const handleDelete = (id: number) => {
-        if (
-            confirm(
-                '¿Estás seguro de que deseas eliminar esta jornada de campo?',
-            )
-        ) {
-            router.delete(`/admin/field-sessions/${id}`);
-        }
+        setPendingDeleteId(id);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!pendingDeleteId) return;
+        router.delete(`/admin/field-sessions/${pendingDeleteId}`);
+        setConfirmDialogOpen(false);
+        setPendingDeleteId(null);
     };
 
     const pagination: PaginationInfo | undefined =
@@ -291,6 +305,27 @@ export default function FieldSessionsIndex({
                     emptyMessage="No hay jornadas de campo registradas."
                 />
             </div>
+
+            <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar jornada de campo?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. La jornada de campo será eliminada permanentemente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-test="confirm-delete-button"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

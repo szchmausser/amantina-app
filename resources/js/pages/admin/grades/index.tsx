@@ -1,6 +1,16 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Edit, GraduationCap, Plus, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -68,6 +78,8 @@ export default function GradesIndex({
 
     const [perPage, setPerPage] = useState(grades.per_page || 10);
     const isFirstPerPageRender = useRef(true);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
     useEffect(() => {
         if (isFirstPerPageRender.current) {
@@ -91,15 +103,17 @@ export default function GradesIndex({
     };
 
     const handleDelete = (gradeId: number) => {
-        if (
-            confirm(
-                '¿Estás seguro de que deseas eliminar este grado? Se eliminarán también todas sus secciones.',
-            )
-        ) {
-            router.delete(`/admin/grades/${gradeId}`, {
-                preserveState: true,
-            });
-        }
+        setPendingDeleteId(gradeId);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!pendingDeleteId) return;
+        router.delete(`/admin/grades/${pendingDeleteId}`, {
+            preserveState: true,
+        });
+        setConfirmDialogOpen(false);
+        setPendingDeleteId(null);
     };
 
     const pagination: PaginationInfo | undefined =
@@ -246,8 +260,9 @@ export default function GradesIndex({
                             <Select
                                 value={selectedYearId.toString()}
                                 onValueChange={handleYearChange}
+                                data-test="academic-year-filter"
                             >
-                                <SelectTrigger className="h-10">
+                                <SelectTrigger className="h-10" data-test="academic-year-filter-trigger">
                                     <SelectValue placeholder="Seleccionar año" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -286,6 +301,32 @@ export default function GradesIndex({
                     />
                 </div>
             </SettingsLayout>
+
+            <AlertDialog
+                open={confirmDialogOpen}
+                onOpenChange={setConfirmDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar grado?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            <strong>Advertencia:</strong> Esta acción eliminará
+                            el grado y todas sus secciones asociadas. Esta
+                            operación no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-test="confirm-delete-button"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

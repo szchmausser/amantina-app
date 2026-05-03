@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, Edit, Trash2, Users, UserPlus, Plus } from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +10,16 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -54,6 +65,8 @@ interface Props {
 }
 
 export default function SectionShow({ section, academicYear }: Props) {
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Años Escolares', href: '/admin/academic-years' },
@@ -69,15 +82,14 @@ export default function SectionShow({ section, academicYear }: Props) {
     );
 
     const handleDelete = () => {
-        if (
-            confirm(
-                '¿Estás seguro de que deseas eliminar esta sección? Se eliminarán también las inscripciones y asignaciones asociadas.',
-            )
-        ) {
-            router.delete(`/admin/sections/${section.id}`, {
-                preserveScroll: true,
-            });
-        }
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        router.delete(`/admin/sections/${section.id}`, {
+            preserveScroll: true,
+        });
+        setConfirmDialogOpen(false);
     };
 
     return (
@@ -333,6 +345,38 @@ export default function SectionShow({ section, academicYear }: Props) {
                     </div>
                 </div>
             </SettingsLayout>
+
+            {/* Confirmation Dialog */}
+            <AlertDialog
+                open={confirmDialogOpen}
+                onOpenChange={setConfirmDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Confirmar Eliminación
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            ¿Estás seguro de que deseas eliminar esta sección?
+                            <br />
+                            <br />
+                            <strong>Advertencia:</strong> Se eliminarán también
+                            las inscripciones y asignaciones asociadas. Esta
+                            acción no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            data-test="confirm-delete-button"
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

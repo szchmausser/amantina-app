@@ -6,6 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
     DataTable,
     DataTableHead,
     DataTableTH,
@@ -47,6 +57,8 @@ export default function LocationsIndex({ locations }: Props) {
     const [isCreating, setIsCreating] = useState(false);
     const [perPage, setPerPage] = useState(locations.per_page || 10);
     const isFirstPerPageRender = useRef(true);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
     useEffect(() => {
         if (isFirstPerPageRender.current) {
@@ -101,9 +113,15 @@ export default function LocationsIndex({ locations }: Props) {
     };
 
     const handleDelete = (id: number) => {
-        if (confirm('¿Estás seguro de que deseas eliminar esta ubicación?')) {
-            router.delete(`/admin/locations/${id}`);
-        }
+        setPendingDeleteId(id);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!pendingDeleteId) return;
+        router.delete(`/admin/locations/${pendingDeleteId}`);
+        setConfirmDialogOpen(false);
+        setPendingDeleteId(null);
     };
 
     const pagination: PaginationInfo | undefined =
@@ -268,6 +286,27 @@ export default function LocationsIndex({ locations }: Props) {
                     />
                 </div>
             </SettingsLayout>
+
+            <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar ubicación?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. La ubicación será eliminada permanentemente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-test="confirm-delete-button"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

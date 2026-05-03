@@ -47,9 +47,15 @@ export default function TeacherAssignmentsIndex({ activeYear, assignments }: Pro
     ];
 
     const handleDelete = (id: number) => {
-        if (confirm('¿Estás seguro de que deseas eliminar la asignación de este profesor?')) {
-            router.delete(`/admin/teacher-assignments/${id}`);
-        }
+        setPendingDeleteId(id);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!pendingDeleteId) return;
+        router.delete(`/admin/teacher-assignments/${pendingDeleteId}`);
+        setConfirmDialogOpen(false);
+        setPendingDeleteId(null);
     };
 
     if (!activeYear) {

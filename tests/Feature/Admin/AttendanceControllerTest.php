@@ -57,7 +57,10 @@ class AttendanceControllerTest extends TestCase
         $this->otherProfesor->assignRole('profesor');
 
         $this->grade = Grade::factory()->create(['name' => '1er Año', 'order' => 1]);
-        $this->section = Section::factory()->create(['name' => 'A', 'grade_id' => $this->grade->id]);
+        $this->section = Section::factory()->create([
+            'grade_id' => $this->grade->id,
+            'name' => 'Sección A',
+        ]);
     }
 
     public function test_admin_can_view_attendance_page(): void

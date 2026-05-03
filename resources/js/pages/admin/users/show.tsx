@@ -1,4 +1,5 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
+import { useMemo } from 'react';
 import {
     ArrowLeft,
     Clock,
@@ -23,6 +24,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import {
@@ -40,7 +51,6 @@ import HealthRecordModal from './partials/health-record-modal';
 import ExternalHourModal, {
     ExternalHourItem,
 } from './partials/external-hour-modal';
-import { router } from '@inertiajs/react';
 
 interface CurrentEnrollment {
     id: number;
@@ -138,6 +148,14 @@ export default function Show({
     const [activeTab, setActiveTab] = useState('general');
     const getInitials = useInitials();
 
+    // AlertDialog states
+    const [unlinkDialogOpen, setUnlinkDialogOpen] = useState(false);
+    const [pendingUnlinkId, setPendingUnlinkId] = useState<number | null>(null);
+    const [deleteHealthDialogOpen, setDeleteHealthDialogOpen] = useState(false);
+    const [pendingDeleteHealthId, setPendingDeleteHealthId] = useState<number | null>(null);
+    const [deleteExternalHourDialogOpen, setDeleteExternalHourDialogOpen] = useState(false);
+    const [pendingDeleteExternalHourId, setPendingDeleteExternalHourId] = useState<number | null>(null);
+
     const hasPermission = (p: string) => auth.permissions?.includes(p);
 
     const roles = user.roles ? user.roles.map((r: any) => r.name) : [];
@@ -192,13 +210,41 @@ export default function Show({
     }, [hourHistory]);
 
     const handleUnlink = (pivotId: number) => {
-        if (
-            confirm(
-                '¿Estás seguro de que deseas desvincular a este representante?',
-            )
-        ) {
-            router.delete(unlinkRepresentative(pivotId).url);
-        }
+        setPendingUnlinkId(pivotId);
+        setUnlinkDialogOpen(true);
+    };
+
+    const confirmUnlink = () => {
+        if (!pendingUnlinkId) return;
+        router.delete(unlinkRepresentative(pendingUnlinkId).url);
+        setUnlinkDialogOpen(false);
+        setPendingUnlinkId(null);
+    };
+
+    const handleDeleteHealthRecord = (recordId: number) => {
+        setPendingDeleteHealthId(recordId);
+        setDeleteHealthDialogOpen(true);
+    };
+
+    const confirmDeleteHealthRecord = () => {
+        if (!pendingDeleteHealthId) return;
+        router.delete(`/admin/student-health-records/${pendingDeleteHealthId}`);
+        setDeleteHealthDialogOpen(false);
+        setPendingDeleteHealthId(null);
+    };
+
+    const handleDeleteExternalHour = (externalHourId: number) => {
+        setPendingDeleteExternalHourId(externalHourId);
+        setDeleteExternalHourDialogOpen(true);
+    };
+
+    const confirmDeleteExternalHour = () => {
+        if (!pendingDeleteExternalHourId) return;
+        router.delete(`/admin/external-hours/${pendingDeleteExternalHourId}`, {
+            preserveScroll: true,
+        });
+        setDeleteExternalHourDialogOpen(false);
+        setPendingDeleteExternalHourId(null);
     };
 
     return (
@@ -823,17 +869,11 @@ export default function Show({
                                                                         variant="ghost"
                                                                         size="icon"
                                                                         className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
-                                                                        onClick={() => {
-                                                                            if (
-                                                                                confirm(
-                                                                                    '¿Eliminar este registro de salud?\n\nLos archivos adjuntos se eliminarán permanentemente del servidor y no podrán recuperarse.',
-                                                                                )
-                                                                            ) {
-                                                                                router.delete(
-                                                                                    `/admin/student-health-records/${record.id}`,
-                                                                                );
-                                                                            }
-                                                                        }}
+                                                                        onClick={() =>
+                                                                            handleDeleteHealthRecord(
+                                                                                record.id,
+                                                                            )
+                                                                        }
                                                                     >
                                                                         <Trash2 className="h-3.5 w-3.5" />
                                                                     </Button>
@@ -1177,20 +1217,11 @@ export default function Show({
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
-                                                                    onClick={() => {
-                                                                        if (
-                                                                            confirm(
-                                                                                '¿Eliminar este registro de horas externas?\n\nLos archivos adjuntos se eliminarán permanentemente.',
-                                                                            )
-                                                                        ) {
-                                                                            router.delete(
-                                                                                `/admin/external-hours/${item.id}`,
-                                                                                {
-                                                                                    preserveScroll: true,
-                                                                                },
-                                                                            );
-                                                                        }
-                                                                    }}
+                                                                    onClick={() =>
+                                                                        handleDeleteExternalHour(
+                                                                            item.id,
+                                                                        )
+                                                                    }
                                                                 >
                                                                     <Trash2 className="h-3.5 w-3.5" />
                                                                 </Button>
@@ -1483,6 +1514,72 @@ export default function Show({
                 existingRecord={editingExternalHour}
                 isEditing={!!editingExternalHour}
             />
+
+            {/* AlertDialog: Desvincular representante */}
+            <AlertDialog open={unlinkDialogOpen} onOpenChange={setUnlinkDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Desvincular representante?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. El vínculo entre el estudiante y el representante será eliminado permanentemente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmUnlink}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-test="confirm-delete-button"
+                        >
+                            Desvincular
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* AlertDialog: Eliminar registro de salud */}
+            <AlertDialog open={deleteHealthDialogOpen} onOpenChange={setDeleteHealthDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar registro de salud?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            <strong>Advertencia:</strong> Los archivos adjuntos se eliminarán permanentemente del servidor y no podrán recuperarse.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDeleteHealthRecord}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-test="confirm-delete-button"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* AlertDialog: Eliminar horas externas */}
+            <AlertDialog open={deleteExternalHourDialogOpen} onOpenChange={setDeleteExternalHourDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar registro de horas externas?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            <strong>Advertencia:</strong> Los archivos adjuntos se eliminarán permanentemente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDeleteExternalHour}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-test="confirm-delete-button"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

@@ -11,6 +11,16 @@ import { useState, useEffect, useRef } from 'react';
 import { formatDate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem, SharedData } from '@/types';
@@ -64,6 +74,8 @@ export default function AcademicYearIndex({ academicYears }: Props) {
 
     const [perPage, setPerPage] = useState(academicYears.per_page || 10);
     const isFirstPerPageRender = useRef(true);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
     useEffect(() => {
         if (isFirstPerPageRender.current) {
@@ -79,13 +91,15 @@ export default function AcademicYearIndex({ academicYears }: Props) {
     }, [perPage]);
 
     const handleDelete = (id: number) => {
-        if (
-            confirm(
-                '¿Estás seguro de que deseas eliminar este año académico? Se eliminarán también sus lapsos, grados y secciones.',
-            )
-        ) {
-            router.delete(academicYearsDestroy(id).url);
-        }
+        setPendingDeleteId(id);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!pendingDeleteId) return;
+        router.delete(academicYearsDestroy(pendingDeleteId).url);
+        setConfirmDialogOpen(false);
+        setPendingDeleteId(null);
     };
 
     const pagination: PaginationInfo | undefined =
@@ -263,6 +277,27 @@ export default function AcademicYearIndex({ academicYears }: Props) {
                     />
                 </div>
             </SettingsLayout>
+
+            <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar año escolar?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            <strong>Advertencia:</strong> Esta acción eliminará el año escolar y todos sus lapsos, grados y secciones asociados. Esta operación no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-test="confirm-delete-button"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

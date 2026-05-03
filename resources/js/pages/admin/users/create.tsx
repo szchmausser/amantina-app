@@ -115,6 +115,7 @@ export default function Create({ roles }: Props) {
                                                 onCheckedChange={() =>
                                                     toggleRole(r)
                                                 }
+                                                data-test={`role-checkbox-${r}`}
                                             />
                                             <Label
                                                 htmlFor={`role-${r}`}
@@ -138,6 +139,7 @@ export default function Create({ roles }: Props) {
                                             setData('cedula', e.target.value)
                                         }
                                         placeholder="V-12345678"
+                                        data-test="cedula-input"
                                     />
                                     <InputError message={errors.cedula} />
                                 </div>
@@ -153,6 +155,7 @@ export default function Create({ roles }: Props) {
                                             setData('name', e.target.value)
                                         }
                                         placeholder="Nombre completo"
+                                        data-test="name-input"
                                     />
                                     <InputError message={errors.name} />
                                 </div>
@@ -169,6 +172,7 @@ export default function Create({ roles }: Props) {
                                             setData('email', e.target.value)
                                         }
                                         placeholder="ejemplo@amantina.test"
+                                        data-test="email-input"
                                     />
                                     <InputError message={errors.email} />
                                 </div>
@@ -195,6 +199,7 @@ export default function Create({ roles }: Props) {
                                             setData('phone', e.target.value)
                                         }
                                         placeholder="0412-1234567"
+                                        data-test="phone-input"
                                     />
                                     <InputError message={errors.phone} />
                                 </div>
@@ -221,6 +226,7 @@ export default function Create({ roles }: Props) {
                                             setData('address', e.target.value)
                                         }
                                         placeholder="Ciudad, Sector, Calle..."
+                                        data-test="address-input"
                                     />
                                     <InputError message={errors.address} />
                                 </div>
@@ -295,6 +301,7 @@ export default function Create({ roles }: Props) {
                                         setData('password', e.target.value)
                                     }
                                     placeholder="Mínimo 8 caracteres"
+                                    data-test="password-input"
                                 />
                                 <InputError message={errors.password} />
                             </div>
@@ -314,6 +321,7 @@ export default function Create({ roles }: Props) {
                                         )
                                     }
                                     placeholder="Repite la contraseña"
+                                    data-test="password-confirmation-input"
                                 />
                                 <InputError
                                     message={errors.password_confirmation}
@@ -327,7 +335,7 @@ export default function Create({ roles }: Props) {
                         <Button variant="outline" asChild disabled={processing}>
                             <Link href={userIndex().url}>Cancelar</Link>
                         </Button>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" disabled={processing} data-test="submit-button">
                             {processing ? (
                                 'Guardando...'
                             ) : (

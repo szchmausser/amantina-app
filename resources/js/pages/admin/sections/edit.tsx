@@ -144,8 +144,9 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                                                 parseInt(val),
                                             )
                                         }
+                                        data-test="academic-year-select"
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger data-test="academic-year-select-trigger">
                                             <SelectValue placeholder="Seleccionar año" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -173,8 +174,9 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                                         onValueChange={(val) =>
                                             setData('grade_id', parseInt(val))
                                         }
+                                        data-test="grade-select"
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger data-test="grade-select-trigger">
                                             <SelectValue placeholder="Seleccionar grado" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -203,6 +205,7 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                                         }
                                         placeholder="Ej: A"
                                         required
+                                        data-test="section-name-input"
                                     />
                                     <InputError message={errors.name} />
                                 </div>
@@ -230,7 +233,7 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                                     Cancelar
                                 </Link>
                             </Button>
-                            <Button type="submit" disabled={processing}>
+                            <Button type="submit" disabled={processing} data-test="submit-button">
                                 {processing ? (
                                     'Guardando...'
                                 ) : (

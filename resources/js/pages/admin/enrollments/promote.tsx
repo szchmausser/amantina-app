@@ -19,6 +19,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -82,6 +92,12 @@ export default function PromoteEnrollments({
         suggestedGrade?.id ?? null,
     );
 
+    // AlertDialog state for promote confirmation
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingPromotion, setPendingPromotion] = useState<Section | null>(
+        null,
+    );
+
     useEffect(() => {
         setManualDestGradeId(suggestedGrade?.id ?? null);
     }, [suggestedGrade]);
@@ -137,28 +153,30 @@ export default function PromoteEnrollments({
 
     const promoteTo = (destSection: Section) => {
         if (selectedStudents.length === 0) return;
+        setPendingPromotion(destSection);
+        setConfirmDialogOpen(true);
+    };
 
-        if (
-            confirm(
-                `¿Promover ${selectedStudents.length} alumnos a ${destSection.name}?`,
-            )
-        ) {
-            router.post(
-                '/admin/enrollments/promote',
-                {
-                    academic_year_id: activeYear.id,
-                    user_ids: selectedStudents,
-                    grade_id: destSection.grade_id.toString(),
-                    section_id: destSection.id.toString(),
-                },
-                {
-                    preserveScroll: true,
-                    onStart: () => setIsProcessing(true),
-                    onFinish: () => setIsProcessing(false),
-                    onSuccess: () => setSelectedStudents([]),
-                },
-            );
-        }
+    const confirmPromotion = () => {
+        if (!pendingPromotion) return;
+
+        router.post(
+            '/admin/enrollments/promote',
+            {
+                academic_year_id: activeYear.id,
+                user_ids: selectedStudents,
+                grade_id: pendingPromotion.grade_id.toString(),
+                section_id: pendingPromotion.id.toString(),
+            },
+            {
+                preserveScroll: true,
+                onStart: () => setIsProcessing(true),
+                onFinish: () => setIsProcessing(false),
+                onSuccess: () => setSelectedStudents([]),
+            },
+        );
+        setConfirmDialogOpen(false);
+        setPendingPromotion(null);
     };
 
     const sourceSections =
@@ -509,6 +527,31 @@ export default function PromoteEnrollments({
                     </div>
                 </div>
             </SettingsLayout>
+
+            <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Promover alumnos?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {pendingPromotion && (
+                                <>
+                                    Se promoverán <strong>{selectedStudents.length}</strong> alumno(s) a la sección <strong>{pendingPromotion.name}</strong> del año escolar <strong>{activeYear.name}</strong>.
+                                </>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmPromotion}
+                            className="bg-blue-600 hover:bg-blue-700"
+                            data-test="confirm-promote-button"
+                        >
+                            Promover
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

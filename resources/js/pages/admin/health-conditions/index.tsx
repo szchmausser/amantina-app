@@ -8,6 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
     DataTable,
     DataTableHead,
     DataTableTH,
@@ -49,6 +59,8 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
     const [isCreating, setIsCreating] = useState(false);
     const [perPage, setPerPage] = useState(healthConditions.per_page || 10);
     const isFirstPerPageRender = useRef(true);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
     useEffect(() => {
         if (isFirstPerPageRender.current) {
@@ -103,13 +115,15 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
     };
 
     const handleDelete = (id: number) => {
-        if (
-            confirm(
-                '¿Estás seguro de que deseas eliminar esta condición de salud?',
-            )
-        ) {
-            router.delete(`/admin/health-conditions/${id}`);
-        }
+        setPendingDeleteId(id);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!pendingDeleteId) return;
+        router.delete(`/admin/health-conditions/${pendingDeleteId}`);
+        setConfirmDialogOpen(false);
+        setPendingDeleteId(null);
     };
 
     const toggleActive = (condition: HealthCondition) => {
@@ -299,6 +313,27 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
                     />
                 </div>
             </SettingsLayout>
+
+            <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar condición de salud?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. La condición de salud será eliminada permanentemente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-test="confirm-delete-button"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

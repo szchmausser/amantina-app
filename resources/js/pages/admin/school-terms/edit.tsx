@@ -152,8 +152,9 @@ export default function SchoolTermEdit({
                                                 parseInt(val),
                                             )
                                         }
+                                        data-test="academic-year-select"
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger data-test="academic-year-select-trigger">
                                             <SelectValue placeholder="Seleccionar año" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -186,8 +187,9 @@ export default function SchoolTermEdit({
                                                 parseInt(val),
                                             )
                                         }
+                                        data-test="term-type-select"
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger data-test="term-type-select-trigger">
                                             <SelectValue placeholder="Seleccionar tipo de lapso" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -220,6 +222,7 @@ export default function SchoolTermEdit({
                                                 )
                                             }
                                             required
+                                            data-test="start-date-input"
                                         />
                                         <InputError
                                             message={errors.start_date}
@@ -241,6 +244,7 @@ export default function SchoolTermEdit({
                                                 )
                                             }
                                             required
+                                            data-test="end-date-input"
                                         />
                                         <InputError message={errors.end_date} />
                                     </div>
@@ -268,7 +272,7 @@ export default function SchoolTermEdit({
                                     Cancelar
                                 </Link>
                             </Button>
-                            <Button type="submit" disabled={processing}>
+                            <Button type="submit" disabled={processing} data-test="submit-button">
                                 {processing ? (
                                     'Guardando...'
                                 ) : (

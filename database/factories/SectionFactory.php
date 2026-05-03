@@ -18,12 +18,14 @@ class SectionFactory extends Factory
      */
     public function definition(): array
     {
+        $letter = $this->faker->unique()->randomElement(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
+
         return [
             'grade_id' => Grade::factory(),
             'academic_year_id' => function (array $attributes) {
                 return Grade::find($attributes['grade_id'])->academic_year_id;
             },
-            'name' => $this->faker->unique()->randomElement(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']),
+            'name' => "Sección {$letter}",
         ];
     }
 }

@@ -7,6 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -66,6 +76,11 @@ export default function TeacherAssignmentsCreate({
     );
     const [selectedSections, setSelectedSections] = useState<number[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [unassignConfirmOpen, setUnassignConfirmOpen] = useState(false);
+    const [pendingUnassignSectionId, setPendingUnassignSectionId] = useState<
+        number | null
+    >(null);
 
     const filteredTeachers = useMemo(() => {
         if (!searchQuery) return availableTeachers;
@@ -99,13 +114,58 @@ export default function TeacherAssignmentsCreate({
     }, [selectedTeacherId, grades]);
 
     const toggleSection = (sectionId: number) => {
-        if (selectedSections.includes(sectionId)) {
+        const isCurrentlySelected = selectedSections.includes(sectionId);
+        const wasOriginallyAssigned = isOriginallyAssigned(sectionId);
+
+        // Si está marcada Y era una asignación original, mostrar confirmación
+        if (isCurrentlySelected && wasOriginallyAssigned) {
+            setPendingUnassignSectionId(sectionId);
+            setUnassignConfirmOpen(true);
+            return;
+        }
+
+        // Si no está marcada O no era asignación original, toggle directo
+        if (isCurrentlySelected) {
             setSelectedSections(
                 selectedSections.filter((id) => id !== sectionId),
             );
         } else {
             setSelectedSections([...selectedSections, sectionId]);
         }
+    };
+
+    const confirmUnassign = () => {
+        if (pendingUnassignSectionId !== null) {
+            setSelectedSections(
+                selectedSections.filter((id) => id !== pendingUnassignSectionId),
+            );
+        }
+        setUnassignConfirmOpen(false);
+        setPendingUnassignSectionId(null);
+    };
+
+    const cancelUnassign = () => {
+        setUnassignConfirmOpen(false);
+        setPendingUnassignSectionId(null);
+    };
+
+    const isOriginallyAssigned = (sectionId: number): boolean => {
+        if (!selectedTeacherId) return false;
+
+        let found = false;
+        grades.forEach((g) => {
+            g.sections.forEach((s) => {
+                if (
+                    s.id === sectionId &&
+                    s.teacher_assignments?.some(
+                        (ta) => ta.teacher.id === selectedTeacherId,
+                    )
+                ) {
+                    found = true;
+                }
+            });
+        });
+        return found;
     };
 
     const isDirty = useMemo(() => {
@@ -134,30 +194,28 @@ export default function TeacherAssignmentsCreate({
 
     const saveAssignments = () => {
         if (!selectedTeacherId) return;
+        setConfirmDialogOpen(true);
+    };
 
-        const teacher = availableTeachers.find(
-            (t) => t.id === selectedTeacherId,
+    const confirmSaveAssignments = () => {
+        if (!selectedTeacherId) return;
+
+        router.post(
+            '/admin/teacher-assignments',
+            {
+                academic_year_id: activeYear.id,
+                user_id: selectedTeacherId.toString(),
+                section_ids: selectedSections,
+            },
+            {
+                preserveScroll: true,
+                onStart: () => setIsProcessing(true),
+                onFinish: () => {
+                    setIsProcessing(false);
+                    setConfirmDialogOpen(false);
+                },
+            },
         );
-
-        if (
-            confirm(
-                `¿Guardar la asignación de ${selectedSections.length} sección(es) para el Prof. ${teacher?.name}?`,
-            )
-        ) {
-            router.post(
-                '/admin/teacher-assignments',
-                {
-                    academic_year_id: activeYear.id,
-                    user_id: selectedTeacherId.toString(),
-                    section_ids: selectedSections,
-                },
-                {
-                    preserveScroll: true,
-                    onStart: () => setIsProcessing(true),
-                    onFinish: () => setIsProcessing(false),
-                },
-            );
-        }
     };
 
     const getAssignedTeacherNames = (section: Section): string => {
@@ -211,6 +269,7 @@ export default function TeacherAssignmentsCreate({
                                         onChange={(e) =>
                                             setSearchQuery(e.target.value)
                                         }
+                                        data-test="teacher-search-input"
                                     />
                                 </div>
                             </CardHeader>
@@ -231,6 +290,7 @@ export default function TeacherAssignmentsCreate({
                                                                 t.id,
                                                             )
                                                         }
+                                                        data-test={`teacher-item-${t.id}`}
                                                         className={`flex w-full items-center gap-3 rounded-lg p-3 text-left transition-all ${
                                                             isSelected
                                                                 ? 'bg-neutral-100 ring-1 ring-neutral-300 dark:bg-neutral-800 dark:ring-neutral-600'
@@ -293,6 +353,7 @@ export default function TeacherAssignmentsCreate({
                                         isProcessing
                                     }
                                     size="sm"
+                                    data-test="save-assignments-button"
                                 >
                                     {isProcessing
                                         ? 'Guardando...'
@@ -337,6 +398,10 @@ export default function TeacherAssignmentsCreate({
                                                                     selectedSections.includes(
                                                                         section.id,
                                                                     );
+                                                                const wasAssigned =
+                                                                    isOriginallyAssigned(
+                                                                        section.id,
+                                                                    );
 
                                                                 return (
                                                                     <button
@@ -349,17 +414,32 @@ export default function TeacherAssignmentsCreate({
                                                                                 section.id,
                                                                             )
                                                                         }
+                                                                        data-test={`section-checkbox-${section.id}`}
                                                                         className={`relative flex w-full flex-col rounded-lg border p-4 text-left transition-all ${
                                                                             isChecked
-                                                                                ? 'border-neutral-900 bg-neutral-50 shadow-sm dark:border-white dark:bg-neutral-800/50'
+                                                                                ? wasAssigned
+                                                                                    ? 'border-blue-500 bg-blue-50 shadow-sm dark:border-blue-600 dark:bg-blue-950/30'
+                                                                                    : 'border-neutral-900 bg-neutral-50 shadow-sm dark:border-white dark:bg-neutral-800/50'
                                                                                 : 'border-neutral-200 hover:border-neutral-300 dark:border-neutral-800 dark:hover:border-neutral-700'
                                                                         }`}
                                                                     >
                                                                         <div className="mb-3 flex items-start justify-between">
-                                                                            <div className="text-base font-semibold">
-                                                                                {
-                                                                                    section.name
-                                                                                }
+                                                                            <div className="flex flex-col gap-1">
+                                                                                <div className="text-base font-semibold">
+                                                                                    {
+                                                                                        section.name
+                                                                                    }
+                                                                                </div>
+                                                                                {wasAssigned &&
+                                                                                    isChecked && (
+                                                                                        <Badge
+                                                                                            variant="secondary"
+                                                                                            className="w-fit bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                                                                                        >
+                                                                                            Ya
+                                                                                            asignado
+                                                                                        </Badge>
+                                                                                    )}
                                                                             </div>
                                                                             <Checkbox
                                                                                 checked={
@@ -419,6 +499,85 @@ export default function TeacherAssignmentsCreate({
                     </div>
                 </div>
             </SettingsLayout>
+
+            {/* Confirmation Dialog */}
+            <AlertDialog
+                open={confirmDialogOpen}
+                onOpenChange={setConfirmDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Confirmar Asignación
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {selectedTeacherId && (
+                                <>
+                                    ¿Guardar la asignación de{' '}
+                                    <strong>
+                                        {selectedSections.length} sección(es)
+                                    </strong>{' '}
+                                    para el Prof.{' '}
+                                    <strong>
+                                        {
+                                            availableTeachers.find(
+                                                (t) =>
+                                                    t.id === selectedTeacherId,
+                                            )?.name
+                                        }
+                                    </strong>
+                                    ?
+                                </>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmSaveAssignments}
+                            data-test="confirm-save-button"
+                        >
+                            Guardar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Unassign Confirmation Dialog */}
+            <AlertDialog
+                open={unassignConfirmOpen}
+                onOpenChange={setUnassignConfirmOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            ⚠️ Desasignar Sección
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="space-y-2">
+                            <p>
+                                Estás a punto de <strong>desasignar</strong> al
+                                profesor de esta sección.
+                            </p>
+                            <p className="text-amber-600 dark:text-amber-500">
+                                <strong>Nota:</strong> El cambio se aplicará
+                                cuando hagas click en "Guardar Cambios".
+                            </p>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={cancelUnassign}>
+                            Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmUnassign}
+                            className="bg-amber-600 hover:bg-amber-700"
+                            data-test="confirm-unassign-button"
+                        >
+                            Continuar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

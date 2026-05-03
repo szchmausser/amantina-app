@@ -1,18 +1,5 @@
 import { Link } from '@inertiajs/react';
-import type { PropsWithChildren } from 'react';
-import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { useCurrentUrl } from '@/hooks/use-current-url';
-import { cn, toUrl } from '@/lib/utils';
-import { edit as editAppearance } from '@/routes/appearance';
-import { edit } from '@/routes/profile';
-import { edit as editSecurity } from '@/routes/security';
-import { edit as editInstitution } from '@/routes/institution';
-import { index as academicYearsIndex } from '@/routes/admin/academic-years';
-import { index as gradesIndex } from '@/routes/admin/grades';
-import { index as sectionsIndex } from '@/routes/admin/sections';
-import { index as schoolTermsIndex } from '@/routes/admin/school-terms';
+import { usePage } from '@inertiajs/react';
 import {
     Calendar,
     Clock,
@@ -29,31 +16,47 @@ import {
     Heart,
     Tag,
     MapPin,
-    ClipboardList,
 } from 'lucide-react';
-import type { NavItem, SharedData } from '@/types';
-import { usePage } from '@inertiajs/react';
+import type { PropsWithChildren } from 'react';
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useCurrentUrl } from '@/hooks/use-current-url';
+import { cn, toUrl } from '@/lib/utils';
+import { index as academicYearsIndex } from '@/routes/admin/academic-years';
+import { index as gradesIndex } from '@/routes/admin/grades';
+import { index as schoolTermsIndex } from '@/routes/admin/school-terms';
+import { index as sectionsIndex } from '@/routes/admin/sections';
+import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editInstitution } from '@/routes/institution';
+import { edit } from '@/routes/profile';
+import { edit as editSecurity } from '@/routes/security';
+import type { NavEntry, NavItem, SharedData } from '@/types';
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { auth } = usePage<SharedData>().props;
     const { isCurrentOrParentUrl } = useCurrentUrl();
 
-    const sidebarNavItems: NavItem[] = [
+    const sidebarNavItems: NavEntry[] = [
+        // ── Cuenta ──
+        { title: 'Cuenta', type: 'separator' },
         {
-            title: 'Profile',
+            title: 'Perfil',
             href: edit(),
             icon: User,
         },
         {
-            title: 'Security',
+            title: 'Seguridad',
             href: editSecurity(),
             icon: Lock,
         },
         {
-            title: 'Appearance',
+            title: 'Apariencia',
             href: editAppearance(),
             icon: Palette,
         },
+        // ── Institución ──
+        { title: 'Institución', type: 'separator' },
         {
             title: 'Datos Institucionales',
             href: editInstitution().url,
@@ -61,8 +64,11 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         },
     ];
 
+    // ── Académico ──
+    const academicItems: NavItem[] = [];
+
     if (auth.permissions?.includes('academic_years.view')) {
-        sidebarNavItems.push({
+        academicItems.push({
             title: 'Años Escolares',
             href: academicYearsIndex().url,
             icon: Calendar,
@@ -70,7 +76,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     if (auth.permissions?.includes('school_terms.view')) {
-        sidebarNavItems.push({
+        academicItems.push({
             title: 'Lapsos Académicos',
             href: schoolTermsIndex().url,
             icon: Clock,
@@ -78,7 +84,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     if (auth.permissions?.includes('grades.view')) {
-        sidebarNavItems.push({
+        academicItems.push({
             title: 'Grados',
             href: gradesIndex().url,
             icon: GraduationCap,
@@ -86,15 +92,25 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     if (auth.permissions?.includes('sections.view')) {
-        sidebarNavItems.push({
+        academicItems.push({
             title: 'Secciones',
             href: sectionsIndex().url,
             icon: Layers,
         });
     }
 
+    if (academicItems.length > 0) {
+        sidebarNavItems.push(
+            { title: 'Académico', type: 'separator' },
+            ...academicItems,
+        );
+    }
+
+    // ── Operativo ──
+    const operationalItems: NavItem[] = [];
+
     if (auth.permissions?.includes('health_conditions.view')) {
-        sidebarNavItems.push({
+        operationalItems.push({
             title: 'Condiciones de Salud',
             href: '/admin/health-conditions',
             icon: Heart,
@@ -102,7 +118,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     if (auth.permissions?.includes('activity_categories.view')) {
-        sidebarNavItems.push({
+        operationalItems.push({
             title: 'Categorías',
             href: '/admin/activity-categories',
             icon: Tag,
@@ -110,7 +126,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     if (auth.permissions?.includes('locations.view')) {
-        sidebarNavItems.push({
+        operationalItems.push({
             title: 'Ubicaciones',
             href: '/admin/locations',
             icon: MapPin,
@@ -118,7 +134,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     if (auth.permissions?.includes('enrollments.view')) {
-        sidebarNavItems.push({
+        operationalItems.push({
             title: 'Inscripciones',
             href: '/admin/enrollments',
             icon: UserPlus,
@@ -126,15 +142,25 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     if (auth.permissions?.includes('assignments.view')) {
-        sidebarNavItems.push({
+        operationalItems.push({
             title: 'Asignaciones Docentes',
             href: '/admin/teacher-assignments',
             icon: BookUser,
         });
     }
 
+    if (operationalItems.length > 0) {
+        sidebarNavItems.push(
+            { title: 'Operativo', type: 'separator' },
+            ...operationalItems,
+        );
+    }
+
+    // ── Accesos ──
+    const accessItems: NavItem[] = [];
+
     if (auth.permissions?.includes('roles.view')) {
-        sidebarNavItems.push({
+        accessItems.push({
             title: 'Gestión de Roles',
             href: '/admin/roles',
             icon: Shield,
@@ -142,11 +168,18 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     if (auth.permissions?.includes('permissions.view')) {
-        sidebarNavItems.push({
+        accessItems.push({
             title: 'Gestión de Permisos',
             href: '/admin/permissions',
             icon: ShieldCheck,
         });
+    }
+
+    if (accessItems.length > 0) {
+        sidebarNavItems.push(
+            { title: 'Accesos', type: 'separator' },
+            ...accessItems,
+        );
     }
 
     // When server-side rendering, we only render the layout on the client...
@@ -167,24 +200,43 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                         className="flex flex-col space-y-1 space-x-0"
                         aria-label="Settings"
                     >
-                        {sidebarNavItems.map((item, index) => (
-                            <Button
-                                key={`${toUrl(item.href)}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': isCurrentOrParentUrl(item.href),
-                                })}
-                            >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
-                                    )}
-                                    {item.title}
-                                </Link>
-                            </Button>
-                        ))}
+                        {sidebarNavItems.map((entry) => {
+                            if (entry.type === 'separator') {
+                                return (
+                                    <div
+                                        key={`sep-${entry.title}`}
+                                        className="pt-3 pb-1"
+                                    >
+                                        <p className="px-3 text-[11px] font-semibold tracking-wider text-muted-foreground/70 uppercase">
+                                            {entry.title}
+                                        </p>
+                                    </div>
+                                );
+                            }
+
+                            const item = entry as NavItem;
+
+                            return (
+                                <Button
+                                    key={toUrl(item.href)}
+                                    size="sm"
+                                    variant="ghost"
+                                    asChild
+                                    className={cn('w-full justify-start', {
+                                        'bg-muted': isCurrentOrParentUrl(
+                                            item.href,
+                                        ),
+                                    })}
+                                >
+                                    <Link href={item.href}>
+                                        {item.icon && (
+                                            <item.icon className="h-4 w-4" />
+                                        )}
+                                        {item.title}
+                                    </Link>
+                                </Button>
+                            );
+                        })}
                     </nav>
                 </aside>
 

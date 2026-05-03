@@ -39,8 +39,8 @@ class UpdateSectionRequest extends FormRequest
             'name' => [
                 'required',
                 'string',
-                'max:1',
-                'regex:/^[A-Z]$/', // Una única letra mayúscula
+                'max:20',
+                'regex:/^Sección [A-Z]$/', // "Sección A", "Sección B", etc.
                 Rule::unique('sections', 'name')
                     ->where('academic_year_id', $this->academic_year_id)
                     ->where('grade_id', $this->grade_id)
@@ -53,7 +53,7 @@ class UpdateSectionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.regex' => 'El nombre de la sección debe contener solo letras mayúsculas (A, B, C, etc.).',
+            'name.regex' => 'El nombre de la sección debe tener el formato "Sección A", "Sección B", etc.',
             'name.unique' => 'Ya existe una sección con este nombre para el grado y año escolar seleccionados.',
         ];
     }

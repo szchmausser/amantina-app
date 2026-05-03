@@ -11,6 +11,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -64,6 +74,8 @@ export default function SchoolTermsIndex({
 
     const [perPage, setPerPage] = useState(schoolTerms.per_page || 10);
     const isFirstPerPageRender = useRef(true);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
     useEffect(() => {
         if (isFirstPerPageRender.current) {
@@ -87,15 +99,17 @@ export default function SchoolTermsIndex({
     };
 
     const handleDelete = (termId: number) => {
-        if (
-            confirm(
-                '¿Estás seguro de que deseas eliminar este lapso académico?',
-            )
-        ) {
-            router.delete(`/admin/school-terms/${termId}`, {
-                preserveState: true,
-            });
-        }
+        setPendingDeleteId(termId);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!pendingDeleteId) return;
+        router.delete(`/admin/school-terms/${pendingDeleteId}`, {
+            preserveState: true,
+        });
+        setConfirmDialogOpen(false);
+        setPendingDeleteId(null);
     };
 
     const pagination: PaginationInfo | undefined =
@@ -220,8 +234,9 @@ export default function SchoolTermsIndex({
                             <Select
                                 value={selectedYearId.toString()}
                                 onValueChange={handleYearChange}
+                                data-test="academic-year-filter"
                             >
-                                <SelectTrigger className="h-10">
+                                <SelectTrigger className="h-10" data-test="academic-year-filter-trigger">
                                     <SelectValue placeholder="Seleccionar año" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -260,6 +275,27 @@ export default function SchoolTermsIndex({
                     />
                 </div>
             </SettingsLayout>
+
+            <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar lapso académico?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. El lapso académico será eliminado permanentemente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-test="confirm-delete-button"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

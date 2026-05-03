@@ -10,6 +10,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -71,6 +81,8 @@ export default function SectionsIndex({
     ];
 
     const [perPage, setPerPage] = useState(sections.per_page || 10);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
     const isFirstPerPageRender = useRef(true);
 
     useEffect(() => {
@@ -103,9 +115,15 @@ export default function SectionsIndex({
     };
 
     const handleDelete = (id: number) => {
-        if (confirm('¿Estás seguro de que deseas eliminar esta sección?')) {
-            router.delete(`/admin/sections/${id}`);
-        }
+        setPendingDeleteId(id);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!pendingDeleteId) return;
+        router.delete(`/admin/sections/${pendingDeleteId}`);
+        setConfirmDialogOpen(false);
+        setPendingDeleteId(null);
     };
 
     const pagination: PaginationInfo | undefined =
@@ -138,7 +156,7 @@ export default function SectionsIndex({
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
                                     <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <span className="font-semibold text-neutral-900 uppercase dark:text-neutral-100">
+                                <span className="font-semibold text-neutral-900 dark:text-neutral-100">
                                     {section.name}
                                 </span>
                             </div>
@@ -236,8 +254,9 @@ export default function SectionsIndex({
                                 onValueChange={(v) =>
                                     handleFilterChange('academic_year_id', v)
                                 }
+                                data-test="academic-year-filter"
                             >
-                                <SelectTrigger className="h-10">
+                                <SelectTrigger className="h-10" data-test="academic-year-filter-trigger">
                                     <SelectValue placeholder="Seleccionar año" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -258,8 +277,9 @@ export default function SectionsIndex({
                                 onValueChange={(v) =>
                                     handleFilterChange('grade_id', v)
                                 }
+                                data-test="grade-filter"
                             >
-                                <SelectTrigger className="h-10">
+                                <SelectTrigger className="h-10" data-test="grade-filter-trigger">
                                     <SelectValue placeholder="Todos los grados" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -301,6 +321,34 @@ export default function SectionsIndex({
                     />
                 </div>
             </SettingsLayout>
+
+            {/* Confirmation Dialog */}
+            <AlertDialog
+                open={confirmDialogOpen}
+                onOpenChange={setConfirmDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Confirmar Eliminación
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            ¿Estás seguro de que deseas eliminar esta sección?
+                            Esta acción no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            data-test="confirm-delete-button"
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

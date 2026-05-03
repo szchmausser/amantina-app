@@ -8,6 +8,21 @@ use Tests\TestCase;
 |--------------------------------------------------------------------------
 | Test Case
 |--------------------------------------------------------------------------
+|
+| ⚠️ PROTOCOLO OBLIGATORIO ANTES DE EJECUTAR TESTS:
+|
+| SIEMPRE ejecutar estos comandos ANTES de correr cualquier test:
+|
+|   php artisan config:clear
+|   php artisan cache:clear
+|
+| O en una sola línea:
+|
+|   php artisan config:clear; php artisan cache:clear; php artisan test --env=testing --compact tests/...
+|
+| Esto asegura que Laravel use la base de datos de testing (amantina_app_testing)
+| y NO la de desarrollo (amantina_app), evitando pérdida de datos.
+|
 */
 
 // Feature tests (unit/integration) - usan RefreshDatabase
@@ -17,11 +32,19 @@ pest()->extend(TestCase::class)
 
 // Browser tests (E2E) - usan RefreshDatabase y Browsable
 //
-// ⚠️ IMPORTANTE: Para ejecutar estos tests correctamente, usa:
-//    .\run-browser-tests.bat tests/Browser/Admin/UserManagementTest.php
+// ⚠️ PROTOCOLO OBLIGATORIO ANTES DE EJECUTAR TESTS:
 //
-// El script usa --env=testing para cargar .env.testing automáticamente.
-// Lee tests/Browser/README.md para más detalles.
+// SIEMPRE ejecutar estos comandos ANTES de correr cualquier test:
+//
+//   php artisan config:clear
+//   php artisan cache:clear
+//
+// O en una sola línea:
+//
+//   php artisan config:clear; php artisan cache:clear; php artisan test --env=testing --compact tests/Browser/...
+//
+// Esto asegura que Laravel use la base de datos de testing (amantina_app_testing)
+// y NO la de desarrollo (amantina_app), evitando pérdida de datos.
 //
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
@@ -36,7 +59,7 @@ pest()->extend(TestCase::class)
 | Configuración para browser tests con Playwright.
 | - headed(): Muestra el navegador (útil para desarrollo y debugging)
 | - timeout(): Tiempo máximo de espera para elementos (15 segundos)
-| - withHost(): Dominio de Laravel Herd (amantina-app.test)
+| - SIN withHost(): Pest usa su servidor interno que respeta .env.testing
 |
 | MODO HEADED (VISUAL):
 | - Permite ver la ejecución de los tests en tiempo real
@@ -45,16 +68,29 @@ pest()->extend(TestCase::class)
 |
 | Para ejecutar en modo headless (sin ventana), comentar la línea ->headed()
 |
-| ✅ EJECUCIÓN CORRECTA:
-| Usa el script: .\run-browser-tests.bat tests/Browser/Admin/UserManagementTest.php
-| El script usa --env=testing para cargar .env.testing automáticamente.
+| ⚠️ PROTOCOLO OBLIGATORIO DE EJECUCIÓN:
+|
+| SIEMPRE ejecutar en este orden:
+|
+|   php artisan config:clear
+|   php artisan cache:clear
+|   php artisan test --env=testing --compact tests/Browser/...
+|
+| O en una sola línea:
+|
+|   php artisan config:clear; php artisan cache:clear; php artisan test --env=testing --compact tests/Browser/...
+|
+| ¿Por qué es obligatorio?
+| - Laravel Herd cachea la configuración con .env (desarrollo)
+| - Sin limpiar cache, los tests usan amantina_app (desarrollo) en lugar de amantina_app_testing
+| - Esto causa PÉRDIDA DE DATOS en la base de datos de desarrollo
 |
 */
 
 pest()->browser()
-    // ->headed()                          // Modo visual - ver el navegador (comentado temporalmente)
-    ->timeout(15000)                    // 15 segundos de timeout
-    ->withHost('amantina-app.test');    // Dominio de Herd
+    //->headed()                          // Modo visual - ver el navegador
+    ->timeout(15000);                   // 15 segundos de timeout
+    // NO usar ->withHost() para que Pest use su servidor interno con .env.testing
 
 /*
 |--------------------------------------------------------------------------

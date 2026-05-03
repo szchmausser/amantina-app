@@ -129,8 +129,9 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                                                 parseInt(val),
                                             )
                                         }
+                                        data-test="academic-year-select"
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger data-test="academic-year-select-trigger">
                                             <SelectValue placeholder="Seleccionar año" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -161,6 +162,7 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                                         }
                                         placeholder="Ej: 1er Año"
                                         required
+                                        data-test="grade-name-input"
                                     />
                                     <InputError message={errors.name} />
                                 </div>
@@ -183,6 +185,7 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                                         }
                                         placeholder="Ej: 1"
                                         required
+                                        data-test="grade-order-input"
                                     />
                                     <p className="text-xs text-neutral-500">
                                         Define la secuencia en la que aparecerán
@@ -213,7 +216,7 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                                     Cancelar
                                 </Link>
                             </Button>
-                            <Button type="submit" disabled={processing}>
+                            <Button type="submit" disabled={processing} data-test="submit-button">
                                 {processing ? (
                                     'Guardando...'
                                 ) : (

@@ -14,6 +14,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -62,6 +72,10 @@ export default function EnrollmentsCreate({
     const [isProcessing, setIsProcessing] = useState(false);
 
     const [destGradeId, setDestGradeId] = useState<number | null>(null);
+    
+    // AlertDialog state
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingSection, setPendingSection] = useState<Section | null>(null);
 
     const filteredStudents = useMemo(() => {
         if (!searchQuery) return availableStudents;
@@ -103,30 +117,36 @@ export default function EnrollmentsCreate({
     const enrollTo = (destSection: Section) => {
         if (selectedStudents.length === 0) return;
 
-        if (
-            confirm(
-                `¿Inscribir ${selectedStudents.length} alumnos de nuevo ingreso en ${destSection.name}?`,
-            )
-        ) {
-            router.post(
-                '/admin/enrollments',
-                {
-                    academic_year_id: activeYear.id,
-                    user_ids: selectedStudents,
-                    grade_id: destGradeId?.toString() || '',
-                    section_id: destSection.id.toString(),
+        // Open confirmation dialog
+        setPendingSection(destSection);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmEnrollment = () => {
+        if (!pendingSection) return;
+
+        router.post(
+            '/admin/enrollments',
+            {
+                academic_year_id: activeYear.id,
+                user_ids: selectedStudents,
+                grade_id: destGradeId?.toString() || '',
+                section_id: pendingSection.id.toString(),
+            },
+            {
+                preserveScroll: true,
+                onStart: () => setIsProcessing(true),
+                onFinish: () => {
+                    setIsProcessing(false);
+                    setConfirmDialogOpen(false);
+                    setPendingSection(null);
                 },
-                {
-                    preserveScroll: true,
-                    onStart: () => setIsProcessing(true),
-                    onFinish: () => setIsProcessing(false),
-                    onSuccess: () => {
-                        setSelectedStudents([]);
-                        setSearchQuery('');
-                    },
+                onSuccess: () => {
+                    setSelectedStudents([]);
+                    setSearchQuery('');
                 },
-            );
-        }
+            },
+        );
     };
 
     const destSections =
@@ -172,6 +192,7 @@ export default function EnrollmentsCreate({
                                         onChange={(e) =>
                                             setSearchQuery(e.target.value)
                                         }
+                                        data-test="student-search-input"
                                     />
                                 </div>
                             </CardHeader>
@@ -190,6 +211,7 @@ export default function EnrollmentsCreate({
                                                         filteredStudents.length ===
                                                         0
                                                     }
+                                                    data-test="select-all-students-checkbox"
                                                 />
                                                 <span className="text-sm font-medium">
                                                     Seleccionar de la lista
@@ -255,6 +277,7 @@ export default function EnrollmentsCreate({
                                                                             s.id,
                                                                         )
                                                                     }
+                                                                    data-test={`student-checkbox-${s.id}`}
                                                                 />
                                                             </label>
                                                         );
@@ -290,8 +313,9 @@ export default function EnrollmentsCreate({
                                         onValueChange={(v) =>
                                             setDestGradeId(Number(v))
                                         }
+                                        data-test="grade-select"
                                     >
-                                        <SelectTrigger className="w-full">
+                                        <SelectTrigger className="w-full" data-test="grade-select-trigger">
                                             <SelectValue placeholder="Seleccione grado destino..." />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -348,6 +372,7 @@ export default function EnrollmentsCreate({
                                                             enrollTo(section)
                                                         }
                                                         disabled={isProcessing}
+                                                        data-test={`enroll-to-section-${section.id}`}
                                                     >
                                                         <span className="text-lg font-bold">
                                                             {section.name}
@@ -381,6 +406,31 @@ export default function EnrollmentsCreate({
                     </div>
                 </div>
             </SettingsLayout>
+
+            {/* Confirmation Dialog */}
+            <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmar Inscripción</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            ¿Inscribir {selectedStudents.length} alumno(s) de nuevo ingreso en la sección{' '}
+                            <strong>{pendingSection?.name}</strong>?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isProcessing}>
+                            Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmEnrollment}
+                            disabled={isProcessing}
+                            data-test="confirm-enrollment-button"
+                        >
+                            {isProcessing ? 'Inscribiendo...' : 'Confirmar'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

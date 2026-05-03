@@ -9,6 +9,7 @@ import {
     Layers,
     Trash2,
 } from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +19,16 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem, SharedData } from '@/types';
@@ -48,6 +59,7 @@ interface Props {
 export default function AcademicYearShow({ academicYear }: Props) {
     const { auth } = usePage<SharedData>().props;
     const hasPermission = (p: string) => auth.permissions?.includes(p);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: dashboard() },
@@ -56,13 +68,12 @@ export default function AcademicYearShow({ academicYear }: Props) {
     ];
 
     const handleDelete = () => {
-        if (
-            confirm(
-                '¿Estás seguro de que deseas eliminar este año escolar? Se eliminarán también sus lapsos, grados y secciones.',
-            )
-        ) {
-            router.delete(academicYearsDestroy(academicYear.id).url);
-        }
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        router.delete(academicYearsDestroy(academicYear.id).url);
+        setConfirmDialogOpen(false);
     };
 
     return (
@@ -269,6 +280,27 @@ export default function AcademicYearShow({ academicYear }: Props) {
                     </div>
                 </div>
             </SettingsLayout>
+
+            <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar año escolar?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            <strong>Advertencia:</strong> Esta acción eliminará el año escolar y todos sus lapsos, grados y secciones asociados. Esta operación no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-test="confirm-delete-button"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

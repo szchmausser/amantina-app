@@ -45,6 +45,7 @@ export function TableFilters({
                     className="pr-8 pl-10"
                     value={searchValue || ''}
                     onChange={(e) => onSearchChange?.(e.target.value)}
+                    data-test="search-input"
                 />
                 {searchValue && (
                     <button
@@ -67,6 +68,7 @@ export function TableFilters({
                     size="sm"
                     onClick={onClearFilters}
                     className="h-10 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    data-test="clear-filters"
                 >
                     <X className="mr-1 h-4 w-4" />
                     Limpiar
