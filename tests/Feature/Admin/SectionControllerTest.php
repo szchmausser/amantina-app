@@ -60,7 +60,7 @@ class SectionControllerTest extends TestCase
         $response = $this->actingAs($admin)->post(route('admin.sections.store'), [
             'academic_year_id' => $year->id,
             'grade_id' => $grade->id,
-            'name' => 'A',
+            'name' => 'Sección A',
         ]);
 
         $response->assertRedirect(route('admin.sections.index', [
@@ -71,7 +71,7 @@ class SectionControllerTest extends TestCase
         $this->assertDatabaseHas('sections', [
             'academic_year_id' => $year->id,
             'grade_id' => $grade->id,
-            'name' => 'A',
+            'name' => 'Sección A',
         ]);
     }
 
@@ -104,7 +104,7 @@ class SectionControllerTest extends TestCase
         $response = $this->actingAs($admin)->put(route('admin.sections.update', $section), [
             'academic_year_id' => $section->academic_year_id,
             'grade_id' => $section->grade_id,
-            'name' => 'B',
+            'name' => 'Sección B',
         ]);
 
         $response->assertRedirect(route('admin.sections.index', [
@@ -114,7 +114,7 @@ class SectionControllerTest extends TestCase
 
         $this->assertDatabaseHas('sections', [
             'id' => $section->id,
-            'name' => 'B',
+            'name' => 'Sección B',
         ]);
     }
 

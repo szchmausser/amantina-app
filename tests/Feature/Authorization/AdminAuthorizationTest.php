@@ -394,13 +394,13 @@ class AdminAuthorizationTest extends TestCase
         $sectionData = [
             'academic_year_id' => $academicYear->id,
             'grade_id' => $grade->id,
-            'name' => 'A',
+            'name' => 'Sección A',
         ];
 
         $response = $this->actingAs($this->admin)->post(route('admin.sections.store'), $sectionData);
         $response->assertSessionHasNoErrors();
 
-        $section = Section::where('name', 'A')
+        $section = Section::where('name', 'Sección A')
             ->where('academic_year_id', $academicYear->id)
             ->where('grade_id', $grade->id)
             ->first();

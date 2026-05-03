@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__.'/../Helpers.php';
+
 use App\Models\AcademicYear;
 use App\Models\Grade;
 use App\Models\SchoolTerm;
@@ -23,6 +25,7 @@ use Database\Seeders\TermTypeSeeder;
  * 4. Eliminar Sección
  * 5. Eliminar Usuario
  */
+
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
     $this->seed(TermTypeSeeder::class);
@@ -44,7 +47,7 @@ beforeEach(function () {
 test('admin puede eliminar un año escolar', function () {
     // Crear año escolar con factory
     $academicYear = AcademicYear::factory()->create([
-        'name' => '2024-2025',
+        'name' => generateUniqueAcademicYearName(),
         'start_date' => '2024-09-01',
         'end_date' => '2025-07-31',
         'required_hours' => 500,
@@ -54,7 +57,7 @@ test('admin puede eliminar un año escolar', function () {
     // Navegar a la página de listado
     $page = visit('/admin/academic-years');
     $page->wait(2);
-    $page->assertSee('2024-2025');
+    $page->assertSee($academicYear->name);
 
     // Click en botón eliminar (abre el AlertDialog)
     // Usar selector CSS: botón con clase text-red-500 (el botón de eliminar)
@@ -77,7 +80,7 @@ test('admin puede eliminar un año escolar', function () {
     ]);
 
     // Verificar que no aparece en el listado
-    $page->assertDontSee('2024-2025');
+    $page->assertDontSee($academicYear->name);
 });
 
 // ============================================================================
@@ -87,7 +90,7 @@ test('admin puede eliminar un año escolar', function () {
 test('admin puede eliminar un lapso académico', function () {
     // Crear año escolar y lapso con factory
     $academicYear = AcademicYear::factory()->create([
-        'name' => '2024-2025',
+        'name' => generateUniqueAcademicYearName(),
         'start_date' => '2024-09-01',
         'end_date' => '2025-07-31',
         'is_active' => true,
@@ -136,7 +139,7 @@ test('admin puede eliminar un lapso académico', function () {
 test('admin puede eliminar un grado', function () {
     // Crear año escolar y grado con factory
     $academicYear = AcademicYear::factory()->create([
-        'name' => '2024-2025',
+        'name' => generateUniqueAcademicYearName(),
         'start_date' => '2024-09-01',
         'end_date' => '2025-07-31',
         'is_active' => true,
@@ -183,7 +186,7 @@ test('admin puede eliminar un grado', function () {
 test('admin puede eliminar una sección', function () {
     // Crear estructura completa con factory
     $academicYear = AcademicYear::factory()->create([
-        'name' => '2024-2025',
+        'name' => generateUniqueAcademicYearName(),
         'start_date' => '2024-09-01',
         'end_date' => '2025-07-31',
         'is_active' => true,
@@ -278,7 +281,7 @@ test('admin puede eliminar un usuario', function () {
 test('admin puede desinscribir un alumno de una sección', function () {
     // Crear estructura completa con factory
     $academicYear = AcademicYear::factory()->create([
-        'name' => '2025-2026',
+        'name' => generateUniqueAcademicYearName(),
         'start_date' => '2025-09-01',
         'end_date' => '2026-07-31',
         'is_active' => true,
@@ -349,7 +352,7 @@ test('admin puede desinscribir un alumno de una sección', function () {
 test('admin puede desasignar un profesor de una sección', function () {
     // Crear estructura completa con factory
     $academicYear = AcademicYear::factory()->create([
-        'name' => '2025-2026',
+        'name' => generateUniqueAcademicYearName(),
         'start_date' => '2025-09-01',
         'end_date' => '2026-07-31',
         'is_active' => true,

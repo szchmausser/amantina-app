@@ -76,6 +76,12 @@ Los comandos para ejecutar el proyecto son:
   php artisan config:clear; php artisan cache:clear; php artisan test --env=testing --compact tests/...
   ```
   **¿Por qué es obligatorio?** Laravel Herd cachea la configuración con `.env` (desarrollo). Sin limpiar cache, los tests usan `amantina_app` (desarrollo) en lugar de `amantina_app_testing`, causando **PÉRDIDA DE DATOS** en la base de datos de desarrollo.
+- **Estado actual de la suite de tests:**
+  - ✅ **700 tests pasando** (342 Feature + 358 Browser)
+  - ✅ **2462 assertions**
+  - ✅ **0 tests fallidos**
+  - ✅ Duración: ~18 minutos
+  - Desglose Browser: 55 HappyPath + 69 Security + 234 otros
 
 ### 6. Convenciones de Git
 

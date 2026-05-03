@@ -30,7 +30,7 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
 
-// Browser tests (E2E) - usan RefreshDatabase y Browsable
+// Browser tests (E2E) - usan DatabaseTruncation y Browsable
 //
 // ⚠️ PROTOCOLO OBLIGATORIO ANTES DE EJECUTAR TESTS:
 //
@@ -46,8 +46,12 @@ pest()->extend(TestCase::class)
 // Esto asegura que Laravel use la base de datos de testing (amantina_app_testing)
 // y NO la de desarrollo (amantina_app), evitando pérdida de datos.
 //
+// IMPORTANTE: Browser tests usan DatabaseTruncation (no RefreshDatabase) para
+// asegurar que la base de datos se limpia completamente entre tests, evitando
+// problemas de datos duplicados o residuales.
+//
 pest()->extend(TestCase::class)
-    ->use(RefreshDatabase::class)
+    ->use(Illuminate\Foundation\Testing\DatabaseTruncation::class)
     ->use(Browsable::class)
     ->in('Browser');
 

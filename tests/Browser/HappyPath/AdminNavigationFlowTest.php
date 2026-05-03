@@ -318,10 +318,12 @@ test('admin puede filtrar por grado y sección en cascada', function () {
 
     // Filtrar por grado "1er Año"
     $page->click('[data-test="grade-filter-trigger"]');
-    $page->wait(1);
+    $page->wait(2); // Aumentado wait para que el dropdown se abra completamente
+    // Verificar que el dropdown está abierto
+    $page->assertSee('1er Año'); // El texto debe estar visible en el dropdown
     // Usar un selector más específico para el item del dropdown
     $page->click('[role="option"]:has-text("1er Año")');
-    $page->wait(2);
+    $page->wait(3); // Aumentado wait para que el filtro se aplique
 
     // Verificar que solo aparecen las secciones de 1er Año
     $page->assertSee('1er Año');
@@ -334,9 +336,11 @@ test('admin puede filtrar por grado y sección en cascada', function () {
 
     // Filtrar por grado "2do Año"
     $page->click('[data-test="grade-filter-trigger"]');
-    $page->wait(1);
+    $page->wait(2); // Aumentado wait para que el dropdown se abra completamente
+    // Verificar que el dropdown está abierto antes de hacer click
+    $page->assertSee('2do Año'); // El texto debe estar visible en el dropdown
     $page->click('[role="option"]:has-text("2do Año")');
-    $page->wait(2);
+    $page->wait(3); // Aumentado wait para que el filtro se aplique
 
     // Verificar que solo aparecen las secciones de 2do Año
     $page->assertSee('2do Año');
