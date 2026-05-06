@@ -240,7 +240,14 @@ class HourAccumulatorService
                 ->whereNull('teacher_assignments.deleted_at')
                 ->whereNull('users.deleted_at')
                 ->when($yearId, fn ($q) => $q->where('teacher_assignments.academic_year_id', $yearId))
-                ->pluck('users.name')
+                ->select('users.id', 'users.name')
+                ->get()
+                ->map(function ($teacher) {
+                    return [
+                        'id' => $teacher->id,
+                        'name' => $teacher->name,
+                    ];
+                })
                 ->toArray();
 
             $avgProgress = array_sum(array_column($students, 'percentage')) / count($students);

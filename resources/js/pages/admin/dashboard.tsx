@@ -783,16 +783,36 @@ function SectionCard({
         <>
             <div className="rounded-lg border bg-card p-4">
                 <div className="mb-2 flex items-start justify-between">
-                    <div>
-                        <h4 className="font-medium">
-                            {section.grade} {section.name}
-                        </h4>
-                        {section.teachers.length > 0 && (
-                            <p className="text-xs text-muted-foreground">
-                                👨‍🏫 {section.teachers.join(', ')}
-                            </p>
-                        )}
-                    </div>
+                     <div>
+                         <h4 className="font-medium">
+                             <button
+                                 onClick={() => {
+                                     router.visit(`/admin/sections/${section.id}`);
+                                 }}
+                                 className="text-left hover:underline"
+                             >
+                                 {section.grade} {section.name}
+                             </button>
+                         </h4>
+                         {section.teachers.length > 0 && (
+                             <p className="text-xs text-muted-foreground flex flex-wrap gap-2">
+                                 👨‍🏫 {section.teachers.map((teacher, idx) => (
+                                     <>
+                                         <button
+                                             key={teacher.id}
+                                             onClick={() => {
+                                                 router.visit(`/admin/users/${teacher.id}`);
+                                             }}
+                                             className="hover:underline text-muted-foreground"
+                                         >
+                                             {teacher.name}
+                                         </button>
+                                         {idx < section.teachers.length - 1 && <span> | </span>}
+                                     </>
+                                 ))}
+                             </p>
+                         )}
+                     </div>
                     <div className="text-right">
                         <div className="flex items-center gap-2">
                             <p
