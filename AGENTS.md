@@ -62,9 +62,11 @@ Los comandos para ejecutar el proyecto son:
 ### 5. Convenciones de Testing
 
 - Los tests deben usar **Pest 4** como framework de testing. Se prefieren los Feature Tests sobre los Unit Tests para asegurar la integración completa con Inertia y la base de datos.
+- El PHP CLI usado para tests debe tener habilitada la extensión `sockets`, porque Pest Browser la necesita incluso cuando se ejecutan subconjuntos pequeños de tests.
 - Cada funcionalidad debe tener al menos un test.
 - Se deben usar datos de prueba que simulen datos reales. No usar datos reales en los tests.
 - **Base de datos de pruebas separada:** Los tests usan la base de datos `amantina_app_testing` (PostgreSQL), distinta de la de desarrollo (`amantina_app`), para no afectar los datos reales. Crear la BD de pruebas una vez con: `psql -U postgres -c "CREATE DATABASE amantina_app_testing;"` (o desde pgAdmin). Las credenciales (host, usuario, contraseña) se toman del `.env`.
+- **Overrides locales por máquina:** No cambiar `phpunit.xml` ni `.env.testing` para adaptar la base de datos a una computadora puntual. Para trabajar en una máquina que requiere SQLite, crear un archivo local ignorado llamado `.env.testing.local` con `DB_CONNECTION=sqlite` y `DB_DATABASE=database/database_testing.sqlite`, crear ese archivo SQLite, y ejecutar los tests con `php artisan test --env=testing.local --compact tests/...`. Esto evita conflictos al alternar entre casa/trabajo.
 - **⚠️ PROTOCOLO OBLIGATORIO ANTES DE EJECUTAR TESTS:**
   ```bash
   php artisan config:clear
@@ -114,6 +116,7 @@ Para entender el panorama general, reglas de negocio e histórico de decisiones,
 
 - **Especificaciones y Requerimientos:** `ia_docs/bitacora_especificaciones.md` (Define el "qué" y el "por qué" funcional del negocio).
 - **Manual de Implementación:** `ia_docs/amantina_implementacion.md` (Contiene el registro histórico de los Hitos ya completados y el porqué arquitectónico).
+- **Fresh setup local:** `fresh-setup.md` (Fuente de verdad para recrear la instalación local desde cero y cargar datos completos de ejemplo con `CompleteTestDataSeeder`).
 
 _(Este documento puede ser expandido a medida que el proyecto requiera nuevas convenciones)._
 

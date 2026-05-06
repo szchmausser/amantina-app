@@ -75,8 +75,8 @@ class CompleteTestDataSeeder extends Seeder
         $this->command->info('✅ ¡Semilla completa de datos de prueba finalizada!');
         $this->command->newLine();
         $this->command->info('📊 Puedes acceder al sistema con:');
-        $this->command->info('   Admin: admin@example.com / password');
-        $this->command->info('   Profesor: profesor@example.com / password');
-        $this->command->info('   Alumno: alumno@example.com / password');
+        $this->command->info('   Admin: admin@amantina.test / password');
+        $this->command->info('   Profesor test: user90000001@amantina.test / password');
+        $this->command->info('   Alumno test: user90000020@amantina.test / password');
     }
 }
