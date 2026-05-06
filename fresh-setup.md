@@ -53,9 +53,32 @@ npm install
 
 ---
 
-## Plantillas `.env.example`
+## Archivos `.env` del Proyecto
+
+### Resumen Ejecutivo
+
+El proyecto tiene **9 archivos `.env`** organizados en dos categorías:
+
+**✅ Archivos en Uso (NO se commitean):**
+- `.env` - Tu configuración de desarrollo actual
+- `.env.testing.local` - Tu configuración de testing local
+
+**📋 Plantillas (SÍ se commitean):**
+- `.env.example` - Plantilla genérica de instalación
+- `.env.sqlite.example` - Plantilla para trabajo con SQLite
+- `.env.postgres.example` - Plantilla para casa con PostgreSQL
+- `.env.production.example` - Plantilla para producción
+- `.env.testing` - Config de testing PostgreSQL (casa)
+- `.env.testing.sqlite.example` - Plantilla testing SQLite
+- `.env.testing.postgres.example` - Plantilla testing PostgreSQL
+
+### Regla de Oro
+
+**El código viaja por Git; la configuración local de base de datos NO.**
 
 Los archivos `.env` reales no se commitean porque contienen configuración local y secretos. Lo que sí viaja por Git son sus plantillas `.example`.
+
+### Tabla de Plantillas `.env.example`
 
 | Configuración del proyecto | Plantilla | Copiar a | Cuándo usarla |
 |----------------------------|-----------|----------|---------------|
@@ -65,6 +88,53 @@ Los archivos `.env` reales no se commitean porque contienen configuración local
 | Casa/PostgreSQL — testing | `.env.testing.postgres.example` | `.env.testing` | Tests con PostgreSQL separado. Normalmente ya existe versionado. |
 | Producción real | `.env.production.example` | `.env.production` o `.env` del servidor | Servidor real con PostgreSQL y secretos reales. |
 | Instalación simple | `.env.example` | `.env` | Alias de setup local simple con SQLite. |
+
+### Protección en `.gitignore`
+
+El `.gitignore` está configurado para ignorar:
+- ✅ `.env` (tu config local de desarrollo)
+- ✅ `.env.backup` (backups automáticos)
+- ✅ `.env.production` (producción real con secretos)
+- ✅ `.env.testing.local` (tu config de testing local)
+
+Las plantillas `.example` SÍ se commitean porque son documentación del proyecto.
+
+### Referencia Rápida: ¿Qué Archivo Usar?
+
+**Estoy en el trabajo con SQLite:**
+```powershell
+# Desarrollo
+Copy-Item .env.sqlite.example .env
+
+# Testing
+Copy-Item .env.testing.sqlite.example .env.testing.local
+```
+
+**Estoy en casa con PostgreSQL:**
+```powershell
+# Desarrollo
+Copy-Item .env.postgres.example .env
+
+# Testing (ya existe en Git)
+# Usar .env.testing directamente
+```
+
+**Primera vez en el proyecto:**
+```powershell
+# Setup simple con SQLite
+Copy-Item .env.example .env
+```
+
+**Nunca commitees:**
+- ❌ `.env`
+- ❌ `.env.testing.local`
+- ❌ Archivos `*.sqlite`
+
+**Siempre commitea:**
+- ✅ Plantillas `.env*.example`
+- ✅ `.env.testing` (config casa/PostgreSQL)
+
+---
 
 ### Trabajo/SQLite — aplicación
 

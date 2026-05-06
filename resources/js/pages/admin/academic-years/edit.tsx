@@ -71,31 +71,55 @@ export default function AcademicYearEdit({ academicYear }: Props) {
             <SettingsLayout>
                 <div className="px-4 py-4">
                     {/* Header */}
-                    <div className="mb-6">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                            className="mb-2 -ml-2 h-8"
-                        >
-                            <Link href={academicYearsIndex().url}>
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Volver al listado
-                            </Link>
-                        </Button>
-                        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            {isEditing
-                                ? 'Editar Año Escolar'
-                                : 'Nuevo Año Escolar'}
-                        </h1>
-                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                            {isEditing
-                                ? `Modifica los parámetros del ciclo lectivo ${academicYear.name}.`
-                                : 'Registra un nuevo ciclo académico en el sistema.'}
-                        </p>
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+                        <div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                asChild
+                                className="mb-2 -ml-2 h-8"
+                            >
+                                <Link href={academicYearsIndex().url}>
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Volver al listado
+                                </Link>
+                            </Button>
+                            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                                {isEditing
+                                    ? 'Editar Año Escolar'
+                                    : 'Nuevo Año Escolar'}
+                            </h1>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                {isEditing
+                                    ? `Modifica los parámetros del ciclo lectivo ${academicYear.name}.`
+                                    : 'Registra un nuevo ciclo académico en el sistema.'}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Button
+                                variant="outline"
+                                asChild
+                            >
+                                <Link href={academicYearsIndex().url}>
+                                    Cancelar
+                                </Link>
+                            </Button>
+                            <Button
+                                type="submit"
+                                form="academic-year-form"
+                                disabled={processing}
+                            >
+                                <Save className="mr-2 h-4 w-4" />
+                                {isEditing ? 'Actualizar' : 'Crear Año'}
+                            </Button>
+                        </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form
+                        id="academic-year-form"
+                        onSubmit={handleSubmit}
+                        className="space-y-6"
+                    >
                         {/* Card */}
                         <div className="overflow-hidden rounded-xl border">
                             <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
@@ -215,31 +239,6 @@ export default function AcademicYearEdit({ academicYear }: Props) {
                                 </div>
                                 <InputError message={errors.is_active} />
                             </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center justify-end gap-3">
-                            <Button
-                                variant="outline"
-                                asChild
-                                disabled={processing}
-                            >
-                                <Link href={academicYearsIndex().url}>
-                                    Cancelar
-                                </Link>
-                            </Button>
-                            <Button type="submit" disabled={processing}>
-                                {processing ? (
-                                    'Guardando...'
-                                ) : (
-                                    <>
-                                        <Save className="mr-2 h-4 w-4" />
-                                        {isEditing
-                                            ? 'Actualizar Año'
-                                            : 'Crear Año'}
-                                    </>
-                                )}
-                            </Button>
                         </div>
                     </form>
                 </div>

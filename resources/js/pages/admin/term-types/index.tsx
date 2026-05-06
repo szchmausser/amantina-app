@@ -1,5 +1,5 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import { Edit, Plus, Save, Trash2, X } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { ArrowLeft, Edit, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -116,10 +116,21 @@ export default function TermTypesIndex({ termTypes }: Props) {
                                 lapsos académicos.
                             </p>
                         </div>
-                        <Button onClick={startCreate} disabled={isCreating}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nuevo Tipo
-                        </Button>
+                        <div className="flex items-center gap-3">
+                            <Button
+                                variant="outline"
+                                asChild
+                            >
+                                <Link href={schoolTermsIndex().url}>
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Volver
+                                </Link>
+                            </Button>
+                            <Button onClick={startCreate} disabled={isCreating}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Nuevo
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Create/Edit Form */}
@@ -161,10 +172,9 @@ export default function TermTypesIndex({ termTypes }: Props) {
                                 <div className="flex items-center justify-end gap-2">
                                     <Button
                                         type="button"
-                                        variant="ghost"
+                                        variant="outline"
                                         onClick={cancelEdit}
                                     >
-                                        <X className="mr-1 h-4 w-4" />
                                         Cancelar
                                     </Button>
                                     <Button type="submit" disabled={processing}>

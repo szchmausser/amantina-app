@@ -45,14 +45,25 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
             <SettingsLayout>
                 <div className="flex flex-col gap-6">
                     {/* Header */}
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            Datos Institucionales
-                        </h1>
-                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                            Gestiona los datos de contacto y parámetros
-                            generales de la institución.
-                        </p>
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                                Datos Institucionales
+                            </h1>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                Gestiona los datos de contacto y parámetros
+                                generales de la institución.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <Button
+                                type="submit"
+                                form="institution-form"
+                            >
+                                <Save className="mr-2 h-4 w-4" />
+                                Guardar cambios
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Form Card */}
@@ -67,17 +78,27 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
 
                         <CardContent className="p-6">
                             <Form
+                                id="institution-form"
                                 {...InstitutionController.update.form()}
                                 options={{
                                     preserveScroll: true,
                                 }}
                             >
-                                {({
-                                    processing,
-                                    recentlySuccessful,
-                                    errors,
-                                }) => (
+                                {({ processing, recentlySuccessful, errors }) => (
                                     <>
+                                        <Transition
+                                            show={recentlySuccessful}
+                                            enter="transition ease-in-out"
+                                            enterFrom="opacity-0"
+                                            leave="transition ease-in-out"
+                                            leaveTo="opacity-0"
+                                        >
+                                            <p className="mb-4 flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
+                                                <Check className="h-4 w-4" />
+                                                Guardado correctamente
+                                            </p>
+                                        </Transition>
+
                                         <div className="grid gap-6 md:grid-cols-2">
                                             <div className="space-y-2">
                                                 <Label
@@ -186,36 +207,6 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
                                                     message={errors.address}
                                                 />
                                             </div>
-                                        </div>
-
-                                        {/* Actions */}
-                                        <div className="mt-6 flex items-center gap-4 border-t pt-6">
-                                            <Button
-                                                type="submit"
-                                                disabled={processing}
-                                            >
-                                                {processing ? (
-                                                    'Guardando...'
-                                                ) : (
-                                                    <>
-                                                        <Save className="mr-2 h-4 w-4" />
-                                                        Guardar cambios
-                                                    </>
-                                                )}
-                                            </Button>
-
-                                            <Transition
-                                                show={recentlySuccessful}
-                                                enter="transition ease-in-out"
-                                                enterFrom="opacity-0"
-                                                leave="transition ease-in-out"
-                                                leaveTo="opacity-0"
-                                            >
-                                                <p className="flex items-center gap-1.5 text-sm text-neutral-500">
-                                                    <Check className="h-4 w-4 text-green-500" />
-                                                    Guardado correctamente
-                                                </p>
-                                            </Transition>
                                         </div>
                                     </>
                                 )}
