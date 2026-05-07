@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, Trash2, Users, UserPlus, Plus } from 'lucide-react';
+import { ArrowLeft, Edit, Eye, Trash2, Users, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ interface User {
     id: number;
     name: string;
     email: string;
+    cedula: string;
 }
 
 interface Enrollment {
@@ -74,7 +75,7 @@ export default function SectionShow({ section, academicYear }: Props) {
             title: academicYear.name,
             href: `/admin/academic-years/${academicYear.id}`,
         },
-        { title: `${section.grade.name} - ${section.name}`, href: '#' },
+        { title: `${section.grade.name} - Sección ${section.name}`, href: '#' },
     ];
 
     const sortedEnrollments = [...section.enrollments].sort((a, b) =>
@@ -94,17 +95,17 @@ export default function SectionShow({ section, academicYear }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Ficha de Sección | ${section.name}`} />
+            <Head title={`Sección ${section.name} | Ficha de Sección`} />
 
             <SettingsLayout>
                 <div className="flex flex-col gap-6">
                     {/* Header Section */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                         <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4">
                             <div>
                                 <div className="flex items-center gap-2">
                                     <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                                        {section.name}
+                                        Sección {section.name}
                                     </h1>
                                     <Badge variant="secondary">
                                         {section.grade.name}
@@ -118,14 +119,26 @@ export default function SectionShow({ section, academicYear }: Props) {
                         </div>
                         <div className="flex items-center gap-2">
                             <Button
-                                variant="ghost"
-                                size="icon"
+                                variant="outline"
                                 onClick={() => window.history.back()}
-                                title="Volver atrás"
+                                className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30"
                             >
-                                <ArrowLeft className="h-4 w-4" />
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
                             </Button>
-                            <Button variant="outline" size="sm" asChild>
+                            <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/30">
+                                <Link href={`/admin/teacher-assignments/create?grade_id=${section.grade.id}&section_id=${section.id}`}>
+                                    <UserPlus className="mr-2 h-4 w-4" />
+                                    Asignación Docentes
+                                </Link>
+                            </Button>
+                            <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/30">
+                                <Link href={`/admin/enrollments/create?grade_id=${section.grade.id}&section_id=${section.id}`}>
+                                    <UserPlus className="mr-2 h-4 w-4" />
+                                    Inscripción Alumnos
+                                </Link>
+                            </Button>
+                            <Button variant="outline" size="sm" asChild className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950/30">
                                 <Link
                                     href={`/admin/sections/${section.id}/edit`}
                                 >
@@ -136,7 +149,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+                                className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
                                 onClick={handleDelete}
                             >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -148,15 +161,19 @@ export default function SectionShow({ section, academicYear }: Props) {
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                         {/* Tarjeta Profesores */}
                         <div className="space-y-6 md:col-span-1">
-                            <Card>
-                                <CardHeader className="bg-neutral-50/50 pb-4 dark:bg-neutral-800/30">
+                            <Card className="flex h-full flex-col">
+                                <CardHeader className="border-b bg-neutral-50/50 pb-4 dark:bg-neutral-800/30">
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="flex items-center gap-2 text-lg">
                                             <Users className="h-5 w-5 text-blue-500" />
-                                            Profesores (Staff)
+                                            Docentes
                                         </CardTitle>
-                                        <Badge variant="outline">
-                                            {section.teacher_assignments.length}
+
+                                        <Badge
+                                            variant="secondary"
+                                            className="px-3 py-1 text-base"
+                                        >
+                                            {section.teacher_assignments.length} docentes
                                         </Badge>
                                     </div>
                                     <CardDescription>
@@ -164,7 +181,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                         sección.
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="p-0 pt-4">
+                                <CardContent className="p-0 -pt-0">
                                     {section.teacher_assignments.length > 0 ? (
                                         <div className="divide-y">
                                             {section.teacher_assignments.map(
@@ -203,21 +220,6 @@ export default function SectionShow({ section, academicYear }: Props) {
                                             No hay profesores asignados.
                                         </div>
                                     )}
-                                    <div className="border-t bg-neutral-50/30 p-4 dark:bg-neutral-800/30">
-                                        <Button
-                                            variant="outline"
-                                            className="w-full"
-                                            size="sm"
-                                            asChild
-                                        >
-                                            <Link
-                                                href={`/admin/teacher-assignments/create?grade_id=${section.grade.id}&section_id=${section.id}`}
-                                            >
-                                                <UserPlus className="mr-2 h-4 w-4" />
-                                                Asignar Profesor
-                                            </Link>
-                                        </Button>
-                                    </div>
                                 </CardContent>
                             </Card>
                         </div>
@@ -227,15 +229,11 @@ export default function SectionShow({ section, academicYear }: Props) {
                             <Card className="flex h-full flex-col">
                                 <CardHeader className="border-b bg-neutral-50/50 pb-4 dark:bg-neutral-800/30">
                                     <div className="flex items-center justify-between">
-                                        <div>
-                                            <CardTitle className="text-lg">
-                                                Alumnos Inscritos
-                                            </CardTitle>
-                                            <CardDescription className="mt-1">
-                                                Lista de matrícula actual para
-                                                esta sección.
-                                            </CardDescription>
-                                        </div>
+                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                            <Users className="h-5 w-5 text-blue-500" />
+                                            Alumnos Inscritos
+                                        </CardTitle>
+
                                         <Badge
                                             variant="secondary"
                                             className="px-3 py-1 text-base"
@@ -243,22 +241,32 @@ export default function SectionShow({ section, academicYear }: Props) {
                                             {section.enrollments.length} alumnos
                                         </Badge>
                                     </div>
+                                    <CardDescription>
+                                        Lista de matrícula actual para
+                                        esta sección.
+                                    </CardDescription>
                                 </CardHeader>
+
                                 <CardContent className="flex-1 p-0">
                                     {sortedEnrollments.length > 0 ? (
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left text-sm whitespace-nowrap">
-                                                <thead className="sticky top-0 bg-neutral-100/50 dark:bg-neutral-800/50">
+                                                <thead className="sticky top-0">
                                                     <tr>
                                                         <th className="w-16 px-6 py-3 text-center font-semibold text-neutral-600 dark:text-neutral-400">
                                                             N°
                                                         </th>
                                                         <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-400">
+                                                            Cédula
+                                                        </th>
+                                                        <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-400">
                                                             Nombre del Alumno
                                                         </th>
                                                         <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-400">
-                                                            Identificación
-                                                            (Email/Cédula)
+                                                            Email
+                                                        </th>
+                                                        <th className="w-16 px-6 py-3 text-center font-semibold text-neutral-600 dark:text-neutral-400">
+                                                            Ver
                                                         </th>
                                                     </tr>
                                                 </thead>
@@ -274,6 +282,13 @@ export default function SectionShow({ section, academicYear }: Props) {
                                                                 <td className="px-6 py-3 text-center font-medium text-neutral-500">
                                                                     {index + 1}
                                                                 </td>
+                                                                <td className="px-6 py-3 font-mono text-xs text-neutral-500">
+                                                                    {
+                                                                        enrollment
+                                                                            .student
+                                                                            .cedula
+                                                                    }
+                                                                </td>
                                                                 <td className="px-6 py-3 text-neutral-900 dark:text-neutral-100">
                                                                     {
                                                                         enrollment
@@ -288,6 +303,14 @@ export default function SectionShow({ section, academicYear }: Props) {
                                                                             .email
                                                                     }
                                                                 </td>
+                                                                <td className="px-6 py-3 text-center">
+                                                                    <Link
+                                                                        href={`/admin/users/${enrollment.student.id}`}
+                                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-blue-600 dark:hover:bg-neutral-800"
+                                                                    >
+                                                                        <Eye className="h-4 w-4" />
+                                                                    </Link>
+                                                                </td>
                                                             </tr>
                                                         ),
                                                     )}
@@ -300,42 +323,13 @@ export default function SectionShow({ section, academicYear }: Props) {
                                             <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                                                 Sección vacía
                                             </p>
-                                            <p className="mt-1 mb-4 text-xs text-neutral-500">
+                                            <p className="mt-1 text-xs text-neutral-500">
                                                 Aún no hay alumnos inscritos
                                                 aquí.
                                             </p>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                asChild
-                                            >
-                                                <Link
-                                                    href={`/admin/enrollments/create?grade_id=${section.grade.id}&section_id=${section.id}`}
-                                                >
-                                                    Inscribir Alumno
-                                                </Link>
-                                            </Button>
                                         </div>
                                     )}
                                 </CardContent>
-
-                                {/* Footer for action */}
-                                {section.enrollments.length > 0 && (
-                                    <div className="flex justify-end border-t bg-neutral-50/30 p-4 dark:bg-neutral-800/30">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            asChild
-                                        >
-                                            <Link
-                                                href={`/admin/enrollments/create?grade_id=${section.grade.id}&section_id=${section.id}`}
-                                            >
-                                                <Plus className="mr-2 h-4 w-4" />
-                                                Añadir Alumno Individual
-                                            </Link>
-                                        </Button>
-                                    </div>
-                                )}
                             </Card>
                         </div>
                     </div>

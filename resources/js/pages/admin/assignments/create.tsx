@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, BookUser, Check, Search, Users } from 'lucide-react';
+import { ArrowLeft, BookUser, Check, Search, Users, X } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -218,6 +218,12 @@ export default function TeacherAssignmentsCreate({
         );
     };
 
+    const clearSelections = () => {
+        setSelectedTeacherId(null);
+        setSelectedSections([]);
+        setSearchQuery('');
+    };
+
     const getAssignedTeacherNames = (section: Section): string => {
         if (
             !section.teacher_assignments ||
@@ -236,12 +242,7 @@ export default function TeacherAssignmentsCreate({
             <SettingsLayout>
                 <div className="flex h-[calc(100vh-10rem)] flex-col gap-6 overflow-hidden">
                     {/* Header */}
-                    <div className="flex shrink-0 items-center gap-4">
-                        <Button variant="ghost" size="icon" asChild>
-                            <Link href="/admin/teacher-assignments">
-                                <ArrowLeft className="h-5 w-5" />
-                            </Link>
-                        </Button>
+                    <div className="flex shrink-0 items-center justify-between gap-4">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                                 Asignación Docente
@@ -251,6 +252,34 @@ export default function TeacherAssignmentsCreate({
                                 que impartirá en {activeYear.name}.
                             </p>
                         </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => window.history.back()}
+                                className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30"
+                            >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={clearSelections}
+                                className="border-amber-300 text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-950/30"
+                            >
+                                <X className="mr-2 h-4 w-4" />
+                                Deseleccionar
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={saveAssignments}
+                                disabled={!selectedTeacherId || !isDirty || isProcessing}
+                                size="sm"
+                                data-test="save-assignments-button"
+                                className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/30"
+                            >
+                                {isProcessing ? 'Guardando...' : 'Guardar Cambios'}
+                            </Button>
+                        </div>
                     </div>
 
                     <div className="grid h-full min-h-0 grid-cols-1 gap-6 md:grid-cols-[1fr_2fr]">
@@ -258,12 +287,15 @@ export default function TeacherAssignmentsCreate({
                         <Card className="flex min-h-0 flex-col overflow-hidden">
                             <CardHeader className="shrink-0 border-b pb-3">
                                 <CardTitle className="text-base font-semibold">
-                                    Profesores
+                                    Lista de Docentes
                                 </CardTitle>
-                                <div className="relative mt-2">
-                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                            </CardHeader>
+
+                            <CardContent className="flex-1 overflow-auto px-2 pb-2 pt-0">
+                                <div className="relative mb-3 mt-0">
+                                    <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                                     <Input
-                                        className="pl-9"
+                                        className="pl-9 focus-visible:ring-0 focus-visible:border-neutral-300"
                                         placeholder="Buscar por cédula o nombre..."
                                         value={searchQuery}
                                         onChange={(e) =>
@@ -272,9 +304,6 @@ export default function TeacherAssignmentsCreate({
                                         data-test="teacher-search-input"
                                     />
                                 </div>
-                            </CardHeader>
-
-                            <CardContent className="flex-1 overflow-auto p-2">
                                 {availableTeachers.length > 0 ? (
                                     <div className="space-y-1">
                                         {filteredTeachers.length > 0 ? (
@@ -341,27 +370,13 @@ export default function TeacherAssignmentsCreate({
 
                         {/* Panel Derecho: Grilla de Secciones */}
                         <Card className="flex min-h-0 flex-col overflow-hidden">
-                            <CardHeader className="flex shrink-0 flex-row items-center justify-between border-b pb-3">
+                            <CardHeader className="border-b pb-3">
                                 <CardTitle className="text-base font-semibold">
-                                    Secciones
+                                    Lista de Secciones
                                 </CardTitle>
-                                <Button
-                                    onClick={saveAssignments}
-                                    disabled={
-                                        !selectedTeacherId ||
-                                        !isDirty ||
-                                        isProcessing
-                                    }
-                                    size="sm"
-                                    data-test="save-assignments-button"
-                                >
-                                    {isProcessing
-                                        ? 'Guardando...'
-                                        : 'Guardar Cambios'}
-                                </Button>
                             </CardHeader>
 
-                            <CardContent className="flex-1 overflow-auto p-4 lg:p-6">
+                            <CardContent className="flex-1 overflow-auto p-3">
                                 {!selectedTeacherId ? (
                                     <div className="flex h-full flex-col items-center justify-center space-y-3">
                                         <BookUser
@@ -415,7 +430,7 @@ export default function TeacherAssignmentsCreate({
                                                                             )
                                                                         }
                                                                         data-test={`section-checkbox-${section.id}`}
-                                                                        className={`relative flex w-full flex-col rounded-lg border p-4 text-left transition-all ${
+                                                                        className={`relative flex w-full flex-col rounded-lg border p-3 text-left transition-all ${
                                                                             isChecked
                                                                                 ? wasAssigned
                                                                                     ? 'border-blue-500 bg-blue-50 shadow-sm dark:border-blue-600 dark:bg-blue-950/30'
@@ -423,46 +438,47 @@ export default function TeacherAssignmentsCreate({
                                                                                 : 'border-neutral-200 hover:border-neutral-300 dark:border-neutral-800 dark:hover:border-neutral-700'
                                                                         }`}
                                                                     >
-                                                                        <div className="mb-3 flex items-start justify-between">
-                                                                            <div className="flex flex-col gap-1">
-                                                                                <div className="text-base font-semibold">
-                                                                                    {
-                                                                                        section.name
-                                                                                    }
-                                                                                </div>
-                                                                                {wasAssigned &&
-                                                                                    isChecked && (
-                                                                                        <Badge
-                                                                                            variant="secondary"
-                                                                                            className="w-fit bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
-                                                                                        >
-                                                                                            Ya
-                                                                                            asignado
-                                                                                        </Badge>
-                                                                                    )}
-                                                                            </div>
-                                                                            <Checkbox
-                                                                                checked={
-                                                                                    isChecked
-                                                                                }
-                                                                                onCheckedChange={() =>
-                                                                                    toggleSection(
-                                                                                        section.id,
-                                                                                    )
-                                                                                }
-                                                                                className="pointer-events-none"
-                                                                            />
-                                                                        </div>
+                                                                        <div className="mb-2 flex items-start justify-between">
+                                                                             <div className="flex flex-col gap-1">
+                                                                                  <div className="text-base font-semibold">
+                                                                                      Sección{' '}
+                                                                                      {
+                                                                                          section.name
+                                                                                      }
+                                                                                  </div>
+                                                                                 {wasAssigned &&
+                                                                                     isChecked && (
+                                                                                         <Badge
+                                                                                             variant="secondary"
+                                                                                             className="w-fit bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                                                                                         >
+                                                                                             Ya está asignado a esta sección.
+                                                                                         </Badge>
+                                                                                     )}
+                                                                             </div>
+                                                                             <div className="flex items-center gap-2">
+                                                                                 <div className="flex items-center gap-1 text-xs text-neutral-500">
+                                                                                     <Users className="h-3.5 w-3.5" />
+                                                                                     {section.enrollments_count ??
+                                                                                         0}
+                                                                                 </div>
+                                                                                 <Checkbox
+                                                                                     checked={
+                                                                                         isChecked
+                                                                                     }
+                                                                                     onCheckedChange={() =>
+                                                                                         toggleSection(
+                                                                                             section.id,
+                                                                                         )
+                                                                                     }
+                                                                                     className="pointer-events-none"
+                                                                                 />
+                                                                             </div>
+                                                                         </div>
 
-                                                                        <div className="mt-auto space-y-1.5">
-                                                                            <div className="flex items-center gap-1.5 text-xs text-neutral-500">
-                                                                                <Users className="h-3.5 w-3.5" />
-                                                                                {section.enrollments_count ??
-                                                                                    0}{' '}
-                                                                                alumno(s)
-                                                                            </div>
+                                                                         <div className="mt-auto">
 
-                                                                            <div className="mt-2 border-t border-neutral-100 pt-2 text-xs text-neutral-400 dark:border-neutral-800">
+                                                                             <div className="mt-1.5 border-t border-neutral-100 pt-1.5 text-xs text-neutral-400 dark:border-neutral-800">
                                                                                 <span className="font-medium text-neutral-500 dark:text-neutral-400">
                                                                                     Profesores:{' '}
                                                                                 </span>
