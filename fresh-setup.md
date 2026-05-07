@@ -6,6 +6,19 @@ Fuente de verdad para levantar una copia local del proyecto desde cero y cargar 
 **Base usada en esta guía:** SQLite local de desarrollo (`database/database.sqlite`)  
 **Seeder completo:** `CompleteTestDataSeeder`
 
+> ⚠️ **Cada máquina tiene sus propios `.env` y `.env.testing`**
+>
+> Ambos archivos están en `.gitignore`. Cada computadora copia los templates que
+> necesita según el motor de base de datos que use (SQLite o PostgreSQL).
+>
+> El comando de tests es **el mismo** en cualquier máquina:
+>
+> ```powershell
+> php artisan config:clear; php artisan cache:clear; php artisan test --compact tests/Feature/ExampleTest.php
+> ```
+>
+> La diferencia está únicamente en qué template se copia a `.env.testing`.
+
 ---
 
 ## Camino rápido
@@ -53,105 +66,55 @@ npm install
 
 ---
 
-## Archivos `.env` del Proyecto
+## Plantillas `.env.*`
 
-### Resumen Ejecutivo
+Los archivos `.env` y `.env.testing` **no se commitean** (están en `.gitignore`). Cada máquina tiene los suyos.
 
-El proyecto tiene **9 archivos `.env`** organizados en dos categorías:
+Lo que sí viaja por Git son las **plantillas `.example`**, una por motor de base de datos:
 
-**✅ Archivos en Uso (NO se commitean):**
-- `.env` - Tu configuración de desarrollo actual
-- `.env.testing.local` - Tu configuración de testing local
+### Para aplicación (`.env`)
 
-**📋 Plantillas (SÍ se commitean):**
-- `.env.example` - Plantilla genérica de instalación
-- `.env.sqlite.example` - Plantilla para trabajo con SQLite
-- `.env.postgres.example` - Plantilla para casa con PostgreSQL
-- `.env.production.example` - Plantilla para producción
-- `.env.testing` - Config de testing PostgreSQL (casa)
-- `.env.testing.sqlite.example` - Plantilla testing SQLite
-- `.env.testing.postgres.example` - Plantilla testing PostgreSQL
+| Motor | Plantilla | Uso |
+|-------|-----------|-----|
+| SQLite | `.env.sqlite.example` | Desarrollo local simple, sin servidor de base de datos |
+| PostgreSQL | `.env.postgres.example` | Desarrollo local con PostgreSQL (casa) |
+| MySQL | `.env.mysql.example` | (futuro — no existe todavía) |
 
-### Regla de Oro
+### Para testing (`.env.testing`)
 
-**El código viaja por Git; la configuración local de base de datos NO.**
+| Motor | Plantilla | Uso |
+|-------|-----------|-----|
+| SQLite | `.env.sqlite.testing.example` | Testing con SQLite — base separada `database/database_testing.sqlite` |
+| PostgreSQL | `.env.postgres.testing.example` | Testing con PostgreSQL — base separada `amantina_app_testing` |
+| MySQL | `.env.mysql.testing.example` | (futuro — no existe todavía) |
 
-Los archivos `.env` reales no se commitean porque contienen configuración local y secretos. Lo que sí viaja por Git son sus plantillas `.example`.
+### Configuración recomendada
 
-### Tabla de Plantillas `.env.example`
-
-| Configuración del proyecto | Plantilla | Copiar a | Cuándo usarla |
-|----------------------------|-----------|----------|---------------|
-| Trabajo/SQLite — aplicación | `.env.sqlite.example` | `.env` | Uso diario de la app con SQLite. |
-| Trabajo/SQLite — testing | `.env.testing.sqlite.example` | `.env.testing.local` | Tests locales con SQLite. No se commitea el destino. |
-| Casa/PostgreSQL — aplicación | `.env.postgres.example` | `.env` | Uso diario de la app con PostgreSQL. |
-| Casa/PostgreSQL — testing | `.env.testing.postgres.example` | `.env.testing` | Tests con PostgreSQL separado. Normalmente ya existe versionado. |
-| Producción real | `.env.production.example` | `.env.production` o `.env` del servidor | Servidor real con PostgreSQL y secretos reales. |
-| Instalación simple | `.env.example` | `.env` | Alias de setup local simple con SQLite. |
-
-### Protección en `.gitignore`
-
-El `.gitignore` está configurado para ignorar:
-- ✅ `.env` (tu config local de desarrollo)
-- ✅ `.env.backup` (backups automáticos)
-- ✅ `.env.production` (producción real con secretos)
-- ✅ `.env.testing.local` (tu config de testing local)
-
-Las plantillas `.example` SÍ se commitean porque son documentación del proyecto.
-
-### Referencia Rápida: ¿Qué Archivo Usar?
-
-**Estoy en el trabajo con SQLite:**
-```powershell
-# Desarrollo
-Copy-Item .env.sqlite.example .env
-
-# Testing
-Copy-Item .env.testing.sqlite.example .env.testing.local
-```
-
-**Estoy en casa con PostgreSQL:**
-```powershell
-# Desarrollo
-Copy-Item .env.postgres.example .env
-
-# Testing (ya existe en Git)
-# Usar .env.testing directamente
-```
-
-**Primera vez en el proyecto:**
-```powershell
-# Setup simple con SQLite
-Copy-Item .env.example .env
-```
-
-**Nunca commitees:**
-- ❌ `.env`
-- ❌ `.env.testing.local`
-- ❌ Archivos `*.sqlite`
-
-**Siempre commitea:**
-- ✅ Plantillas `.env*.example`
-- ✅ `.env.testing` (config casa/PostgreSQL)
-
----
-
-### Trabajo/SQLite — aplicación
+#### Trabajo / SQLite
 
 ```powershell
+# Aplicación
 Copy-Item .env.sqlite.example .env
 New-Item -ItemType File -Path database/database.sqlite -Force
 php artisan key:generate
+
+# Testing
+Copy-Item .env.sqlite.testing.example .env.testing
+New-Item -ItemType File -Path database/database_testing.sqlite -Force
 ```
 
-### Casa/PostgreSQL — aplicación
+#### Casa / PostgreSQL
 
 ```powershell
+# Aplicación
 Copy-Item .env.postgres.example .env
 php artisan key:generate
+
+# Testing
+Copy-Item .env.postgres.testing.example .env.testing
 ```
 
-Después editá en `.env`:
+Después editá en `.env` (y en `.env.testing` si hace falta):
 
 ```env
 DB_DATABASE=amantina_app
@@ -159,42 +122,17 @@ DB_USERNAME=postgres
 DB_PASSWORD=tu_password_local
 ```
 
-### Trabajo/SQLite — testing
+Para testing con PostgreSQL, la base debe ser distinta:
 
-```powershell
-Copy-Item .env.testing.sqlite.example .env.testing.local
-New-Item -ItemType File -Path database/database_testing.sqlite -Force
+```env
+DB_DATABASE=amantina_app_testing
+DB_USERNAME=postgres
+DB_PASSWORD=tu_password_local
 ```
 
-Luego corré:
-
-```powershell
-php artisan config:clear
-php artisan cache:clear
-php artisan test --env=testing.local --compact tests/Feature/ExampleTest.php
-```
-
-### Casa/PostgreSQL — testing
-
-El proyecto ya trae `.env.testing` versionado para la configuración casa/PostgreSQL. Si necesitás recrearlo:
-
-```powershell
-Copy-Item .env.testing.postgres.example .env.testing
-```
-
-Después ajustá `DB_PASSWORD` según tu PostgreSQL local.
-
-### Producción
-
-Usá `.env.production.example` como plantilla, pero NO la copies ciegamente sin revisar. Producción debe completar:
-
-- `APP_URL`
-- `APP_KEY`
-- credenciales PostgreSQL
-- mail real
-- cualquier storage externo si aplica
-
-Regla fuerte: **nunca usar SQLite para producción real**.
+> **Regla fuerte:** la base de testing (`amantina_app_testing`) debe ser DISTINTA de la de desarrollo (`amantina_app`).
+>
+> **Regla fuerte 2:** nunca usar SQLite para producción real.
 
 ---
 
@@ -202,18 +140,18 @@ Regla fuerte: **nunca usar SQLite para producción real**.
 
 **Regla central:** el código viaja por Git; la configuración local de base de datos NO.
 
-Cada computadora debe tener su propio `.env`, porque `.env` está ignorado por Git. Eso permite trabajar con PostgreSQL en casa, SQLite en el trabajo, o cualquier otra combinación local sin generar conflictos en commits.
+| Archivo | Se commitea | Rol |
+|---------|-------------|-----|
+| `.env` | No (`.gitignore`) | Configuración de desarrollo local |
+| `.env.testing` | No (`.gitignore`) | Configuración de testing local |
+| `*.example` | Sí | Plantillas para copiar a los archivos reales |
 
-| Configuración del proyecto | Archivo real | Se commitea | Base recomendada |
-|----------------------------|--------------|-------------|------------------|
-| Casa/PostgreSQL — aplicación | `.env` | No | PostgreSQL local (`amantina_app`) |
-| Casa/PostgreSQL — testing | `.env.testing` | Sí | PostgreSQL testing (`amantina_app_testing`) |
-| Trabajo/SQLite — aplicación | `.env` | No | SQLite local (`database/database.sqlite`) |
-| Trabajo/SQLite — testing | `.env.testing.local` | No | SQLite testing (`database/database_testing.sqlite`) |
+Cada computadora tiene sus propios `.env` y `.env.testing`. Así se puede trabajar con
+PostgreSQL en casa y SQLite en el trabajo sin generar conflictos en commits.
 
-### Casa/PostgreSQL — aplicación
+### Casa/PostgreSQL
 
-Ejemplo de `.env` local:
+#### Aplicación (`.env`)
 
 ```env
 DB_CONNECTION=pgsql
@@ -224,19 +162,52 @@ DB_USERNAME=postgres
 DB_PASSWORD=tu_password_local
 ```
 
-### Trabajo/SQLite — aplicación
+#### Testing (`.env.testing`)
 
-Ejemplo de `.env` local:
+```env
+APP_ENV=testing
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=amantina_app_testing
+DB_USERNAME=postgres
+DB_PASSWORD=tu_password_local
+SESSION_DRIVER=array
+CACHE_STORE=array
+QUEUE_CONNECTION=sync
+MAIL_MAILER=array
+```
+
+### Trabajo/SQLite
+
+#### Aplicación (`.env`)
 
 ```env
 DB_CONNECTION=sqlite
-DB_DATABASE=database/database.sqlite
 ```
 
 Crear la base SQLite si no existe:
 
 ```powershell
 New-Item -ItemType File -Path database/database.sqlite -Force
+```
+
+#### Testing (`.env.testing`)
+
+```env
+APP_ENV=testing
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database_testing.sqlite
+SESSION_DRIVER=array
+CACHE_STORE=array
+QUEUE_CONNECTION=sync
+MAIL_MAILER=array
+```
+
+Crear la base de testing:
+
+```powershell
+New-Item -ItemType File -Path database/database_testing.sqlite -Force
 ```
 
 ### Qué hacer al cambiar de una máquina a otra
@@ -249,12 +220,12 @@ php artisan config:clear
 php artisan cache:clear
 ```
 
-No cambies archivos versionados solo para adaptar la base local. En particular:
+Reglas importantes:
 
+- `.env` y `.env.testing` son **tuyos** — no se commitean.
 - No cambies `phpunit.xml` para elegir PostgreSQL o SQLite.
-- No cambies `.env.testing` para una necesidad puntual de una máquina.
-- No commitees `.env`, `.env.testing.local` ni archivos `*.sqlite`.
-- Sí commiteá plantillas `.env*.example` cuando el setup real cambie.
+- No commitees `.env`, `.env.testing` ni archivos `*.sqlite`.
+- Sí commiteá las plantillas `.env.*.example` cuando la configuración cambie.
 
 ---
 
@@ -378,13 +349,16 @@ select count(*) from attendance_activities;
 select id, name from institution limit 1;
 ```
 
-Verificar test mínimo con el entorno local SQLite de testing:
+Verificar que los tests pasan:
 
 ```powershell
 php artisan config:clear
 php artisan cache:clear
-php artisan test --env=testing.local --compact tests/Feature/ExampleTest.php
+php artisan test --compact tests/Feature/ExampleTest.php
 ```
+
+El comando es **el mismo** en cualquier máquina. Laravel auto-detecta `.env.testing`
+porque `phpunit.xml` ya setea `APP_ENV=testing`.
 
 Resultado esperado:
 
@@ -396,54 +370,42 @@ Tests: 1 passed (1 assertions)
 
 ## Testing sin conflictos entre casa y trabajo
 
-Regla de arquitectura: **no commitear configuración de base de datos que dependa de una máquina**.
+Regla fundamental: **`php artisan test` es el mismo comando en cualquier máquina.**
 
-| Configuración del proyecto | Archivo real | Se commitea | Uso |
-|----------------------------|--------------|-------------|-----|
-| Casa/PostgreSQL — aplicación | `.env` | No | App diaria con PostgreSQL local. |
-| Casa/PostgreSQL — testing | `.env.testing` | Sí | Tests con PostgreSQL separado: `amantina_app_testing`. |
-| Trabajo/SQLite — aplicación | `.env` | No | App diaria con SQLite local. |
-| Trabajo/SQLite — testing | `.env.testing.local` | No | Tests con SQLite local: `database/database_testing.sqlite`. |
+Cada máquina tiene su propio `.env.testing` (gitignorado) con la conexión a base
+de datos que corresponda. No hay más archivos `.env.testing.sqlite` ni
+`.env.testing.postgres` — solo existe `.env.testing`, y su contenido varía según
+la máquina.
 
-Para la configuración Trabajo/SQLite — testing, crear `.env.testing.local`:
+### Resumen visual
 
-```env
-APP_ENV=testing
-APP_DEBUG=true
-APP_URL=http://amantina-app.test
+| Situación | `.env` (app) | Copiado de | `.env.testing` (tests) | Copiado de |
+|-----------|-------------|------------|------------------------|------------|
+| Casa / PostgreSQL | `DB_CONNECTION=pgsql` | `.env.postgres.example` | `DB_CONNECTION=pgsql`, apunta a `amantina_app_testing` | `.env.postgres.testing.example` |
+| Trabajo / SQLite | `DB_CONNECTION=sqlite` | `.env.sqlite.example` | `DB_CONNECTION=sqlite`, apunta a `database/database_testing.sqlite` | `.env.sqlite.testing.example` |
 
-DB_CONNECTION=sqlite
-DB_DATABASE=database/database_testing.sqlite
-
-SESSION_DRIVER=array
-CACHE_STORE=array
-QUEUE_CONNECTION=sync
-MAIL_MAILER=array
-BROADCAST_CONNECTION=null
-FILESYSTEM_DISK=local
-```
-
-Crear la base de Trabajo/SQLite — testing:
+### Casa — PostgreSQL
 
 ```powershell
+Copy-Item .env.postgres.testing.example .env.testing
+# Editar DB_PASSWORD si es necesario
+php artisan config:clear
+php artisan cache:clear
+php artisan test --compact tests/Feature/ExampleTest.php
+```
+
+### Trabajo — SQLite
+
+```powershell
+Copy-Item .env.sqlite.testing.example .env.testing
 New-Item -ItemType File -Path database/database_testing.sqlite -Force
-```
-
-Correr Trabajo/SQLite — testing:
-
-```powershell
 php artisan config:clear
 php artisan cache:clear
-php artisan test --env=testing.local --compact tests/Feature/ExampleTest.php
+php artisan test --compact tests/Feature/ExampleTest.php
 ```
 
-En Casa/PostgreSQL — testing, usar:
-
-```powershell
-php artisan config:clear
-php artisan cache:clear
-php artisan test --env=testing --compact tests/Feature/ExampleTest.php
-```
+No hay comandos diferentes entre máquinas. La diferencia está solo en el contenido
+de `.env.testing`.
 
 ---
 
@@ -527,15 +489,60 @@ php artisan db:seed --class=CompleteTestDataSeeder --force
 
 ## Checklist final
 
-- [ ] `.env` apunta a `DB_CONNECTION=sqlite` para setup local simple.
-- [ ] Existe `database/database.sqlite`.
+- [ ] `.env` existe con la configuración correcta para tu máquina (SQLite o PostgreSQL).
+- [ ] `.env.testing` existe con la configuración correcta para testing.
+- [ ] `database/database.sqlite` existe (si usás SQLite).
+- [ ] `database/database_testing.sqlite` existe (si usás SQLite para testing).
 - [ ] `php artisan migrate:fresh --force` termina sin errores.
 - [ ] `php artisan db:seed --class=CompleteTestDataSeeder --force` termina sin errores.
 - [ ] El admin real es `admin@amantina.test / password`.
 - [ ] Hay jornadas, asistencias y actividades suficientes para dashboards vivos.
 - [ ] `npm run dev` está corriendo si vas a trabajar frontend.
+- [ ] Los tests pasan con `php artisan test --compact tests/Feature/ExampleTest.php`.
 
 ---
 
-**Estado:** ✅ Probado y validado con `CompleteTestDataSeeder` el 2026-05-06.
+**Estado:** ✅ Actualizado con la nueva estructura de plantillas `.env.*` el 2026-05-07.
+
+---
+
+## Convenciones del Framework: por qué `.env` y `.env.testing` son los nombres correctos
+
+Laravel está programado para buscar nombres de archivos específicos en momentos específicos. Entender esto evita dolores de cabeza con la configuración.
+
+### 1. El estándar: `.env.testing`
+
+Laravel tiene una integración nativa con este nombre de archivo. Cuando ejecutás `php artisan test`, el framework detecta automáticamente si existe un archivo llamado `.env.testing` en la raíz. Si lo encuentra:
+
+- Lo carga **encima** del `.env` original.
+- Sobrescribe cualquier variable que coincida con la de desarrollo.
+
+Es una convención "mágica" porque no tenés que configurar nada extra para que funcione; el framework simplemente lo busca por nombre gracias a que `phpunit.xml` setea `APP_ENV=testing`.
+
+### 2. ¿Qué pasa con nombres personalizados como `.env.pruebas` o `.env.testing.sqlite`?
+
+Si creás un archivo llamado `.env.pruebas`, Laravel **lo ignorará por completo** de forma automática. Para el framework, es simplemente un archivo de texto plano sin relevancia.
+
+Sí, se puede forzar su uso con `--env=pruebas` o `--env=testing.sqlite`, pero eso rompe la convención. Cada máquina terminaría usando un flag distinto y el comando `php artisan test` ya no sería universal.
+
+### 3. El orden de prioridad (jerarquía)
+
+Cuando lanzás un test, Laravel decide qué configuración usar siguiendo este orden (el de arriba gana al de abajo):
+
+1. **Variables en `phpunit.xml`:** Lo que definas acá (en la sección `<php>`) tiene la máxima prioridad.
+2. **`.env.testing`:** Se carga automáticamente cuando `APP_ENV=testing` (lo setea `phpunit.xml`).
+3. **`.env`:** Se usa como base, pero todo lo de arriba lo sobrescribe.
+
+### ¿Por qué seguir esta convención?
+
+La razón principal es que **`php artisan test` debe ser el mismo comando en cualquier máquina**. Si usás `.env.testing` (canónico):
+
+- En casa con PostgreSQL copiás `.env.postgres.testing.example` → `.env.testing`.
+- En el trabajo con SQLite copiás `.env.sqlite.testing.example` → `.env.testing`.
+- En ambos lados ejecutás **exactamente el mismo comando**: `php artisan test`.
+
+No importa qué motor uses: el framework siempre va a encontrar `.env.testing` porque es el nombre que espera. Eso hace que el setup sea predecible y que los comandos en la documentación, en CI/CD y en los hooks de Git sean siempre idénticos.
+
+**En resumen:** `.env` y `.env.testing` son los únicos archivos que Laravel busca por sí solo. Los templates como `.env.sqlite.example` existen para que copies el que necesites a `.env`, y los templates `.env.sqlite.testing.example` para que copies el que necesites a `.env.testing`. El framework siempre lee `.env` y `.env.testing` — el resto son solo plantillas.
+
 

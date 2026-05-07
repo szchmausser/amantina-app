@@ -12,9 +12,7 @@
 /vendor
 .DS_Store
 .env
-.env.backup
-.env.production
-.env.testing.local
+.env.testing
 database/*.sqlite
 .phpactor.json
 .phpunit.result.cache

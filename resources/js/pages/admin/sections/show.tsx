@@ -101,19 +101,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                     {/* Header Section */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                          <div className="flex items-center gap-4">
-                             <Button
-                                 variant="ghost"
-                                 size="icon"
-                                 asChild
-                                 className="-ml-2"
-                             >
-                                 <Link
-                                     href={`/admin/academic-years/${academicYear.id}`}
-                                 >
-                                     <ArrowLeft className="h-4 w-4" />
-                                 </Link>
-                             </Button>
-                             <div>
+                            <div>
                                 <div className="flex items-center gap-2">
                                     <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                                         {section.name}
@@ -129,6 +117,14 @@ export default function SectionShow({ section, academicYear }: Props) {
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => window.history.back()}
+                                title="Volver atrás"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
                             <Button variant="outline" size="sm" asChild>
                                 <Link
                                     href={`/admin/sections/${section.id}/edit`}
