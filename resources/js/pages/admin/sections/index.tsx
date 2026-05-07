@@ -139,11 +139,10 @@ export default function SectionsIndex({
     const tableColumns = (
         <>
             <DataTableHead>
-                <DataTableTH className="w-16">#</DataTableTH>
+                <DataTableTH className="w-12">#</DataTableTH>
                 <DataTableTH>Sección</DataTableTH>
-                <DataTableTH className="w-40">Grado</DataTableTH>
-                <DataTableTH className="w-40">Año Escolar</DataTableTH>
-                <DataTableTH className="w-32 text-right">Acciones</DataTableTH>
+                <DataTableTH className="text-center">Alumnos</DataTableTH>
+                <DataTableTH className="w-28 text-right">Acciones</DataTableTH>
             </DataTableHead>
             <DataTableBody>
                 {sections.data.map((section, index) => (
@@ -152,24 +151,28 @@ export default function SectionsIndex({
                             {(sections.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
                         <DataTableTD>
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                                    <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                </div>
+                            <div className="flex flex-col">
                                 <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-                                    {section.name}
+                                    Sección {section.name}
+                                </span>
+                                <span className="flex flex-wrap items-center gap-1 text-sm text-neutral-500">
+                                    <Link href={`/admin/sections?grade_id=${section.grade?.id}`}>
+                                        <Badge variant="secondary" className="cursor-pointer text-xs bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800 dark:hover:bg-sky-900">
+                                            {section.grade?.name || 'N/A'}
+                                        </Badge>
+                                    </Link>
+                                    <Link href={`/admin/academic-years/${section.academic_year_id}`}>
+                                        <Badge variant="outline" className="cursor-pointer text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                            {academicYears.find(
+                                                (y) => y.id === section.academic_year_id,
+                                            )?.name || 'N/A'}
+                                        </Badge>
+                                    </Link>
                                 </span>
                             </div>
                         </DataTableTD>
-                        <DataTableTD>
-                            <Badge variant="secondary" className="text-xs">
-                                {section.grade?.name || 'N/A'}
-                            </Badge>
-                        </DataTableTD>
-                        <DataTableTD className="text-neutral-500">
-                            {academicYears.find(
-                                (y) => y.id === section.academic_year_id,
-                            )?.name || 'N/A'}
+                        <DataTableTD className="text-center font-medium text-neutral-700 dark:text-neutral-300">
+                            {section.enrollments_count ?? 0}
                         </DataTableTD>
                         <DataTableTD className="text-right">
                             <div className="flex items-center justify-end gap-1">
