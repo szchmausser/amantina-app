@@ -23,13 +23,7 @@ class StoreGradeRequest extends FormRequest
     {
         return [
             'academic_year_id' => ['required', 'exists:academic_years,id'],
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('grades', 'name')
-                    ->where('academic_year_id', $this->academic_year_id),
-            ],
+            'grade_definition_id' => ['required', 'exists:grade_definitions,id'],
             'order' => [
                 'required',
                 'integer',

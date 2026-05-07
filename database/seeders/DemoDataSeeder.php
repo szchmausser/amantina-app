@@ -5,7 +5,9 @@ namespace Database\Seeders;
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
 use App\Models\Grade;
+use App\Models\GradeDefinition;
 use App\Models\Section;
+use App\Models\SectionDefinition;
 use App\Models\TeacherAssignment;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -27,22 +29,39 @@ class DemoDataSeeder extends Seeder
             return;
         }
 
+        // Ensure definitions are seeded before creating grades/sections
+        $this->call([
+            GradeDefinitionSeeder::class,
+            SectionDefinitionSeeder::class,
+        ]);
+
         // Si no hay estructura, creamo una base para poder probar
         if ($activeYear->grades->isEmpty()) {
             $this->command->info('No hay grados configurados. Creando estructura básica de 5 grados con 3 secciones cada uno...');
 
-            for ($i = 1; $i <= 5; $i++) {
+            $gradeDefinitions = GradeDefinition::orderBy('order')->get();
+            $sectionDefinitions = SectionDefinition::all();
+
+            for ($i = 0; $i < 5; $i++) {
+                $def = $gradeDefinitions->get($i);
+
                 $grade = Grade::factory()->create([
                     'academic_year_id' => $activeYear->id,
-                    'name' => "{$i}er Año",
-                    'order' => $i,
+                    'name' => $def?->name ?? "{$i}er Año",
+                    'order' => $def?->order ?? ($i + 1),
+                    'grade_definition_id' => $def?->id,
+                    'grade_definition_name' => $def?->name,
                 ]);
 
                 foreach (['A', 'B', 'C'] as $sectionLetter) {
+                    $secDef = $sectionDefinitions->firstWhere('name', $sectionLetter);
+
                     Section::factory()->create([
                         'academic_year_id' => $activeYear->id,
                         'grade_id' => $grade->id,
                         'name' => "Sección {$sectionLetter}",
+                        'section_definition_id' => $secDef?->id,
+                        'section_definition_name' => $secDef?->name,
                     ]);
                 }
             }

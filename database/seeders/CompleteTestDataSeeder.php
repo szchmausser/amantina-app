@@ -44,6 +44,8 @@ class CompleteTestDataSeeder extends Seeder
         $this->call([
             AcademicYearSeeder::class,
             SchoolTermSeeder::class,
+            GradeDefinitionSeeder::class,
+            SectionDefinitionSeeder::class,
             GradeSeeder::class,
             SectionSeeder::class,
         ]);

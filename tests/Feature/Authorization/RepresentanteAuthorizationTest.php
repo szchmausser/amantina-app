@@ -4,6 +4,7 @@ namespace Tests\Feature\Authorization;
 
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
+use App\Models\FieldSession;
 use App\Models\Grade;
 use App\Models\RelationshipType;
 use App\Models\Section;
@@ -18,8 +19,11 @@ class RepresentanteAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     protected User $representante;
+
     protected User $representado;
+
     protected User $otherStudent;
+
     protected AcademicYear $academicYear;
 
     protected function setUp(): void
@@ -267,7 +271,7 @@ class RepresentanteAuthorizationTest extends TestCase
         $profesor = User::factory()->create();
         $profesor->assignRole('profesor');
 
-        $fieldSession = \App\Models\FieldSession::factory()
+        $fieldSession = FieldSession::factory()
             ->for($this->academicYear)
             ->for($profesor, 'teacher')
             ->create();

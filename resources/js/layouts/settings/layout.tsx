@@ -1,6 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import {
+    Book,
+    BookOpen,
     Calendar,
     Clock,
     GraduationCap,
@@ -24,9 +26,12 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { index as academicYearsIndex } from '@/routes/admin/academic-years';
+import { index as gradeDefsIndex } from '@/routes/admin/grade-definitions';
 import { index as gradesIndex } from '@/routes/admin/grades';
 import { index as schoolTermsIndex } from '@/routes/admin/school-terms';
+import { index as sectionDefsIndex } from '@/routes/admin/section-definitions';
 import { index as sectionsIndex } from '@/routes/admin/sections';
+import { index as termTypesIndex } from '@/routes/admin/term-types';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editInstitution } from '@/routes/institution';
 import { edit } from '@/routes/profile';
@@ -103,6 +108,40 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         sidebarNavItems.push(
             { title: 'Académico', type: 'separator' },
             ...academicItems,
+        );
+    }
+
+    // ── Definiciones ──
+    const definitionItems: NavItem[] = [];
+
+    if (auth.permissions?.includes('school_terms.view')) {
+        definitionItems.push({
+            title: 'Definiciones de Lapsos',
+            href: termTypesIndex().url,
+            icon: BookOpen,
+        });
+    }
+
+    if (auth.permissions?.includes('grade_definitions.view')) {
+        definitionItems.push({
+            title: 'Definiciones de Grados',
+            href: gradeDefsIndex().url,
+            icon: Book,
+        });
+    }
+
+    if (auth.permissions?.includes('section_definitions.view')) {
+        definitionItems.push({
+            title: 'Definiciones de Secciones',
+            href: sectionDefsIndex().url,
+            icon: Tag,
+        });
+    }
+
+    if (definitionItems.length > 0) {
+        sidebarNavItems.push(
+            { title: 'Definiciones', type: 'separator' },
+            ...definitionItems,
         );
     }
 

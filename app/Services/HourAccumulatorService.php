@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AcademicYear;
 use App\Models\Attendance;
-use App\Models\ExternalHour;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -161,7 +160,7 @@ class HourAccumulatorService
         $atRisk = 0;
         $noHours = 0;
         $totalHoursAll = 0;
-        
+
         $outstandingStudents = [];
         $atRiskStudents = [];
         $studentsWithNoHours = [];
@@ -204,10 +203,10 @@ class HourAccumulatorService
         }
 
         // Sort outstanding students by percentage descending
-        usort($outstandingStudents, fn($a, $b) => $b['percentage'] <=> $a['percentage']);
-        
+        usort($outstandingStudents, fn ($a, $b) => $b['percentage'] <=> $a['percentage']);
+
         // Sort at-risk students by percentage ascending
-        usort($atRiskStudents, fn($a, $b) => $a['percentage'] <=> $b['percentage']);
+        usort($atRiskStudents, fn ($a, $b) => $a['percentage'] <=> $b['percentage']);
 
         $totalStudents = $allStudents->count();
         $globalPercentage = $totalStudents > 0 ? ($metQuota / $totalStudents) * 100 : 0;
@@ -226,7 +225,7 @@ class HourAccumulatorService
             ->get();
 
         $allSectionsData = [];
-        
+
         foreach ($sections as $section) {
             $students = $this->getSectionProgress($section->id, $yearId);
             if (empty($students)) {
@@ -251,18 +250,18 @@ class HourAccumulatorService
                 ->toArray();
 
             $avgProgress = array_sum(array_column($students, 'percentage')) / count($students);
-            
+
             // Count distribution
             $distribution = [
                 'onTrack' => 0,
                 'inProgress' => 0,
                 'atRisk' => 0,
             ];
-            
+
             $sectionOnTrackStudents = [];
             $sectionInProgressStudents = [];
             $sectionAtRiskStudents = [];
-            
+
             foreach ($students as $student) {
                 $studentData = [
                     'id' => $student['student_id'],
@@ -270,7 +269,7 @@ class HourAccumulatorService
                     'hours' => $student['total_hours'],
                     'percentage' => $student['percentage'],
                 ];
-                
+
                 if ($student['percentage'] >= 80) {
                     $distribution['onTrack']++;
                     $sectionOnTrackStudents[] = $studentData;
@@ -282,7 +281,7 @@ class HourAccumulatorService
                     $sectionAtRiskStudents[] = $studentData;
                 }
             }
-            
+
             $allSectionsData[] = [
                 'id' => $section->id,
                 'name' => $section->section_name,
@@ -299,10 +298,10 @@ class HourAccumulatorService
 
         // Sort all sections by average percentage
         usort($allSectionsData, fn ($a, $b) => $b['avgPercentage'] <=> $a['avgPercentage']);
-        
+
         // Top 3 sections (best performing)
         $topSections = array_slice($allSectionsData, 0, 3);
-        
+
         // Bottom 3 sections (need most attention) - reverse order so worst is first
         $concerningSections = array_slice(array_reverse($allSectionsData), 0, 3);
 

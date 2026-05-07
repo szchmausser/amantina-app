@@ -6,28 +6,34 @@ See `_shared/skill-resolver.md` for the full resolution protocol.
 
 ## User Skills
 
-| Trigger                                                                                                                        | Skill          | Path                                                  |
-| ------------------------------------------------------------------------------------------------------------------------------ | -------------- | ----------------------------------------------------- |
-| When creating a GitHub issue, reporting a bug, or requesting a feature                                                         | issue-creation | C:\Users\pprch\.claude\skills\issue-creation\SKILL.md |
-| When creating a pull request, opening a PR, or preparing changes for review                                                    | branch-pr      | C:\Users\pprch\.claude\skills\branch-pr\SKILL.md      |
-| When user asks to create a new skill, add agent instructions, or document patterns for AI                                      | skill-creator  | C:\Users\pprch\.claude\skills\skill-creator\SKILL.md  |
-| When writing Go tests, using teatest, or adding test coverage                                                                  | go-testing     | C:\Users\pprch\.claude\skills\go-testing\SKILL.md     |
-| When user says "judgment day", "judgment-day", "review adversarial", "dual review", "doble review", "juzgar", "que lo juzguen" | judgment-day   | C:\Users\pprch\.claude\skills\judgment-day\SKILL.md   |
+| Trigger | Skill | Path |
+|---------|-------|------|
+| When creating a GitHub issue, reporting a bug, or requesting a feature | issue-creation | C:\Users\ASISVENTAS\.claude\skills\issue-creation\SKILL.md |
+| When creating a pull request, opening a PR, or preparing changes for review | branch-pr | C:\Users\ASISVENTAS\.claude\skills\branch-pr\SKILL.md |
+| When user says "judgment day", "judgment-day", "review adversarial", "dual review", "doble review", "juzgar", "que lo juzguen" | judgment-day | C:\Users\ASISVENTAS\.claude\skills\judgment-day\SKILL.md |
+| When user asks to create a new skill, add agent instructions, or document patterns for AI | skill-creator | C:\Users\ASISVENTAS\.claude\skills\skill-creator\SKILL.md |
+| When writing Go tests, using teatest, or adding test coverage | go-testing | C:\Users\ASISVENTAS\.claude\skills\go-testing\SKILL.md |
+| When writing guides, READMEs, RFCs, onboarding docs, architecture docs, or review-facing documentation | cognitive-doc-design | C:\Users\ASISVENTAS\.claude\skills\cognitive-doc-design\SKILL.md |
+| When drafting or posting feedback, review comments, maintainer replies, Slack messages, or GitHub comments | comment-writer | C:\Users\ASISVENTAS\.claude\skills\comment-writer\SKILL.md |
+| When a PR would exceed 400 changed lines, when planning chained PRs, stacked PRs, or reviewable slices | chained-pr | C:\Users\ASISVENTAS\.claude\skills\chained-pr\SKILL.md |
+| When implementing a change, preparing commits, splitting PRs, or planning chained or stacked PRs | work-unit-commits | C:\Users\ASISVENTAS\.claude\skills\work-unit-commits\SKILL.md |
 
 ## Project-Level Skills
 
-| Trigger                                                                                                                                                     | Skill                          | Path                                                                              |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | --------------------------------------------------------------------------------- |
-| When user asks to build web components, pages, artifacts, posters, or applications                                                                          | frontend-design                | C:\Desarrollo\amantina-app\.agents\skills\frontend-design\SKILL.md                |
-| When working with shadcn/ui, component registries, presets                                                                                                  | shadcn                         | C:\Desarrollo\amantina-app\.agents\skills\shadcn\SKILL.md                         |
-| Triggers on tasks involving Inertia.js, page props, form handling, or Laravel React integration                                                             | laravel-inertia-react          | C:\Desarrollo\amantina-app\.agents\skills\laravel-inertia-react\SKILL.md          |
-| When user asks "how do I do X", "find a skill for X", "is there a skill for X"                                                                              | find-skills                    | C:\Desarrollo\amantina-app\.agents\skills\find-skills\SKILL.md                    |
-| Build and work with Spatie Laravel Permission features                                                                                                      | laravel-permission-development | C:\Desarrollo\amantina-app\.agents\skills\laravel-permission-development\SKILL.md |
-| Build and work with spatie/laravel-medialibrary features                                                                                                    | medialibrary-development       | C:\Desarrollo\amantina-app\.agents\skills\medialibrary-development\SKILL.md       |
-| Laravel Fortify headless authentication backend development                                                                                                 | fortify-development            | C:\Desarrollo\amantina-app\.agents\skills\fortify-development\SKILL.md            |
-| When adding styles, restyling components, working with gradients, spacing, layout, flex, grid, responsive design, dark mode, colors, typography, or borders | tailwindcss-development        | C:\Desarrollo\amantina-app\.agents\skills\tailwindcss-development\SKILL.md        |
-| When creating React pages, forms, or navigation; using <Link>, <Form>, useForm, or router; working with deferred props, prefetching                         | inertia-react-development      | C:\Desarrollo\amantina-app\.agents\skills\inertia-react-development\SKILL.md      |
-| Whenever referencing backend routes in frontend components, importing from @/actions or @/routes, calling Laravel routes from TypeScript                    | wayfinder-development          | C:\Desarrollo\amantina-app\.agents\skills\wayfinder-development\SKILL.md          |
+| Trigger | Skill | Path |
+|---------|-------|------|
+| Whenever referencing backend routes in frontend components, importing from @/actions or @/routes, calling Laravel routes from TypeScript, or working with Wayfinder route functions | wayfinder-development | C:\Desarrollo\amantina-app\.claude\skills\wayfinder-development\SKILL.md |
+| When creating React pages, forms, or navigation; using <Link>, <Form>, useForm, or router; working with deferred props, prefetching, or polling; or when user mentions React with Inertia | inertia-react-development | C:\Desarrollo\amantina-app\.claude\skills\inertia-react-development\SKILL.md |
+| When adding styles, restyling components, working with gradients, spacing, layout, flex, grid, responsive design, dark mode, colors, typography, or borders; or when the user mentions CSS, styling, classes, Tailwind, restyle, hero section, cards, buttons, or any visual/UI changes | tailwindcss-development | C:\Desarrollo\amantina-app\.claude\skills\tailwindcss-development\SKILL.md |
+| When implementing authentication features including login, registration, password reset, email verification, two-factor authentication (2FA/TOTP), profile updates, headless auth, authentication scaffolding, or auth guards in Laravel applications | fortify-development | C:\Desarrollo\amantina-app\.claude\skills\fortify-development\SKILL.md |
+| When working with spatie/laravel-medialibrary features including associating files with Eloquent models, defining media collections and conversions, generating responsive images, and retrieving media URLs and paths | medialibrary-development | C:\Desarrollo\amantina-app\.claude\skills\medialibrary-development\SKILL.md |
+| When working with Spatie Laravel Permission features, including roles, permissions, middleware, policies, teams, and Blade directives | laravel-permission-development | C:\Desarrollo\amantina-app\.claude\skills\laravel-permission-development\SKILL.md |
+| When building Inertia page components, handling forms with useForm, managing shared data, or implementing persistent layouts. Triggers on tasks involving Inertia.js, page props, form handling, or Laravel React integration | laravel-inertia-react | C:\Desarrollo\amantina-app\.claude\skills\laravel-inertia-react\SKILL.md |
+| When user asks to build web components, pages, artifacts, posters, or applications (websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI) | frontend-design | C:\Desarrollo\amantina-app\.claude\skills\frontend-design\SKILL.md |
+| When working with shadcn/ui, component registries, presets, --preset codes, or any project with a components.json file. Also for "shadcn init", "create an app with --preset", or "switch to --preset" | shadcn | C:\Desarrollo\amantina-app\.claude\skills\shadcn\SKILL.md |
+| When user asks "how do I do X", "find a skill for X", "is there a skill that can...", or expresses interest in extending agent capabilities | find-skills | C:\Desarrollo\amantina-app\.claude\skills\find-skills\SKILL.md |
+| When writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements | vercel-react-best-practices | C:\Desarrollo\amantina-app\.claude\skills\vercel-react-best-practices\SKILL.md |
+| When creating Laravel models, setting up queue workers, implementing Sanctum auth flows, building Livewire components, optimising Eloquent queries, or writing Pest/PHPUnit tests for Laravel features | laravel-specialist | C:\Desarrollo\amantina-app\.claude\skills\laravel-specialist\SKILL.md |
 
 ## Compact Rules
 
@@ -125,10 +131,61 @@ Pre-digested rules per skill. Delegators copy matching blocks into sub-agent pro
 - Iterate until both pass or escalate after 2 iterations
 - Use for: high-confidence review of code/features/architecture
 
+### chained-pr
+
+- Split large changes into chained or stacked PRs protecting reviewer focus
+- Stay within Gentle AI's 400-line cognitive review budget per PR
+- First PR: infrastructure (migrations, models, interfaces). Second+: features
+- Each PR must be independently reviewable and mergeable
+
+### work-unit-commits
+
+- Structure commits as deliverable work units, not file-type batches
+- Tests and docs stay beside the code they verify
+- Each commit should answer "what does this deliver?" not "what files changed?"
+
+### vercel-react-best-practices
+
+- Eliminate waterfalls: use Promise.all() for independent operations
+- Avoid barrel file imports (200-800ms import cost)
+- Use dynamic imports for heavy components
+- Prefer derived state over effects for computed values
+- Use functional setState updates to prevent stale closures
+- Use toSorted() over sort() for immutability with React state
+- Config after() for non-blocking operations after response
+
+### laravel-specialist
+
+- Create Eloquent models with proper relationships and return type hints
+- Implement Form Request classes for validation
+- Build RESTful APIs with API resources
+- Use Pest/PHPUnit for feature testing
+- Configure queues with ShouldQueue interface
+
+### cognitive-doc-design
+
+- Use progressive disclosure — start with overview, add detail as needed
+- Chunk information: one idea per section, short paragraphs
+- Use tables for comparisons, checklists for procedures
+- Lead with recognition (what they know) before recall (what they need to learn)
+- Signpost sections clearly; use consistent terminology throughout
+
+### comment-writer
+
+- Warm and direct, not sarcastic or cold
+- Validate the effort before correcting the approach
+- Explain WHY something is wrong with technical reasoning, not opinion
+- CAPS for emphasis of important points, not for shouting
+- Use analogies only when they genuinely clarify the point
+
 ## Project Conventions
 
-| File      | Path                                 | Notes                                                                                                  |
-| --------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| File | Path | Notes |
+|------|------|-------|
 | AGENTS.md | C:\Desarrollo\amantina-app\AGENTS.md | Main convention file — contains Laravel Boost guidelines, testing rules, and project-specific patterns |
+| CLAUDE.md | C:\Desarrollo\amantina-app\CLAUDE.md | Duplicate of AGENTS.md with Laravel Boost guidelines |
+| ia_docs/bitacora_especificaciones.md | C:\Desarrollo\amantina-app\ia_docs\bitacora_especificaciones.md | Business specs and requirements for Bitácora Socioproductiva |
+| ia_docs/amantina_implementacion.md | C:\Desarrollo\amantina-app\ia_docs\amantina_implementacion.md | Implementation milestones and architecture decisions |
+| fresh-setup.md | C:\Desarrollo\amantina-app\fresh-setup.md | Fresh local setup instructions with CompleteTestDataSeeder |
 
-Read the convention files listed above for project-specific patterns and rules. All referenced paths have been extracted — no need to read index files to discover more.
+Read the convention files listed above for project-specific patterns and rules.

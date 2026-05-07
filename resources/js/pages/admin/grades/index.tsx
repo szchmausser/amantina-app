@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, GraduationCap, Plus, Trash2 } from 'lucide-react';
+import { Edit, GraduationCap, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import {
     AlertDialog,
@@ -233,14 +233,22 @@ export default function GradesIndex({
                                 escolar.
                             </p>
                         </div>
-                        <Button asChild>
-                            <Link
-                                href={`/admin/grades/create?academic_year_id=${selectedYearId}`}
-                            >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nuevo Grado
-                            </Link>
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" asChild>
+                                <Link href="/admin/grade-definitions">
+                                    <Settings2 className="mr-2 h-4 w-4" />
+                                    Definiciones de grados
+                                </Link>
+                            </Button>
+                            <Button asChild>
+                                <Link
+                                    href={`/admin/grades/create?academic_year_id=${selectedYearId}`}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nuevo Grado
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Filtro */}

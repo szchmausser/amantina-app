@@ -3,9 +3,11 @@
 require_once __DIR__.'/../Helpers.php';
 
 use App\Models\AcademicYear;
+use App\Models\Enrollment;
 use App\Models\Grade;
 use App\Models\SchoolTerm;
 use App\Models\Section;
+use App\Models\TeacherAssignment;
 use App\Models\TermType;
 use App\Models\User;
 use Database\Seeders\FieldSessionStatusSeeder;
@@ -25,7 +27,6 @@ use Database\Seeders\TermTypeSeeder;
  * 4. Eliminar Sección
  * 5. Eliminar Usuario
  */
-
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
     $this->seed(TermTypeSeeder::class);
@@ -306,7 +307,7 @@ test('admin puede desinscribir un alumno de una sección', function () {
     $student->assignRole('alumno');
 
     // Crear inscripción
-    $enrollment = \App\Models\Enrollment::factory()->create([
+    $enrollment = Enrollment::factory()->create([
         'academic_year_id' => $academicYear->id,
         'grade_id' => $grade->id,
         'section_id' => $section->id,
@@ -377,7 +378,7 @@ test('admin puede desasignar un profesor de una sección', function () {
     $teacher->assignRole('profesor');
 
     // Crear asignación de profesor a sección
-    $assignment = \App\Models\TeacherAssignment::factory()->create([
+    $assignment = TeacherAssignment::factory()->create([
         'academic_year_id' => $academicYear->id,
         'user_id' => $teacher->id,
         'section_id' => $section->id,

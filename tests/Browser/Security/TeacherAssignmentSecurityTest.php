@@ -12,14 +12,13 @@ uses(RefreshDatabase::class);
 
 /**
  * SECURITY TESTS: Teacher Assignment Access Control
- * 
+ *
  * Estos tests verifican que el control de acceso al módulo de asignaciones de profesores funciona correctamente:
  * - Admin: acceso completo (CRUD)
  * - Profesor: NO puede acceder (403)
  * - Alumno: NO puede acceder (403)
  * - Representante: NO puede acceder (403)
  */
-
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
 

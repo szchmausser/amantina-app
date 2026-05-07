@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateSectionRequest;
 use App\Models\AcademicYear;
 use App\Models\Grade;
 use App\Models\Section;
+use App\Models\SectionDefinition;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -53,6 +54,7 @@ class SectionController extends Controller
         return Inertia::render('admin/sections/edit', [
             'grades' => Grade::with('academicYear')->get(),
             'academicYears' => AcademicYear::all(),
+            'sectionDefinitions' => SectionDefinition::where('is_active', true)->get(),
         ]);
     }
 
@@ -61,7 +63,13 @@ class SectionController extends Controller
      */
     public function store(StoreSectionRequest $request): RedirectResponse
     {
-        Section::create($request->validated());
+        $sectionDefinition = SectionDefinition::find($request->section_definition_id);
+
+        Section::create([
+            ...$request->validated(),
+            'name' => $sectionDefinition?->name,
+            'section_definition_name' => $sectionDefinition?->name,
+        ]);
 
         return redirect()->route('admin.sections.index', [
             'academic_year_id' => $request->academic_year_id,
@@ -99,6 +107,7 @@ class SectionController extends Controller
             'section' => $section,
             'grades' => Grade::where('academic_year_id', $section->academic_year_id)->get(),
             'academicYears' => AcademicYear::all(),
+            'sectionDefinitions' => SectionDefinition::where('is_active', true)->get(),
         ]);
     }
 

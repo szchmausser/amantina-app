@@ -11,8 +11,8 @@ use App\Models\FieldSession;
 use App\Models\FieldSessionStatus;
 use App\Models\Location;
 use App\Models\SchoolTerm;
-use App\Models\Section;
 use App\Models\TeacherAssignment;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class FieldSessionsSeeder extends Seeder
@@ -97,8 +97,8 @@ class FieldSessionsSeeder extends Seeder
             $location = $locations->random();
 
             // Generar fecha aleatoria dentro del término
-            $startDate = \Carbon\Carbon::parse($term->start_date);
-            $endDate = \Carbon\Carbon::parse($term->end_date);
+            $startDate = Carbon::parse($term->start_date);
+            $endDate = Carbon::parse($term->end_date);
             $sessionDate = $startDate->copy()->addDays(rand(0, max(0, $startDate->diffInDays($endDate))));
 
             // Hora de inicio entre 7am y 2pm
@@ -205,7 +205,7 @@ class FieldSessionsSeeder extends Seeder
             'Actividad de Servicio',
         ];
 
-        return $names[array_rand($names)] . ' #' . rand(1, 999);
+        return $names[array_rand($names)].' #'.rand(1, 999);
     }
 
     private function generateSessionDescription(): string

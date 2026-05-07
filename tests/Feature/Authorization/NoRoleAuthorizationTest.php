@@ -4,8 +4,6 @@ namespace Tests\Feature\Authorization;
 
 use App\Models\AcademicYear;
 use App\Models\FieldSession;
-use App\Models\Grade;
-use App\Models\Section;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,6 +14,7 @@ class NoRoleAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     protected User $userWithoutRole;
+
     protected AcademicYear $academicYear;
 
     protected function setUp(): void

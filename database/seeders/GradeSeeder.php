@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AcademicYear;
 use App\Models\Grade;
+use App\Models\GradeDefinition;
 use Illuminate\Database\Seeder;
 
 class GradeSeeder extends Seeder
@@ -22,18 +23,25 @@ class GradeSeeder extends Seeder
             return;
         }
 
-        $grades = [
-            ['name' => '1er Año', 'order' => 1],
-            ['name' => '2do Año', 'order' => 2],
-            ['name' => '3er Año', 'order' => 3],
-            ['name' => '4to Año', 'order' => 4],
-            ['name' => '5to Año', 'order' => 5],
-        ];
+        $definitions = GradeDefinition::orderBy('order')->get();
 
-        foreach ($grades as $gradeData) {
+        if ($definitions->isEmpty()) {
+            $this->command->warn('No grade definitions found. Please run GradeDefinitionSeeder first.');
+
+            return;
+        }
+
+        foreach ($definitions as $definition) {
             Grade::updateOrCreate(
-                ['academic_year_id' => $year->id, 'name' => $gradeData['name']],
-                ['order' => $gradeData['order']]
+                [
+                    'academic_year_id' => $year->id,
+                    'name' => $definition->name,
+                ],
+                [
+                    'order' => $definition->order,
+                    'grade_definition_id' => $definition->id,
+                    'grade_definition_name' => $definition->name,
+                ]
             );
         }
     }

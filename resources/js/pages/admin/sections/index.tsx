@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, Eye, Layers, Plus, Trash2 } from 'lucide-react';
+import { Edit, Eye, Layers, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -239,14 +239,22 @@ export default function SectionsIndex({
                                 y periodo.
                             </p>
                         </div>
-                        <Button asChild>
-                            <Link
-                                href={`/admin/sections/create?academic_year_id=${selectedYearId}${selectedGradeId ? `&grade_id=${selectedGradeId}` : ''}`}
-                            >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nueva Sección
-                            </Link>
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" asChild>
+                                <Link href="/admin/section-definitions">
+                                    <Settings2 className="mr-2 h-4 w-4" />
+                                    Definiciones de secciones
+                                </Link>
+                            </Button>
+                            <Button asChild>
+                                <Link
+                                    href={`/admin/sections/create?academic_year_id=${selectedYearId}${selectedGradeId ? `&grade_id=${selectedGradeId}` : ''}`}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nueva Sección
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Filtros */}

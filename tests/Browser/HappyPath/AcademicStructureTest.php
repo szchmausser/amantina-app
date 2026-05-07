@@ -6,10 +6,14 @@ use App\Models\SchoolTerm;
 use App\Models\Section;
 use App\Models\TermType;
 use App\Models\User;
+use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Database\Seeders\SectionDefinitionSeeder;
 
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(GradeDefinitionSeeder::class);
+    $this->seed(SectionDefinitionSeeder::class);
 
     $this->admin = User::factory()->create([
         'email' => 'admin@test.com',

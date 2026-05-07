@@ -3,7 +3,6 @@
 namespace Tests\Feature\Authorization;
 
 use App\Models\AcademicYear;
-use App\Models\Attendance;
 use App\Models\Enrollment;
 use App\Models\FieldSession;
 use App\Models\Grade;
@@ -19,11 +18,17 @@ class ProfesorAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     protected User $profesor;
+
     protected AcademicYear $academicYear;
+
     protected Grade $grade;
+
     protected Section $ownSection;
+
     protected Section $otherSection;
+
     protected User $ownStudent;
+
     protected User $otherStudent;
 
     protected function setUp(): void

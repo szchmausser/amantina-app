@@ -17,7 +17,9 @@ class AlumnoAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     protected User $alumno;
+
     protected User $otherAlumno;
+
     protected AcademicYear $academicYear;
 
     protected function setUp(): void

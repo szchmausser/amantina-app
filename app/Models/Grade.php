@@ -26,11 +26,18 @@ class Grade extends Model
         'academic_year_id',
         'name',
         'order',
+        'grade_definition_id',
+        'grade_definition_name',
     ];
 
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function gradeDefinition(): BelongsTo
+    {
+        return $this->belongsTo(GradeDefinition::class);
     }
 
     public function sections(): HasMany

@@ -3,15 +3,9 @@
 namespace Tests\Feature\Authorization;
 
 use App\Models\AcademicYear;
-use App\Models\ActivityCategory;
-use App\Models\Enrollment;
 use App\Models\FieldSession;
 use App\Models\Grade;
-use App\Models\HealthCondition;
-use App\Models\Location;
-use App\Models\SchoolTerm;
 use App\Models\Section;
-use App\Models\TeacherAssignment;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

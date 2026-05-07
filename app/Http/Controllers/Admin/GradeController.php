@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreGradeRequest;
 use App\Http\Requests\Admin\UpdateGradeRequest;
 use App\Models\AcademicYear;
 use App\Models\Grade;
+use App\Models\GradeDefinition;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -47,6 +48,7 @@ class GradeController extends Controller
 
         return Inertia::render('admin/grades/edit', [
             'academicYears' => AcademicYear::all(),
+            'gradeDefinitions' => GradeDefinition::where('is_active', true)->orderBy('order')->get(),
         ]);
     }
 
@@ -55,7 +57,13 @@ class GradeController extends Controller
      */
     public function store(StoreGradeRequest $request): RedirectResponse
     {
-        Grade::create($request->validated());
+        $gradeDefinition = GradeDefinition::find($request->grade_definition_id);
+
+        Grade::create([
+            ...$request->validated(),
+            'name' => $gradeDefinition?->name,
+            'grade_definition_name' => $gradeDefinition?->name,
+        ]);
 
         return redirect()->route('admin.grades.index', ['academic_year_id' => $request->academic_year_id])
             ->with('success', 'Grado creado correctamente.');
@@ -71,6 +79,7 @@ class GradeController extends Controller
         return Inertia::render('admin/grades/edit', [
             'grade' => $grade,
             'academicYears' => AcademicYear::all(),
+            'gradeDefinitions' => GradeDefinition::where('is_active', true)->orderBy('order')->get(),
         ]);
     }
 

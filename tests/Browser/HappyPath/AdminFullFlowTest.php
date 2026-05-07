@@ -32,7 +32,6 @@ use Database\Seeders\TermTypeSeeder;
  * Al finalizar, el sistema está listo para que un profesor cree jornadas
  * y registre asistencia (ver TeacherJourneyTest).
  */
-
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
     $this->seed(TermTypeSeeder::class);
