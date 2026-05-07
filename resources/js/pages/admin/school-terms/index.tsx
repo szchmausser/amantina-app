@@ -214,7 +214,7 @@ export default function SchoolTermsIndex({
                             <Button variant="outline" asChild>
                                 <Link href="/admin/term-types">
                                     <Settings2 className="mr-2 h-4 w-4" />
-                                    Tipos de Lapsos
+                                    Definiciones de lapsos
                                 </Link>
                             </Button>
                             <Button asChild>

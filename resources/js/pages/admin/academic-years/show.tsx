@@ -84,29 +84,28 @@ export default function AcademicYearShow({ academicYear }: Props) {
                 <div className="flex flex-col gap-6">
                     {/* Encabezado */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-center gap-4">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                asChild
-                                className="-ml-2"
-                            >
-                                <Link href={academicYearsIndex().url}>
-                                    <ArrowLeft className="h-5 w-5" />
-                                </Link>
-                            </Button>
-                            <div>
-                                <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                                    {academicYear.name}
-                                </h1>
-                                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                                    Detalles y configuración del año escolar.
-                                </p>
-                            </div>
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                                {academicYear.name}
+                            </h1>
+                            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                                Detalles y configuración del año escolar.
+                            </p>
                         </div>
                         <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => window.history.back()}
+                            >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
+                            </Button>
                             {hasPermission('academic_years.edit') && (
-                                <Button variant="outline" asChild>
+                                <Button
+                                    variant="outline"
+                                    className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950/30"
+                                    asChild
+                                >
                                     <Link
                                         href={
                                             academicYearsEdit(academicYear.id)

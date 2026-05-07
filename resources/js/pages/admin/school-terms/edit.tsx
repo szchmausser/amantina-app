@@ -152,6 +152,7 @@ export default function SchoolTermEdit({
                                                 parseInt(val),
                                             )
                                         }
+                                        disabled={isEditing}
                                         data-test="academic-year-select"
                                     >
                                         <SelectTrigger data-test="academic-year-select-trigger">
@@ -175,7 +176,7 @@ export default function SchoolTermEdit({
 
                                 <div className="space-y-2">
                                     <Label htmlFor="term_type_id">
-                                        Tipo de Lapso
+                                        Lapso
                                     </Label>
                                     <Select
                                         value={
@@ -187,10 +188,11 @@ export default function SchoolTermEdit({
                                                 parseInt(val),
                                             )
                                         }
+                                        disabled={isEditing}
                                         data-test="term-type-select"
                                     >
                                         <SelectTrigger data-test="term-type-select-trigger">
-                                            <SelectValue placeholder="Seleccionar tipo de lapso" />
+                                            <SelectValue placeholder="Seleccionar lapso" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {termTypes.map((type) => (

@@ -129,6 +129,7 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                                                 parseInt(val),
                                             )
                                         }
+                                        disabled={isEditing}
                                         data-test="academic-year-select"
                                     >
                                         <SelectTrigger data-test="academic-year-select-trigger">

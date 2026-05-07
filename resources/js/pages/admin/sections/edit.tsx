@@ -144,6 +144,7 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                                                 parseInt(val),
                                             )
                                         }
+                                        disabled={isEditing}
                                         data-test="academic-year-select"
                                     >
                                         <SelectTrigger data-test="academic-year-select-trigger">
@@ -174,6 +175,7 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                                         onValueChange={(val) =>
                                             setData('grade_id', parseInt(val))
                                         }
+                                        disabled={isEditing}
                                         data-test="grade-select"
                                     >
                                         <SelectTrigger data-test="grade-select-trigger">

@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     Users,
     AlertTriangle,
@@ -160,7 +160,10 @@ export default function AdminDashboard({
                         </p>
                     </div>
                     {activeYear && (
-                        <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm">
+                        <Link
+                            href={`/admin/academic-years/${activeYear.id}`}
+                            className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm transition-colors hover:bg-accent"
+                        >
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium">
                                 {activeYear.name}
@@ -168,7 +171,7 @@ export default function AdminDashboard({
                             <span className="text-muted-foreground">
                                 ({activeYear.requiredHours}h requeridas)
                             </span>
-                        </div>
+                        </Link>
                     )}
                 </div>
 
