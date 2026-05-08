@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/dialog';
 import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
+import SettingsLayout from '@/layouts/settings/layout';
 import {
     index as userIndex,
     edit as userEdit,
@@ -351,7 +352,8 @@ export default function Show({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Usuario: ${user.name}`} />
 
-            <div className="p-4 lg:p-8">
+            <SettingsLayout>
+            <div>
                 {/* User Header */}
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -1477,6 +1479,7 @@ export default function Show({
                     )}
                 </Tabs>
             </div>
+            </SettingsLayout>
 
             <AssignRepresentativeModal
                 isOpen={isAssignModalOpen}

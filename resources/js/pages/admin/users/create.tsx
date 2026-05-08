@@ -13,6 +13,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
+import SettingsLayout from '@/layouts/settings/layout';
 import { index as userIndex, store as userStore } from '@/routes/admin/users';
 import type { BreadcrumbItem } from '@/types';
 
@@ -68,7 +69,8 @@ export default function Create({ roles }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Nuevo Usuario" />
 
-            <div className="p-4 lg:p-8">
+            <SettingsLayout>
+            <div>
                 {/* Header */}
                 <div className="mb-6">
                     <Button
@@ -348,6 +350,7 @@ export default function Create({ roles }: Props) {
                     </div>
                 </form>
             </div>
+            </SettingsLayout>
         </AppLayout>
     );
 }
