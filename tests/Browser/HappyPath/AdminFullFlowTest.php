@@ -5,13 +5,17 @@ require_once __DIR__.'/../Helpers.php';
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
 use App\Models\Grade;
+use App\Models\GradeDefinition;
 use App\Models\SchoolTerm;
 use App\Models\Section;
+use App\Models\SectionDefinition;
 use App\Models\TeacherAssignment;
 use App\Models\TermType;
 use App\Models\User;
 use Database\Seeders\FieldSessionStatusSeeder;
+use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Database\Seeders\SectionDefinitionSeeder;
 use Database\Seeders\TermTypeSeeder;
 
 /**
@@ -36,6 +40,8 @@ beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
     $this->seed(TermTypeSeeder::class);
     $this->seed(FieldSessionStatusSeeder::class);
+    $this->seed(GradeDefinitionSeeder::class);
+    $this->seed(SectionDefinitionSeeder::class);
 
     $this->admin = User::factory()->create([
         'email' => 'admin@happytest.com',
@@ -163,13 +169,13 @@ test('admin puede crear lapsos académicos para el año escolar', function () {
     $page->click('[data-test="submit-button"]');
     $page->wait(3);
 
-    // Verify Lapso 1 was created
-    $this->assertDatabaseHas('school_terms', [
-        'academic_year_id' => $academicYear->id,
-        'term_type_id' => 1,
-        'start_date' => '2025-09-01',
-        'end_date' => '2025-12-15',
-    ]);
+    // Verify Lapso 1 was created (normalize date format)
+    $lapso1 = SchoolTerm::where('academic_year_id', $academicYear->id)
+        ->where('term_type_id', 1)
+        ->first();
+    expect($lapso1)->not->toBeNull();
+    expect($lapso1->start_date->format('Y-m-d'))->toBe('2025-09-01');
+    expect($lapso1->end_date->format('Y-m-d'))->toBe('2025-12-15');
 
     // ===== CREATE LAPSO 2 =====
     $page = visit('/admin/school-terms/create');
@@ -197,13 +203,13 @@ test('admin puede crear lapsos académicos para el año escolar', function () {
     $page->click('[data-test="submit-button"]');
     $page->wait(3);
 
-    // Verify Lapso 2 was created
-    $this->assertDatabaseHas('school_terms', [
-        'academic_year_id' => $academicYear->id,
-        'term_type_id' => 2,
-        'start_date' => '2026-01-15',
-        'end_date' => '2026-04-15',
-    ]);
+    // Verify Lapso 2 was created (normalize date format)
+    $lapso2 = SchoolTerm::where('academic_year_id', $academicYear->id)
+        ->where('term_type_id', 2)
+        ->first();
+    expect($lapso2)->not->toBeNull();
+    expect($lapso2->start_date->format('Y-m-d'))->toBe('2026-01-15');
+    expect($lapso2->end_date->format('Y-m-d'))->toBe('2026-04-15');
 
     // ===== CREATE LAPSO 3 =====
     $page = visit('/admin/school-terms/create');
@@ -231,13 +237,13 @@ test('admin puede crear lapsos académicos para el año escolar', function () {
     $page->click('[data-test="submit-button"]');
     $page->wait(3);
 
-    // Verify Lapso 3 was created
-    $this->assertDatabaseHas('school_terms', [
-        'academic_year_id' => $academicYear->id,
-        'term_type_id' => 3,
-        'start_date' => '2026-04-20',
-        'end_date' => '2026-07-15',
-    ]);
+    // Verify Lapso 3 was created (normalize date format)
+    $lapso3 = SchoolTerm::where('academic_year_id', $academicYear->id)
+        ->where('term_type_id', 3)
+        ->first();
+    expect($lapso3)->not->toBeNull();
+    expect($lapso3->start_date->format('Y-m-d'))->toBe('2026-04-20');
+    expect($lapso3->end_date->format('Y-m-d'))->toBe('2026-07-15');
 
     // Verify all 3 lapsos appear in the listing
     $page = visit('/admin/school-terms?academic_year_id='.$academicYear->id);
@@ -275,9 +281,11 @@ test('admin puede crear grados para el año escolar', function () {
     $page->click('[role="option"]:has-text("'.$academicYearName.'")');
     $page->wait(1); // Increased wait for selection to complete
 
-    // Fill name
-    $page->type('[data-test="grade-name-input"]', '1er Año');
-    $page->wait(0.3);
+    // Select grade definition (dropdown instead of text input)
+    $page->click('[data-test="grade-definition-select-trigger"]');
+    $page->wait(0.5);
+    $page->click('[role="option"]:has-text("1er Año")');
+    $page->wait(0.5);
 
     // Fill order
     $page->clear('[data-test="grade-order-input"]');
@@ -289,11 +297,11 @@ test('admin puede crear grados para el año escolar', function () {
     $page->wait(3);
 
     // Verify 1er Año was created
-    $this->assertDatabaseHas('grades', [
-        'academic_year_id' => $academicYear->id,
-        'name' => '1er Año',
-        'order' => 1,
-    ]);
+    $grade1 = Grade::where('academic_year_id', $academicYear->id)
+        ->whereHas('gradeDefinition', fn ($q) => $q->where('name', '1er Año'))
+        ->first();
+    expect($grade1)->not->toBeNull();
+    expect($grade1->order)->toBe(1);
 
     // ===== CREATE 2DO AÑO =====
     $page = visit('/admin/grades/create');
@@ -306,9 +314,11 @@ test('admin puede crear grados para el año escolar', function () {
     $page->click('[role="option"]:has-text("'.$academicYearName.'")');
     $page->wait(1);
 
-    // Fill name
-    $page->type('[data-test="grade-name-input"]', '2do Año');
-    $page->wait(0.3);
+    // Select grade definition (dropdown instead of text input)
+    $page->click('[data-test="grade-definition-select-trigger"]');
+    $page->wait(0.5);
+    $page->click('[role="option"]:has-text("2do Año")');
+    $page->wait(0.5);
 
     // Fill order
     $page->clear('[data-test="grade-order-input"]');
@@ -320,11 +330,11 @@ test('admin puede crear grados para el año escolar', function () {
     $page->wait(3);
 
     // Verify 2do Año was created
-    $this->assertDatabaseHas('grades', [
-        'academic_year_id' => $academicYear->id,
-        'name' => '2do Año',
-        'order' => 2,
-    ]);
+    $grade2 = Grade::where('academic_year_id', $academicYear->id)
+        ->whereHas('gradeDefinition', fn ($q) => $q->where('name', '2do Año'))
+        ->first();
+    expect($grade2)->not->toBeNull();
+    expect($grade2->order)->toBe(2);
 
     // ===== CREATE 3ER AÑO =====
     $page = visit('/admin/grades/create');
@@ -337,9 +347,11 @@ test('admin puede crear grados para el año escolar', function () {
     $page->click('[role="option"]:has-text("'.$academicYearName.'")');
     $page->wait(1);
 
-    // Fill name
-    $page->type('[data-test="grade-name-input"]', '3er Año');
-    $page->wait(0.3);
+    // Select grade definition (dropdown instead of text input)
+    $page->click('[data-test="grade-definition-select-trigger"]');
+    $page->wait(0.5);
+    $page->click('[role="option"]:has-text("3er Año")');
+    $page->wait(0.5);
 
     // Fill order
     $page->clear('[data-test="grade-order-input"]');
@@ -351,11 +363,11 @@ test('admin puede crear grados para el año escolar', function () {
     $page->wait(3);
 
     // Verify 3er Año was created
-    $this->assertDatabaseHas('grades', [
-        'academic_year_id' => $academicYear->id,
-        'name' => '3er Año',
-        'order' => 3,
-    ]);
+    $grade3 = Grade::where('academic_year_id', $academicYear->id)
+        ->whereHas('gradeDefinition', fn ($q) => $q->where('name', '3er Año'))
+        ->first();
+    expect($grade3)->not->toBeNull();
+    expect($grade3->order)->toBe(3);
 
     // Verify grades appear in listing
     $page = visit('/admin/grades?academic_year_id='.$academicYear->id);
@@ -405,20 +417,22 @@ test('admin puede crear secciones para los grados', function () {
     $page->click('[role="option"]:has-text("1er Año")');
     $page->wait(1);
 
-    // Fill name
-    $page->type('[data-test="section-name-input"]', 'Sección A');
-    $page->wait(0.3);
+    // Select section definition (dropdown instead of text input)
+    $page->click('[data-test="section-definition-select-trigger"]');
+    $page->wait(0.5);
+    $page->click('[role="option"]:has-text("A")');
+    $page->wait(0.5);
 
     // Submit
     $page->click('[data-test="submit-button"]');
     $page->wait(3);
 
     // Verify Sección A was created
-    $this->assertDatabaseHas('sections', [
-        'grade_id' => $grade->id,
-        'academic_year_id' => $academicYear->id,
-        'name' => 'Sección A',
-    ]);
+    $sectionA = Section::where('grade_id', $grade->id)
+        ->where('academic_year_id', $academicYear->id)
+        ->whereHas('sectionDefinition', fn ($q) => $q->where('name', 'A'))
+        ->first();
+    expect($sectionA)->not->toBeNull();
 
     // ===== CREATE SECCIÓN B =====
     $page = visit('/admin/sections/create');
@@ -438,19 +452,21 @@ test('admin puede crear secciones para los grados', function () {
     $page->click('[role="option"]:has-text("1er Año")');
     $page->wait(1);
 
-    // Fill name
-    $page->type('[data-test="section-name-input"]', 'Sección B');
-    $page->wait(0.3);
+    // Select section definition (dropdown instead of text input)
+    $page->click('[data-test="section-definition-select-trigger"]');
+    $page->wait(0.5);
+    $page->click('[role="option"]:has-text("B")');
+    $page->wait(0.5);
 
     // Submit
     $page->click('[data-test="submit-button"]');
     $page->wait(3);
 
     // Verify Sección B was created
-    $this->assertDatabaseHas('sections', [
-        'grade_id' => $grade->id,
-        'name' => 'Sección B',
-    ]);
+    $sectionB = Section::where('grade_id', $grade->id)
+        ->whereHas('sectionDefinition', fn ($q) => $q->where('name', 'B'))
+        ->first();
+    expect($sectionB)->not->toBeNull();
 
     // Verify sections appear in listing
     $page = visit('/admin/sections?academic_year_id='.$academicYear->id);
@@ -732,32 +748,36 @@ test('admin puede configurar toda la estructura académica en secuencia', functi
 
     expect($academicYear->fresh()->schoolTerms)->toHaveCount(3);
 
-    // 3. Create grades via factory
+    // 3. Create grades via factory (using definitions)
+    $grade1Def = GradeDefinition::where('name', '1er Año')->first();
     $grade1 = Grade::factory()->create([
         'academic_year_id' => $academicYear->id,
-        'name' => '1er Año',
+        'grade_definition_id' => $grade1Def->id,
         'order' => 1,
     ]);
 
+    $grade2Def = GradeDefinition::where('name', '2do Año')->first();
     $grade2 = Grade::factory()->create([
         'academic_year_id' => $academicYear->id,
-        'name' => '2do Año',
+        'grade_definition_id' => $grade2Def->id,
         'order' => 2,
     ]);
 
     expect($academicYear->fresh()->grades)->toHaveCount(2);
 
-    // 4. Create sections via factory
+    // 4. Create sections via factory (using definitions)
+    $sectionADef = SectionDefinition::where('name', 'A')->first();
     $sectionA = Section::factory()->create([
         'academic_year_id' => $academicYear->id,
         'grade_id' => $grade1->id,
-        'name' => 'Sección A',
+        'section_definition_id' => $sectionADef->id,
     ]);
 
+    $sectionBDef = SectionDefinition::where('name', 'B')->first();
     $sectionB = Section::factory()->create([
         'academic_year_id' => $academicYear->id,
         'grade_id' => $grade1->id,
-        'name' => 'Sección B',
+        'section_definition_id' => $sectionBDef->id,
     ]);
 
     expect($grade1->fresh()->sections)->toHaveCount(2);

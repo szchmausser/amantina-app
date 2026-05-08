@@ -55,8 +55,14 @@ test('admin dashboard shows institution-wide data', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('admin/dashboard')
         ->has('activeYear')
-        ->has('globalCompliance')
-        ->has('sectionRanking')
+        ->has('totalStudents')
+        ->has('requiredHours')
+        ->has('averageHours')
+        ->has('distribution')
+        ->has('onTrackStudents')
+        ->has('topSections')
+        ->has('concerningSections')
+        ->has('alerts')
     );
 });
 

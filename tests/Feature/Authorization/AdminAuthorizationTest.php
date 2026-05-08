@@ -5,9 +5,13 @@ namespace Tests\Feature\Authorization;
 use App\Models\AcademicYear;
 use App\Models\FieldSession;
 use App\Models\Grade;
+use App\Models\GradeDefinition;
 use App\Models\Section;
+use App\Models\SectionDefinition;
 use App\Models\User;
+use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Database\Seeders\SectionDefinitionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,6 +26,8 @@ class AdminAuthorizationTest extends TestCase
         parent::setUp();
 
         $this->seed(RoleAndPermissionSeeder::class);
+        $this->seed(GradeDefinitionSeeder::class);
+        $this->seed(SectionDefinitionSeeder::class);
 
         $this->admin = User::factory()->create();
         $this->admin->assignRole('admin');
@@ -372,29 +378,32 @@ class AdminAuthorizationTest extends TestCase
         $this->assertNotNull($academicYear);
 
         // Crear grado
+        $gradeDefinition = GradeDefinition::where('name', '1er Año')->first();
         $gradeData = [
             'academic_year_id' => $academicYear->id,
-            'name' => '1er Año',
+            'grade_definition_id' => $gradeDefinition->id,
             'order' => 1,
         ];
 
         $response = $this->actingAs($this->admin)->post(route('admin.grades.store'), $gradeData);
         $response->assertSessionHasNoErrors();
 
-        $grade = Grade::where('name', '1er Año')->where('academic_year_id', $academicYear->id)->first();
+        $grade = Grade::where('grade_definition_id', $gradeDefinition->id)
+            ->where('academic_year_id', $academicYear->id)
+            ->first();
         $this->assertNotNull($grade);
 
         // Crear sección
+        $sectionDefinition = SectionDefinition::where('name', 'A')->first();
         $sectionData = [
             'academic_year_id' => $academicYear->id,
             'grade_id' => $grade->id,
-            'name' => 'Sección A',
+            'section_definition_id' => $sectionDefinition->id,
         ];
-
         $response = $this->actingAs($this->admin)->post(route('admin.sections.store'), $sectionData);
         $response->assertSessionHasNoErrors();
 
-        $section = Section::where('name', 'Sección A')
+        $section = Section::where('section_definition_id', $sectionDefinition->id)
             ->where('academic_year_id', $academicYear->id)
             ->where('grade_id', $grade->id)
             ->first();

@@ -4,7 +4,9 @@ use App\Models\AcademicYear;
 use App\Models\Grade;
 use App\Models\User;
 use Database\Seeders\FieldSessionStatusSeeder;
+use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Database\Seeders\SectionDefinitionSeeder;
 use Database\Seeders\TermTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Pest\Browser\Browsable;
@@ -26,6 +28,8 @@ beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
     $this->seed(TermTypeSeeder::class);
     $this->seed(FieldSessionStatusSeeder::class);
+    $this->seed(GradeDefinitionSeeder::class);
+    $this->seed(SectionDefinitionSeeder::class);
 
     // Crear admin y autenticar
     $admin = User::factory()->create([
@@ -324,8 +328,11 @@ it('formulario de grado valida que orden sea número positivo', function () {
     $page->click('[role="option"]:has-text("'.$academicYear->name.'")');
     $page->wait(1);
 
-    // Llenar nombre
-    $page->type('[data-test="grade-name-input"]', '1er Año');
+    // Select grade definition (dropdown instead of text input)
+    $page->click('[data-test="grade-definition-select-trigger"]');
+    $page->wait(0.5);
+    $page->click('[role="option"]:has-text("1er Año")');
+    $page->wait(0.5);
 
     // Intentar ingresar orden negativo
     $page->type('[data-test="grade-order-input"]', '-1');

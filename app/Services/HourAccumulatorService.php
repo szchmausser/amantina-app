@@ -18,6 +18,28 @@ use Illuminate\Support\Facades\DB;
 class HourAccumulatorService
 {
     /**
+     * Get database-specific week truncation expression.
+     *
+     * PostgreSQL uses DATE_TRUNC('week', column).
+     * SQLite uses DATE(column, 'weekday 0', '-6 days').
+     *
+     * @param  string  $column  The column name to truncate
+     * @return string The database-specific SQL expression
+     *
+     * @throws \RuntimeException If the database driver is not supported
+     */
+    private function getWeekTruncationExpression(string $column): string
+    {
+        $driver = DB::getDriverName();
+
+        return match ($driver) {
+            'pgsql' => "DATE_TRUNC('week', {$column})",
+            'sqlite' => "DATE({$column}, 'weekday 0', '-6 days')",
+            default => throw new \RuntimeException("Unsupported database driver for week truncation: {$driver}"),
+        };
+    }
+
+    /**
      * Calculate total hours for a student.
      *
      * @return array{
@@ -860,6 +882,8 @@ class HourAccumulatorService
         $progress = $this->getStudentTotalHours($studentId, $yearId);
 
         // Last 4 weeks trend
+        // Use database-agnostic week truncation (PostgreSQL vs SQLite compatibility)
+        $weekExpression = $this->getWeekTruncationExpression('field_sessions.start_datetime');
         $last4WeeksTrend = DB::table('attendances')
             ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
             ->leftJoin('attendance_activities', 'attendances.id', '=', 'attendance_activities.attendance_id')
@@ -870,7 +894,7 @@ class HourAccumulatorService
             ->whereNull('attendance_activities.deleted_at')
             ->where('field_sessions.start_datetime', '>=', now()->subWeeks(4))
             ->select(
-                DB::raw('DATE_TRUNC(\'week\', field_sessions.start_datetime) as week'),
+                DB::raw("{$weekExpression} as week"),
                 DB::raw('COALESCE(SUM(attendance_activities.hours), 0) as hours')
             )
             ->groupBy('week')

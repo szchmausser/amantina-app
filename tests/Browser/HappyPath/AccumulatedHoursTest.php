@@ -68,8 +68,14 @@ test('admin can view accumulated hours in dashboard', function () {
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
         ->component('admin/dashboard')
-        ->has('globalCompliance')
-        ->has('sectionRanking')
+        ->has('totalStudents')
+        ->has('requiredHours')
+        ->has('averageHours')
+        ->has('distribution')
+        ->has('onTrackStudents')
+        ->has('topSections')
+        ->has('concerningSections')
+        ->has('alerts')
     );
 });
 
