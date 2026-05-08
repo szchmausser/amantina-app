@@ -1,9 +1,9 @@
 import { Link } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import {
-    Book,
     BookOpen,
     Calendar,
+    CalendarDays,
     Clock,
     GraduationCap,
     UserPlus,
@@ -15,6 +15,7 @@ import {
     Palette,
     Building2,
     Layers,
+    Layout,
     Heart,
     List,
     Tag,
@@ -129,7 +130,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         definitionItems.push({
             title: 'Lapsos',
             href: termTypesIndex().url,
-            icon: BookOpen,
+            icon: CalendarDays,
         });
     }
 
@@ -137,7 +138,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         definitionItems.push({
             title: 'Grados',
             href: gradeDefsIndex().url,
-            icon: Book,
+            icon: GraduationCap,
         });
     }
 
@@ -145,7 +146,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         definitionItems.push({
             title: 'Secciones',
             href: sectionDefsIndex().url,
-            icon: Tag,
+            icon: Layout,
         });
     }
 

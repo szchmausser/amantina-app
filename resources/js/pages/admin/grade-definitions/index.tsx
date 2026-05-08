@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Edit, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, GraduationCap, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -195,24 +195,25 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
 
                     {/* List */}
                     <div className="space-y-2">
+                        {/* Header labels */}
+                        <div className="flex px-1">
+                            <span className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+                                Nombre
+                            </span>
+                        </div>
                         {gradeDefinitions.length > 0 ? (
                             gradeDefinitions.map((definition) => (
                                 <div
                                     key={definition.id}
-                                    className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
+                                    className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-neutral-50/50 px-3 py-2 dark:border-neutral-700/50 dark:bg-neutral-800/30"
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <Badge
-                                            variant="secondary"
-                                            className="text-xs"
-                                        >
-                                            #{definition.order}
-                                        </Badge>
+                                    <div className="flex items-center gap-3">
+                                        <GraduationCap className="h-4 w-4 text-neutral-400" />
                                         <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                                             {definition.name}
                                         </span>
                                     </div>
-                                    {(permissions.includes('grade_definitions.edit') ||
+                                        {(permissions.includes('grade_definitions.edit') ||
                                         permissions.includes('grade_definitions.delete')) && (
                                         <div className="flex items-center gap-1">
                                             {permissions.includes('grade_definitions.edit') && (
