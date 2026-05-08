@@ -1,0 +1,61 @@
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+    Tech stack: Laravel 12 (PHP 8.4+) + React 19 + TypeScript + Inertia.js v2 + Tailwind CSS v4
+    Architecture: Inertia SPA (no REST), RBAC with spatie/laravel-permission, Laravel Fortify auth
+    Testing: Pest 4 (Feature: RefreshDatabase, Browser: Playwright), 700 tests passing
+    Database: PostgreSQL 18, separate testing DB (amantina_app_testing)
+    Style: ESLint + Prettier + TypeScript strict + Laravel Pint (PSR-12)
+
+strict_tdd: true
+
+rules:
+    proposal:
+        - Include rollback plan for risky changes
+        - Identify affected modules/packages
+    specs:
+        - Use Given/When/Then format for scenarios
+        - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    design:
+        - Include sequence diagrams for complex flows
+        - Document architecture decisions with rationale
+    tasks:
+        - Group tasks by phase (infrastructure, implementation, testing)
+        - Use hierarchical numbering (1.1, 1.2, etc.)
+        - Keep tasks small enough to complete in one session
+    apply:
+        - Follow existing code patterns and conventions
+        - Load relevant coding skills for the project stack
+        - Run php artisan config:clear && php artisan cache:clear before tests
+        - Always run tests after applying changes
+    verify:
+        - Run tests: php artisan test --env=testing --compact
+        - Compare implementation against every spec scenario
+        - Check for regressions in existing test suite
+    archive:
+        - Warn before merging destructive deltas (large removals)
+
+testing:
+    strict_tdd: true
+    detected: '2026-05-07'
+    runner:
+        command: 'php artisan test'
+        framework: 'Pest 4'
+    layers:
+        unit:
+            available: true
+            tool: 'Pest 4'
+        integration:
+            available: true
+            tool: 'Pest 4 with RefreshDatabase'
+        e2e:
+            available: true
+            tool: 'Pest 4 + Playwright'
+    coverage:
+        available: true
+        command: 'php artisan test --coverage'
+    quality:
+        linter: 'npm run lint (ESLint)'
+        type_checker: 'npm run types:check (tsc --noEmit)'
+        formatter: 'npm run format (Prettier)'

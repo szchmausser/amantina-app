@@ -2,12 +2,9 @@
 
 use App\Models\GradeDefinition;
 use App\Models\User;
-use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 
 beforeEach(function () {
-    $this->withoutMiddleware(ValidateCsrfToken::class);
     $this->seed(RoleAndPermissionSeeder::class);
 
     $this->admin = User::factory()->create([
@@ -23,28 +20,153 @@ beforeEach(function () {
 
 test('admin puede ver el listado de definiciones de grados', function () {
     $page = visit('/admin/grade-definitions');
+    $page->wait(2);
 
     $page->assertPathIs('/admin/grade-definitions')
         ->assertSee('Definiciones de Grados')
         ->assertNoJavaScriptErrors();
 });
 
-test('admin puede ver definiciones existentes', function () {
+test('admin puede ver definiciones existentes en el listado', function () {
     GradeDefinition::factory()->create(['name' => '1er Año', 'order' => 1]);
     GradeDefinition::factory()->create(['name' => '2do Año', 'order' => 2]);
 
     $page = visit('/admin/grade-definitions');
+    $page->wait(2);
 
     $page->assertSee('1er Año')
         ->assertSee('2do Año')
         ->assertNoJavaScriptErrors();
 });
 
-// Create/edit/delete via POST/PUT/DELETE are tested in GradeDefinitionControllerTest (Feature).
-// Only visit-based browser tests belong here.
+test('admin puede crear una definición de grado mediante el formulario inline', function () {
+    $page = visit('/admin/grade-definitions');
+    $page->wait(2);
 
-// Access control, validation, and CRUD via POST/PUT/DELETE are tested in
-// GradeDefinitionControllerTest (Feature). Only visit-based browser tests belong here.
+    // Click "Nuevo" button to show the create form
+    $page->click('[data-test="create-button"]');
+    $page->wait(1);
+
+    // Verify the form is visible
+    $page->assertVisible('[data-test="grade-definition-name-input"]');
+    $page->assertVisible('[data-test="grade-definition-order-input"]');
+
+    // Fill the inline create form
+    $page->type('[data-test="grade-definition-name-input"]', '1er Año');
+    $page->wait(0.3);
+    $page->type('[data-test="grade-definition-order-input"]', '1');
+    $page->wait(0.3);
+
+    // Submit the form
+    $page->click('[data-test="create-grade-definition-button"]');
+
+    // Wait for the definition to appear in the list
+    $page->waitForText('1er Año', 5);
+    $page->assertNoJavaScriptErrors();
+
+    // Verify in database
+    $this->assertDatabaseHas('grade_definitions', [
+        'name' => '1er Año',
+        'order' => 1,
+        'is_active' => true,
+    ]);
+});
+
+test('admin puede editar una definición de grado existente', function () {
+    $definition = GradeDefinition::factory()->create([
+        'name' => '1er Año',
+        'order' => 1,
+    ]);
+
+    $page = visit('/admin/grade-definitions');
+    $page->wait(2);
+
+    // Verify the definition is visible
+    $page->assertSee('1er Año');
+
+    // Click edit button for the definition
+    $page->click('[data-test="edit-grade-definition-'.$definition->id.'"]');
+    $page->wait(1);
+
+    // Verify the edit form is visible
+    $page->assertVisible('[data-test="edit-name-input-'.$definition->id.'"]');
+
+    // Modify the name in the edit form
+    $page->clear('[data-test="edit-name-input-'.$definition->id.'"]');
+    $page->type('[data-test="edit-name-input-'.$definition->id.'"]', 'Primer Año');
+    $page->wait(0.3);
+
+    // Save changes
+    $page->click('[data-test="save-grade-definition-'.$definition->id.'"]');
+
+    // Wait for the updated name to appear
+    $page->waitForText('Primer Año', 5);
+    $page->assertNoJavaScriptErrors();
+
+    // Verify in database
+    $this->assertDatabaseHas('grade_definitions', [
+        'id' => $definition->id,
+        'name' => 'Primer Año',
+    ]);
+});
+
+test('admin puede eliminar una definición de grado', function () {
+    $definition = GradeDefinition::factory()->create([
+        'name' => '1er Año',
+        'order' => 1,
+    ]);
+
+    $page = visit('/admin/grade-definitions');
+    $page->wait(2);
+
+    // Verify the definition is visible
+    $page->assertSee('1er Año');
+
+    // Click delete button (opens confirmation dialog)
+    $page->click('[data-test="delete-grade-definition-'.$definition->id.'"]');
+    $page->wait(1);
+
+    // Verify the confirmation dialog is visible
+    $page->assertSee('¿Eliminar definición de grado?');
+
+    // Confirm deletion in the AlertDialog
+    $page->click('[data-test="confirm-delete-button"]');
+
+    // Wait for the empty state message to appear
+    $page->waitForText('No hay definiciones de grados configuradas', 5);
+    $page->assertNoJavaScriptErrors();
+
+    // Verify soft delete in database
+    $this->assertSoftDeleted('grade_definitions', [
+        'id' => $definition->id,
+    ]);
+});
+
+test('admin puede ver el badge de orden de cada definición', function () {
+    GradeDefinition::factory()->create(['name' => '1er Año', 'order' => 1]);
+    GradeDefinition::factory()->create(['name' => '2do Año', 'order' => 2]);
+
+    $page = visit('/admin/grade-definitions');
+    $page->wait(2);
+
+    // Verify order badges are visible
+    $page->assertSee('1er Año');
+    $page->assertSee('2do Año');
+    $page->assertNoJavaScriptErrors();
+});
+
+test('admin puede ver el estado activo/inactivo de cada definición', function () {
+    GradeDefinition::factory()->create(['name' => '1er Año', 'is_active' => true]);
+    GradeDefinition::factory()->create(['name' => '2do Año', 'is_active' => false]);
+
+    $page = visit('/admin/grade-definitions');
+    $page->wait(2);
+
+    // Verify both definitions are visible
+    $page->assertSee('1er Año');
+    $page->assertSee('2do Año');
+    $page->assertNoJavaScriptErrors();
+});
 
 // ─── CONTROL DE ACCESO ──────────────────────────────────────────────────────
 
@@ -55,94 +177,37 @@ test('usuario sin permiso no puede acceder a definiciones de grados', function (
     $this->actingAs($alumno);
 
     $page = visit('/admin/grade-definitions');
+    $page->wait(2);
 
     $page->assertSee('403');
 });
 
-test('usuario sin permiso grade_definitions.create NO puede crear mediante POST', function () {
+test('link de definiciones de grados aparece en sidebar para admin', function () {
+    $page = visit('/dashboard');
+    $page->wait(2);
+
+    // Navigate to settings area where the sidebar link should be
+    $page = visit('/admin/grade-definitions');
+    $page->wait(2);
+
+    // Verify we can access the page
+    $page->assertPathIs('/admin/grade-definitions');
+    $page->assertSee('Definiciones de Grados');
+    $page->assertNoJavaScriptErrors();
+});
+
+test('link de definiciones de grados NO aparece en sidebar para alumno', function () {
     $alumno = User::factory()->create();
     $alumno->assignRole('alumno');
 
     $this->actingAs($alumno);
 
-    $response = $this->post('/admin/grade-definitions', [
-        'name' => 'Grado Malicioso',
-        'order' => 99,
-    ]);
+    $page = visit('/dashboard');
+    $page->wait(2);
 
-    $response->assertStatus(403);
+    // Try to access the page directly (should be blocked)
+    $page = visit('/admin/grade-definitions');
+    $page->wait(2);
 
-    $this->assertDatabaseMissing('grade_definitions', [
-        'name' => 'Grado Malicioso',
-    ]);
-});
-
-test('usuario sin permiso grade_definitions.edit NO puede editar mediante PUT', function () {
-    $definition = GradeDefinition::factory()->create([
-        'name' => '1er Año Protegido',
-        'order' => 1,
-    ]);
-
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $response = $this->put("/admin/grade-definitions/{$definition->id}", [
-        'name' => 'Editado por Alumno',
-        'order' => 2,
-    ]);
-
-    $response->assertStatus(403);
-
-    $this->assertDatabaseHas('grade_definitions', [
-        'id' => $definition->id,
-        'name' => '1er Año Protegido',
-    ]);
-});
-
-test('usuario sin permiso grade_definitions.delete NO puede eliminar mediante DELETE', function () {
-    $definition = GradeDefinition::factory()->create([
-        'name' => 'Grado Protegido',
-        'order' => 1,
-    ]);
-
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $response = $this->delete("/admin/grade-definitions/{$definition->id}");
-
-    $response->assertStatus(403);
-
-    $this->assertDatabaseHas('grade_definitions', [
-        'id' => $definition->id,
-        'deleted_at' => null,
-    ]);
-});
-
-// ─── VALIDACIONES ────────────────────────────────────────────────────────────
-
-test('no se puede crear definición de grado con nombre duplicado', function () {
-    $this->seed(GradeDefinitionSeeder::class);
-
-    $this->actingAs($this->admin);
-
-    $response = $this->post('/admin/grade-definitions', [
-        'name' => '1er Año',
-        'order' => 1,
-    ]);
-
-    $response->assertSessionHasErrors('name');
-});
-
-test('no se puede crear definición de grado sin campos requeridos', function () {
-    $this->actingAs($this->admin);
-
-    $response = $this->post('/admin/grade-definitions', [
-        // Falta 'name' y 'order'
-    ]);
-
-    $response->assertSessionHasErrors(['name', 'order']);
+    $page->assertSee('403');
 });

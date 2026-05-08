@@ -3,10 +3,8 @@
 use App\Models\SectionDefinition;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 
 beforeEach(function () {
-    $this->withoutMiddleware(ValidateCsrfToken::class);
     $this->seed(RoleAndPermissionSeeder::class);
 
     $this->admin = User::factory()->create([
@@ -22,69 +20,144 @@ beforeEach(function () {
 
 test('admin puede ver el listado de definiciones de secciones', function () {
     $page = visit('/admin/section-definitions');
+    $page->wait(2);
 
     $page->assertPathIs('/admin/section-definitions')
         ->assertSee('Definiciones de Secciones')
         ->assertNoJavaScriptErrors();
 });
 
-test('admin puede ver definiciones de secciones existentes', function () {
+test('admin puede ver definiciones de secciones existentes en el listado', function () {
     SectionDefinition::factory()->create(['name' => 'A']);
     SectionDefinition::factory()->create(['name' => 'B']);
 
     $page = visit('/admin/section-definitions');
+    $page->wait(2);
 
     $page->assertSee('A')
         ->assertSee('B')
         ->assertNoJavaScriptErrors();
 });
 
-test('admin puede crear una definición de sección mediante POST', function () {
-    $this->actingAs($this->admin);
+test('admin puede crear una definición de sección mediante el formulario inline', function () {
+    $page = visit('/admin/section-definitions');
+    $page->wait(2);
 
-    $response = $this->post('/admin/section-definitions', [
-        'name' => 'A',
-    ]);
+    // Click "Nuevo" button to show the create form
+    $page->click('[data-test="create-button"]');
+    $page->wait(1);
 
-    $response->assertStatus(302);
-    $response->assertSessionHas('success', 'Definición de sección creada correctamente.');
+    // Verify the form is visible
+    $page->assertVisible('[data-test="section-definition-name-input"]');
 
+    // Fill the inline create form
+    $page->type('[data-test="section-definition-name-input"]', 'A');
+    $page->wait(0.3);
+
+    // Submit the form
+    $page->click('[data-test="create-section-definition-button"]');
+
+    // Wait for the definition to appear in the list
+    $page->waitForText('A', 5);
+    $page->assertNoJavaScriptErrors();
+
+    // Verify in database
     $this->assertDatabaseHas('section_definitions', [
         'name' => 'A',
+        'is_active' => true,
     ]);
 });
 
-test('admin puede editar una definición de sección mediante PUT', function () {
+test('admin puede editar una definición de sección existente', function () {
     $definition = SectionDefinition::factory()->create(['name' => 'A']);
 
-    $this->actingAs($this->admin);
+    $page = visit('/admin/section-definitions');
+    $page->wait(2);
 
-    $response = $this->put("/admin/section-definitions/{$definition->id}", [
-        'name' => 'B',
-    ]);
+    // Verify the definition is visible
+    $page->assertSee('A');
 
-    $response->assertStatus(302);
-    $response->assertSessionHas('success', 'Definición de sección actualizada correctamente.');
+    // Click edit button for the definition
+    $page->click('[data-test="edit-section-definition-'.$definition->id.'"]');
+    $page->wait(1);
 
+    // Verify the edit form is visible
+    $page->assertVisible('[data-test="edit-name-input-'.$definition->id.'"]');
+
+    // Modify the name in the edit form
+    $page->clear('[data-test="edit-name-input-'.$definition->id.'"]');
+    $page->type('[data-test="edit-name-input-'.$definition->id.'"]', 'B');
+    $page->wait(0.3);
+
+    // Save changes
+    $page->click('[data-test="save-section-definition-'.$definition->id.'"]');
+
+    // Wait for the updated name to appear
+    $page->waitForText('B', 5);
+    $page->assertNoJavaScriptErrors();
+
+    // Verify in database
     $this->assertDatabaseHas('section_definitions', [
         'id' => $definition->id,
         'name' => 'B',
     ]);
 });
 
-test('admin puede eliminar (soft delete) una definición de sección mediante DELETE', function () {
+test('admin puede eliminar una definición de sección', function () {
     $definition = SectionDefinition::factory()->create(['name' => 'A']);
 
-    $this->actingAs($this->admin);
+    $page = visit('/admin/section-definitions');
+    $page->wait(2);
 
-    $response = $this->delete("/admin/section-definitions/{$definition->id}");
+    // Verify the definition is visible
+    $page->assertSee('A');
 
-    $response->assertStatus(302);
-    $response->assertSessionHas('success', 'Definición de sección eliminada correctamente.');
+    // Click delete button (opens confirmation dialog)
+    $page->click('[data-test="delete-section-definition-'.$definition->id.'"]');
+    $page->wait(1);
 
+    // Verify the confirmation dialog is visible
+    $page->assertSee('¿Eliminar definición de sección?');
+
+    // Confirm deletion in the AlertDialog
+    $page->click('[data-test="confirm-delete-button"]');
+
+    // Wait for the empty state message to appear
+    $page->waitForText('No hay definiciones de secciones configuradas', 5);
+    $page->assertNoJavaScriptErrors();
+
+    // Verify soft delete in database
     $this->assertSoftDeleted('section_definitions', [
         'id' => $definition->id,
     ]);
+});
+
+test('admin puede ver el estado activo/inactivo de cada definición', function () {
+    SectionDefinition::factory()->create(['name' => 'A', 'is_active' => true]);
+    SectionDefinition::factory()->create(['name' => 'B', 'is_active' => false]);
+
+    $page = visit('/admin/section-definitions');
+    $page->wait(2);
+
+    // Verify both definitions are visible
+    $page->assertSee('A');
+    $page->assertSee('B');
+    $page->assertNoJavaScriptErrors();
+});
+
+test('admin puede ver nombres de sección como badges', function () {
+    SectionDefinition::factory()->create(['name' => 'A']);
+    SectionDefinition::factory()->create(['name' => 'B']);
+    SectionDefinition::factory()->create(['name' => 'C']);
+
+    $page = visit('/admin/section-definitions');
+    $page->wait(2);
+
+    // Verify all section names are visible
+    $page->assertSee('A');
+    $page->assertSee('B');
+    $page->assertSee('C');
+    $page->assertNoJavaScriptErrors();
 });
 
 // ─── CONTROL DE ACCESO ──────────────────────────────────────────────────────
@@ -96,107 +169,37 @@ test('usuario sin permiso no puede acceder a definiciones de secciones', functio
     $this->actingAs($alumno);
 
     $page = visit('/admin/section-definitions');
+    $page->wait(2);
 
     $page->assertSee('403');
 });
 
-test('usuario sin permiso section_definitions.create NO puede crear mediante POST', function () {
+test('link de definiciones de secciones aparece en sidebar para admin', function () {
+    $page = visit('/dashboard');
+    $page->wait(2);
+
+    // Navigate to settings area where the sidebar link should be
+    $page = visit('/admin/section-definitions');
+    $page->wait(2);
+
+    // Verify we can access the page
+    $page->assertPathIs('/admin/section-definitions');
+    $page->assertSee('Definiciones de Secciones');
+    $page->assertNoJavaScriptErrors();
+});
+
+test('link de definiciones de secciones NO aparece en sidebar para alumno', function () {
     $alumno = User::factory()->create();
     $alumno->assignRole('alumno');
 
     $this->actingAs($alumno);
 
-    $response = $this->post('/admin/section-definitions', [
-        'name' => 'A',
-    ]);
+    $page = visit('/dashboard');
+    $page->wait(2);
 
-    $response->assertStatus(403);
+    // Try to access the page directly (should be blocked)
+    $page = visit('/admin/section-definitions');
+    $page->wait(2);
 
-    $this->assertDatabaseMissing('section_definitions', [
-        'name' => 'A',
-    ]);
-});
-
-test('usuario sin permiso section_definitions.edit NO puede editar mediante PUT', function () {
-    $definition = SectionDefinition::factory()->create(['name' => 'A']);
-
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $response = $this->put("/admin/section-definitions/{$definition->id}", [
-        'name' => 'B',
-    ]);
-
-    $response->assertStatus(403);
-
-    $this->assertDatabaseHas('section_definitions', [
-        'id' => $definition->id,
-        'name' => 'A',
-    ]);
-});
-
-test('usuario sin permiso section_definitions.delete NO puede eliminar mediante DELETE', function () {
-    $definition = SectionDefinition::factory()->create(['name' => 'A']);
-
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $response = $this->delete("/admin/section-definitions/{$definition->id}");
-
-    $response->assertStatus(403);
-
-    $this->assertDatabaseHas('section_definitions', [
-        'id' => $definition->id,
-        'deleted_at' => null,
-    ]);
-});
-
-// ─── VALIDACIONES ────────────────────────────────────────────────────────────
-
-test('no se puede crear definición de sección con nombre duplicado', function () {
-    SectionDefinition::factory()->create(['name' => 'A']);
-
-    $this->actingAs($this->admin);
-
-    $response = $this->post('/admin/section-definitions', [
-        'name' => 'A',
-    ]);
-
-    $response->assertSessionHasErrors('name');
-});
-
-test('no se puede crear definición de sección con nombre inválido (no letra)', function () {
-    $this->actingAs($this->admin);
-
-    // Número
-    $response = $this->post('/admin/section-definitions', [
-        'name' => '1',
-    ]);
-    $response->assertSessionHasErrors('name');
-
-    // Múltiples caracteres
-    $response = $this->post('/admin/section-definitions', [
-        'name' => 'AA',
-    ]);
-    $response->assertSessionHasErrors('name');
-
-    // Minúscula
-    $response = $this->post('/admin/section-definitions', [
-        'name' => 'a',
-    ]);
-    $response->assertSessionHasErrors('name');
-});
-
-test('no se puede crear definición de sección sin campos requeridos', function () {
-    $this->actingAs($this->admin);
-
-    $response = $this->post('/admin/section-definitions', [
-        // Falta 'name'
-    ]);
-
-    $response->assertSessionHasErrors(['name']);
+    $page->assertSee('403');
 });

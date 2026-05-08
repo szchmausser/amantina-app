@@ -119,7 +119,7 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                         </div>
                         {permissions.includes('grade_definitions.create') && (
                             <div className="flex items-center gap-3">
-                                <Button onClick={startCreate} disabled={isCreating}>
+                                <Button onClick={startCreate} disabled={isCreating} data-test="create-button">
                                     <Plus className="mr-2 h-4 w-4" />
                                     Nuevo
                                 </Button>
@@ -136,6 +136,7 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                         <Label htmlFor="name">Nombre</Label>
                                         <Input
                                             id="name"
+                                            data-test={editingId ? `edit-name-input-${editingId}` : "grade-definition-name-input"}
                                             value={data.name}
                                             onChange={(e) =>
                                                 setData('name', e.target.value)
@@ -149,6 +150,7 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                         <Label htmlFor="order">Orden</Label>
                                         <Input
                                             id="order"
+                                            data-test={editingId ? `edit-order-input-${editingId}` : "grade-definition-order-input"}
                                             type="number"
                                             min="1"
                                             value={data.order}
@@ -171,7 +173,11 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                     >
                                         Cancelar
                                     </Button>
-                                    <Button type="submit" disabled={processing}>
+                                    <Button 
+                                        type="submit" 
+                                        disabled={processing}
+                                        data-test={editingId ? `save-grade-definition-${editingId}` : "create-grade-definition-button"}
+                                    >
                                         <Save className="mr-2 h-4 w-4" />
                                         {data.id ? 'Actualizar' : 'Crear'}
                                     </Button>
@@ -220,6 +226,7 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                                     size="icon"
                                                     className="h-8 w-8"
                                                     onClick={() => startEdit(definition)}
+                                                    data-test={`edit-grade-definition-${definition.id}`}
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
@@ -232,6 +239,7 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                                     onClick={() =>
                                                         handleDelete(definition.id)
                                                     }
+                                                    data-test={`delete-grade-definition-${definition.id}`}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>

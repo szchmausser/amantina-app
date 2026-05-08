@@ -116,7 +116,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                         </div>
                         {permissions.includes('section_definitions.create') && (
                             <div className="flex items-center gap-3">
-                                <Button onClick={startCreate} disabled={isCreating}>
+                                <Button onClick={startCreate} disabled={isCreating} data-test="create-button">
                                     <Plus className="mr-2 h-4 w-4" />
                                     Nuevo
                                 </Button>
@@ -133,6 +133,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                         <Label htmlFor="name">Nombre</Label>
                                         <Input
                                             id="name"
+                                            data-test={editingId ? `edit-name-input-${editingId}` : "section-definition-name-input"}
                                             value={data.name}
                                             onChange={(e) =>
                                                 setData('name', e.target.value.toUpperCase())
@@ -152,7 +153,11 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                     >
                                         Cancelar
                                     </Button>
-                                    <Button type="submit" disabled={processing}>
+                                    <Button 
+                                        type="submit" 
+                                        disabled={processing}
+                                        data-test={editingId ? `save-section-definition-${editingId}` : "create-section-definition-button"}
+                                    >
                                         <Save className="mr-2 h-4 w-4" />
                                         {data.id ? 'Actualizar' : 'Crear'}
                                     </Button>
@@ -198,6 +203,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                                     size="icon"
                                                     className="h-8 w-8"
                                                     onClick={() => startEdit(definition)}
+                                                    data-test={`edit-section-definition-${definition.id}`}
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
@@ -210,6 +216,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                                     onClick={() =>
                                                         handleDelete(definition.id)
                                                     }
+                                                    data-test={`delete-section-definition-${definition.id}`}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
