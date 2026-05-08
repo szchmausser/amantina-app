@@ -123,9 +123,13 @@ export default function RolesIndex({ roles }: Props) {
                                                 )}
                                             </div>
                                             <Shield className="h-4 w-4 text-neutral-500" />
-                                            <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
+                                            <Link
+                                                href={roleShow(role.id).url}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="text-xs font-semibold tracking-wider text-neutral-500 uppercase hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400 transition-colors"
+                                            >
                                                 {role.name}
-                                            </span>
+                                            </Link>
                                             {isProtected && (
                                                 <Badge
                                                     variant="secondary"

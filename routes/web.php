@@ -41,6 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('roles', RoleController::class)->only(['index', 'show', 'edit', 'update']);
         Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
         Route::get('permissions/{permission}', [PermissionController::class, 'show'])->name('permissions.show');
+        Route::get('permissions/{permission}/users', [PermissionController::class, 'users'])->name('permissions.users');
+        Route::get('roles/{role}/users', [RoleController::class, 'users'])->name('roles.users');
 
         // Academic Structure (show redirects to index/academic year)
         Route::resource('academic-years', AcademicYearController::class);

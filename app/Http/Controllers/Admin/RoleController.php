@@ -32,9 +32,47 @@ class RoleController extends Controller
     {
         Gate::authorize('roles.view');
 
+        $users = $role->users()
+            ->select('id', 'name', 'cedula', 'email')
+            ->with('roles')
+            ->paginate(5);
+
         return Inertia::render('admin/roles/show', [
             'role' => $role->load('permissions'),
-            'users' => $role->users()->select('id', 'name', 'cedula', 'email')->limit(100)->get(),
+            'users' => $users,
+            'filters' => [
+                'search' => null,
+                'per_page' => 5,
+            ],
+        ]);
+    }
+
+    /**
+     * Get paginated/filtered users for this role.
+     */
+    public function users(Role $role): Response
+    {
+        Gate::authorize('roles.view');
+
+        $perPage = min((int) request('per_page', 5), 100);
+
+        $users = $role->users()
+            ->when(request('search'), fn ($q, $search) => $q->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('cedula', 'like', "%{$search}%");
+            }))
+            ->select('id', 'name', 'cedula', 'email')
+            ->with('roles')
+            ->paginate($perPage);
+
+        return Inertia::render('admin/roles/show', [
+            'role' => $role->load('permissions'),
+            'users' => $users,
+            'filters' => [
+                'search' => request('search'),
+                'per_page' => $perPage,
+            ],
         ]);
     }
 

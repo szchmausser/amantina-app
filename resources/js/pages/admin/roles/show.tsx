@@ -1,8 +1,8 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useState, useEffect, useRef } from 'react';
 import { Edit, ShieldCheck, Users } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -11,10 +11,21 @@ import {
     DialogDescription,
 } from '@/components/ui/dialog';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+    DataTable,
+    DataTableHead,
+    DataTableTH,
+    DataTableBody,
+    DataTableTR,
+    DataTableTD,
+    type PaginationInfo,
+} from '@/components/ui/data-table';
+import { TableFilters } from '@/components/ui/table-filters';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { index as roleIndex, edit as roleEdit } from '@/routes/admin/roles';
+import { index as roleIndex, edit as roleEdit, users as roleUsers } from '@/routes/admin/roles';
 import { show as userShow } from '@/routes/admin/users';
+import { useDebounce } from '@/hooks/use-debounce';
 import type { BreadcrumbItem } from '@/types';
 
 interface Permission {
@@ -27,6 +38,21 @@ interface RoleUser {
     name: string;
     cedula: string;
     email: string;
+    roles: { name: string }[];
+}
+
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+interface PaginatedUsers {
+    data: RoleUser[];
+    links: PaginationLink[];
+    total: number;
+    current_page: number;
+    last_page: number;
 }
 
 interface Role {
@@ -37,7 +63,11 @@ interface Role {
 
 interface Props {
     role: Role;
-    users: RoleUser[];
+    users: PaginatedUsers;
+    filters: {
+        search?: string | null;
+        per_page?: number;
+    };
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -46,8 +76,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Detalles del Rol', href: '#' },
 ];
 
-export default function Show({ role, users }: Props) {
+export default function Show({ role, users, filters }: Props) {
+    const [search, setSearch] = useState(filters.search || '');
+    const [perPage, setPerPage] = useState(filters.per_page || 5);
+    const [isSearching, setIsSearching] = useState(false);
     const [selectedPerm, setSelectedPerm] = useState<string | null>(null);
+    const isFirstRender = useRef(true);
+
+    const debouncedSearch = useDebounce(search, 300);
+
     const isProtected = ['admin', 'profesor', 'alumno', 'representante'].includes(role.name);
 
     // Group permissions by module
@@ -59,6 +96,93 @@ export default function Show({ role, users }: Props) {
         }
         groupedPermissions[module].push(p.name);
     });
+
+    // Effect that triggers search when debounced value or perPage changes
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        router.get(
+            roleUsers(role.id).url,
+            {
+                search: debouncedSearch || undefined,
+                per_page: perPage,
+            },
+            {
+                preserveState: true,
+                replace: true,
+                onFinish: () => setIsSearching(false),
+            },
+        );
+        setIsSearching(true);
+    }, [debouncedSearch, perPage]);
+
+    const handleClearFilters = () => {
+        setSearch('');
+        setPerPage(5);
+    };
+
+    const hasFilters = Boolean(search || perPage !== 5);
+
+    // Prepare pagination for DataTable
+    const pagination: PaginationInfo | undefined =
+        users.last_page > 1
+            ? {
+                  links: users.links,
+                  total: users.total,
+                  current_page: users.current_page,
+                  last_page: users.last_page,
+              }
+            : undefined;
+
+    const tableColumns = (
+        <>
+            <DataTableHead>
+                <DataTableTH className="w-16">#</DataTableTH>
+                <DataTableTH className="w-32">Cédula</DataTableTH>
+                <DataTableTH>Nombre</DataTableTH>
+                <DataTableTH>Email</DataTableTH>
+                <DataTableTH className="w-40">Rol</DataTableTH>
+            </DataTableHead>
+            <DataTableBody>
+                {users.data.map((user, index) => (
+                    <DataTableTR key={user.id}>
+                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                            {(users.current_page - 1) * (users.per_page || perPage) + index + 1}
+                        </DataTableTD>
+                        <DataTableTD className="font-mono text-neutral-500">
+                            {user.cedula}
+                        </DataTableTD>
+                        <DataTableTD>
+                            <Link
+                                href={userShow(user.id).url}
+                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100"
+                            >
+                                {user.name}
+                            </Link>
+                        </DataTableTD>
+                        <DataTableTD className="text-neutral-500">
+                            {user.email}
+                        </DataTableTD>
+                        <DataTableTD>
+                            <div className="flex flex-wrap gap-1">
+                                {user.roles?.map((r) => (
+                                    <span
+                                        key={r.name}
+                                        className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+                                    >
+                                        {r.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </DataTableTD>
+                    </DataTableTR>
+                ))}
+            </DataTableBody>
+        </>
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -86,7 +210,7 @@ export default function Show({ role, users }: Props) {
                                     {role.permissions.length} Permisos
                                 </Badge>
                                 <Badge variant="outline" className="text-[10px] text-neutral-500">
-                                    {users.length} Usuarios
+                                    {users.total} Usuarios
                                 </Badge>
                             </div>
                         </div>
@@ -163,43 +287,32 @@ export default function Show({ role, users }: Props) {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-0">
-                                {users.length > 0 ? (
-                                    <div className="divide-y divide-border">
-                                        {users.map((user) => (
-                                            <Link
-                                                key={user.id}
-                                                href={userShow(user.id).url}
-                                                className="flex items-center justify-between px-6 py-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                                        <span className="text-xs font-semibold text-neutral-500">
-                                                            {user.name.charAt(0).toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                                            {user.name}
-                                                        </p>
-                                                        <p className="text-xs text-neutral-500">
-                                                            {user.cedula || '—'}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="text-xs text-neutral-400">
-                                                    {user.email}
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-12 text-center text-neutral-400">
-                                        <Users className="mb-2 h-10 w-10 opacity-20" />
-                                        <p className="text-sm italic">
-                                            Ningún usuario tiene este rol asignado.
-                                        </p>
-                                    </div>
-                                )}
+                                <div className="border-b px-4 py-3">
+                                    <TableFilters
+                                        searchValue={search}
+                                        onSearchChange={setSearch}
+                                        searchPlaceholder="Buscar por nombre, correo o cédula..."
+                                        searchLoading={isSearching}
+                                        hasFilters={hasFilters}
+                                        onClearFilters={handleClearFilters}
+                                    />
+                                </div>
+
+                                <DataTable
+                                    data={users.data}
+                                    columns={tableColumns}
+                                    pagination={pagination}
+                                    onPageChange={(page, url) => {
+                                        router.visit(url, {
+                                            preserveState: true,
+                                            replace: true,
+                                        });
+                                    }}
+                                    perPage={perPage}
+                                    onPerPageChange={setPerPage}
+                                    perPageOptions={[5, 15, 25, 50, 100]}
+                                    emptyMessage="No se encontraron usuarios que coincidan con los criterios de búsqueda."
+                                />
                             </CardContent>
                         </Card>
 

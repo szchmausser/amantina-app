@@ -32,12 +32,57 @@ class PermissionController extends Controller
 
         $permission->load('roles');
 
+        $users = User::permission($permission->name)
+            ->select('id', 'name', 'cedula', 'email')
+            ->with('roles')
+            ->paginate(5);
+
         return Inertia::render('admin/permissions/show', [
             'permission' => $permission,
-            'users' => User::permission($permission->name)
-                ->select('id', 'name', 'cedula', 'email')
-                ->limit(100)
-                ->get(),
+            'users' => $users,
+            'filters' => [
+                'search' => null,
+                'role' => null,
+                'per_page' => 5,
+            ],
+            'availableRoles' => $permission->roles->pluck('name'),
+        ]);
+    }
+
+    /**
+     * Get paginated/filtered users for this permission.
+     */
+    public function users(Permission $permission): Response
+    {
+        Gate::authorize('permissions.view');
+
+        $perPage = min((int) request('per_page', 5), 100);
+
+        $permission->load('roles');
+
+        $users = User::permission($permission->name)
+            ->when(request('search'), fn ($q, $search) => $q->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('cedula', 'like', "%{$search}%");
+            }))
+            ->when(
+                request('role') && request('role') !== 'all',
+                fn ($q) => $q->role(request('role'))
+            )
+            ->select('id', 'name', 'cedula', 'email')
+            ->with('roles')
+            ->paginate($perPage);
+
+        return Inertia::render('admin/permissions/show', [
+            'permission' => $permission,
+            'users' => $users,
+            'filters' => [
+                'search' => request('search'),
+                'role' => request('role'),
+                'per_page' => $perPage,
+            ],
+            'availableRoles' => $permission->roles->pluck('name'),
         ]);
     }
 }
