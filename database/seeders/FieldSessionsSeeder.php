@@ -86,7 +86,14 @@ class FieldSessionsSeeder extends Seeder
         // Generar entre 120 y 180 jornadas totales (más jornadas para simular año cerca de terminar)
         $numSessions = rand(120, 180);
 
+        $bar = $this->command->getOutput()->createProgressBar($numSessions);
+        $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%% — %message%');
+        $bar->setMessage('Iniciando...');
+        $bar->start();
+
         for ($i = 0; $i < $numSessions; $i++) {
+            $bar->setMessage("Jornada " . ($i + 1) . "/{$numSessions}");
+            $bar->advance();
             // Seleccionar un término aleatorio
             $term = $terms->random();
 
@@ -186,6 +193,9 @@ class FieldSessionsSeeder extends Seeder
                 }
             }
         }
+
+        $bar->finish();
+        $this->command->newLine(2);
 
         $this->command->info("✅ Generadas {$totalSessions} jornadas de campo");
         $this->command->info("✅ Generadas {$totalAttendances} asistencias");

@@ -1,5 +1,5 @@
-import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Edit, Plus, Save, Trash2 } from 'lucide-react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeft, Edit, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem, SharedData } from '@/types';
+import { index as gradesIndex } from '@/routes/admin/grades';
 
 interface GradeDefinition {
     id: number;
@@ -117,14 +118,20 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                 grados académicos.
                             </p>
                         </div>
-                        {permissions.includes('grade_definitions.create') && (
-                            <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" asChild className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30">
+                                <Link href={gradesIndex().url}>
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Volver
+                                </Link>
+                            </Button>
+                            {permissions.includes('grade_definitions.create') && (
                                 <Button onClick={startCreate} disabled={isCreating} data-test="create-button">
                                     <Plus className="mr-2 h-4 w-4" />
                                     Nuevo
                                 </Button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     {/* Create/Edit Form */}
@@ -201,21 +208,9 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                         >
                                             #{definition.order}
                                         </Badge>
-                                        <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                                        <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                                             {definition.name}
                                         </span>
-                                        <Badge
-                                            variant={
-                                                definition.is_active
-                                                    ? 'default'
-                                                    : 'secondary'
-                                            }
-                                            className="text-xs"
-                                        >
-                                            {definition.is_active
-                                                ? 'Activo'
-                                                : 'Inactivo'}
-                                        </Badge>
                                     </div>
                                     {(permissions.includes('grade_definitions.edit') ||
                                         permissions.includes('grade_definitions.delete')) && (
@@ -224,7 +219,7 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8"
+                                                    className="h-8 w-8 text-neutral-500"
                                                     onClick={() => startEdit(definition)}
                                                     data-test={`edit-grade-definition-${definition.id}`}
                                                 >

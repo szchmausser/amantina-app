@@ -1,5 +1,5 @@
-import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Edit, Plus, Save, Trash2 } from 'lucide-react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeft, Edit, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem, SharedData } from '@/types';
+import { index as sectionsIndex } from '@/routes/admin/sections';
 
 interface SectionDefinition {
     id: number;
@@ -114,36 +115,40 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                 secciones.
                             </p>
                         </div>
-                        {permissions.includes('section_definitions.create') && (
-                            <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" asChild className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30">
+                                <Link href={sectionsIndex().url}>
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Volver
+                                </Link>
+                            </Button>
+                            {permissions.includes('section_definitions.create') && (
                                 <Button onClick={startCreate} disabled={isCreating} data-test="create-button">
                                     <Plus className="mr-2 h-4 w-4" />
                                     Nuevo
                                 </Button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     {/* Create/Edit Form */}
                     {(isCreating || editingId) && (
                         <div className="rounded-xl border p-6">
                             <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Nombre</Label>
-                                        <Input
-                                            id="name"
-                                            data-test={editingId ? `edit-name-input-${editingId}` : "section-definition-name-input"}
-                                            value={data.name}
-                                            onChange={(e) =>
-                                                setData('name', e.target.value.toUpperCase())
-                                            }
-                                            placeholder="Ej: A, B, C"
-                                            maxLength={1}
-                                            required
-                                        />
-                                        <InputError message={errors.name} />
-                                    </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Nombre</Label>
+                                    <Input
+                                        id="name"
+                                        data-test={editingId ? `edit-name-input-${editingId}` : "section-definition-name-input"}
+                                        value={data.name}
+                                        onChange={(e) =>
+                                            setData('name', e.target.value.toUpperCase())
+                                        }
+                                        placeholder="Ej: A, B, C"
+                                        maxLength={1}
+                                        required
+                                    />
+                                    <InputError message={errors.name} />
                                 </div>
                                 <div className="flex items-center justify-end gap-2">
                                     <Button
@@ -169,30 +174,21 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                     {/* List */}
                     <div className="space-y-2">
                         {sectionDefinitions.length > 0 ? (
-                            sectionDefinitions.map((definition) => (
+                            sectionDefinitions.map((definition, index) => (
                                 <div
                                     key={definition.id}
                                     className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
                                 >
                                     <div className="flex items-center gap-4">
                                         <Badge
-                                            variant="outline"
-                                            className="text-sm font-mono uppercase"
-                                        >
-                                            {definition.name}
-                                        </Badge>
-                                        <Badge
-                                            variant={
-                                                definition.is_active
-                                                    ? 'default'
-                                                    : 'secondary'
-                                            }
+                                            variant="secondary"
                                             className="text-xs"
                                         >
-                                            {definition.is_active
-                                                ? 'Activo'
-                                                : 'Inactivo'}
+                                            #{index + 1}
                                         </Badge>
+                                        <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 uppercase">
+                                            {definition.name}
+                                        </span>
                                     </div>
                                     {(permissions.includes('section_definitions.edit') ||
                                         permissions.includes('section_definitions.delete')) && (
@@ -201,7 +197,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8"
+                                                    className="h-8 w-8 text-neutral-500"
                                                     onClick={() => startEdit(definition)}
                                                     data-test={`edit-section-definition-${definition.id}`}
                                                 >

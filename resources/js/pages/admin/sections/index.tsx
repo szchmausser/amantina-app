@@ -151,11 +151,11 @@ export default function SectionsIndex({
                             {(sections.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
                         <DataTableTD>
-                            <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
                                 <span className="font-semibold text-neutral-900 dark:text-neutral-100">
                                     Sección {section.name}
                                 </span>
-                                <span className="flex flex-wrap items-center gap-1 text-sm text-neutral-500">
+                                <span className="flex flex-wrap items-center gap-1">
                                     <Link href={`/admin/sections?grade_id=${section.grade?.id}`}>
                                         <Badge variant="secondary" className="cursor-pointer text-xs bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800 dark:hover:bg-sky-900">
                                             {section.grade?.name || 'N/A'}

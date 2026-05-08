@@ -140,12 +140,11 @@ export default function GradesIndex({
                             {(grades.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
                         <DataTableTD>
-                            <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-2">
                                 <span className="font-semibold text-neutral-900 dark:text-neutral-100">
                                     {grade.name}
                                 </span>
-                                <span className="flex flex-wrap items-center gap-1 text-sm text-neutral-500">
-                                    <span>Secciones:</span>
+                                <span className="flex flex-wrap items-center gap-1">
                                     {grade.sections?.length > 0 ? (
                                         grade.sections.map((s) => (
                                             <Link key={s.id} href={`/admin/sections/${s.id}`}>
@@ -155,8 +154,8 @@ export default function GradesIndex({
                                             </Link>
                                         ))
                                     ) : (
-                                        <span className="italic">Ninguna</span>
-                                    )}{' '}
+                                        <span className="text-xs italic text-neutral-400">Sin secciones</span>
+                                    )}
                                     <Link href={`/admin/academic-years/${grade.academic_year_id}`}>
                                         <Badge variant="outline" className="cursor-pointer text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                             {academicYears.find(

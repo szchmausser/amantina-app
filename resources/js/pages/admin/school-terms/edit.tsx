@@ -98,39 +98,48 @@ export default function SchoolTermEdit({
             <SettingsLayout>
                 <div className="px-4 py-4">
                     {/* Header */}
-                    <div className="mb-6">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                            className="mb-2 -ml-2 h-8"
-                        >
-                            <Link
-                                href={
-                                    schoolTermsIndex({
-                                        query: {
-                                            academic_year_id:
-                                                data.academic_year_id,
-                                        },
-                                    }).url
-                                }
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                                {isEditing
+                                    ? 'Editar Lapso Académico'
+                                    : 'Nuevo Lapso Académico'}
+                            </h1>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                Define el periodo de tiempo para este lapso o
+                                periodo escolar.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                asChild
+                                className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30"
                             >
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Volver al listado
-                            </Link>
-                        </Button>
-                        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            {isEditing
-                                ? 'Editar Lapso Académico'
-                                : 'Nuevo Lapso Académico'}
-                        </h1>
-                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                            Define el periodo de tiempo para este lapso o
-                            periodo escolar.
-                        </p>
+                                <Link
+                                    href={
+                                        schoolTermsIndex({
+                                            query: {
+                                                academic_year_id:
+                                                    data.academic_year_id,
+                                            },
+                                        }).url
+                                    }
+                                >
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Volver
+                                </Link>
+                            </Button>
+                            <Button type="submit" form="school-term-form" disabled={processing} data-test="submit-button">
+                                <Save className="mr-2 h-4 w-4" />
+                                {isEditing
+                                    ? 'Actualizar Lapso'
+                                    : 'Crear Lapso'}
+                            </Button>
+                        </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form id="school-term-form" onSubmit={handleSubmit} className="space-y-6">
                         {/* Card */}
                         <div className="overflow-hidden rounded-xl border">
                             <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
@@ -140,72 +149,74 @@ export default function SchoolTermEdit({
                                 </h2>
                             </div>
                             <div className="grid gap-6 p-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="academic_year_id">
-                                        Año Académico
-                                    </Label>
-                                    <Select
-                                        value={data.academic_year_id?.toString()}
-                                        onValueChange={(val) =>
-                                            setData(
-                                                'academic_year_id',
-                                                parseInt(val),
-                                            )
-                                        }
-                                        disabled={isEditing}
-                                        data-test="academic-year-select"
-                                    >
-                                        <SelectTrigger data-test="academic-year-select-trigger">
-                                            <SelectValue placeholder="Seleccionar año" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {academicYears.map((year) => (
-                                                <SelectItem
-                                                    key={year.id}
-                                                    value={year.id.toString()}
-                                                >
-                                                    {year.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError
-                                        message={errors.academic_year_id}
-                                    />
-                                </div>
+                                <div className="grid gap-6 md:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="academic_year_id">
+                                            Año Académico
+                                        </Label>
+                                        <Select
+                                            value={data.academic_year_id?.toString()}
+                                            onValueChange={(val) =>
+                                                setData(
+                                                    'academic_year_id',
+                                                    parseInt(val),
+                                                )
+                                            }
+                                            disabled={isEditing}
+                                            data-test="academic-year-select"
+                                        >
+                                            <SelectTrigger data-test="academic-year-select-trigger">
+                                                <SelectValue placeholder="Seleccionar año" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {academicYears.map((year) => (
+                                                    <SelectItem
+                                                        key={year.id}
+                                                        value={year.id.toString()}
+                                                    >
+                                                        {year.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError
+                                            message={errors.academic_year_id}
+                                        />
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="term_type_id">
-                                        Lapso
-                                    </Label>
-                                    <Select
-                                        value={
-                                            data.term_type_id?.toString() || ''
-                                        }
-                                        onValueChange={(val) =>
-                                            setData(
-                                                'term_type_id',
-                                                parseInt(val),
-                                            )
-                                        }
-                                        disabled={isEditing}
-                                        data-test="term-type-select"
-                                    >
-                                        <SelectTrigger data-test="term-type-select-trigger">
-                                            <SelectValue placeholder="Seleccionar lapso" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {termTypes.map((type) => (
-                                                <SelectItem
-                                                    key={type.id}
-                                                    value={type.id.toString()}
-                                                >
-                                                    {type.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.term_type_id} />
+                                    <div className="space-y-2">
+                                        <Label htmlFor="term_type_id">
+                                            Lapso
+                                        </Label>
+                                        <Select
+                                            value={
+                                                data.term_type_id?.toString() || ''
+                                            }
+                                            onValueChange={(val) =>
+                                                setData(
+                                                    'term_type_id',
+                                                    parseInt(val),
+                                                )
+                                            }
+                                            disabled={isEditing}
+                                            data-test="term-type-select"
+                                        >
+                                            <SelectTrigger data-test="term-type-select-trigger">
+                                                <SelectValue placeholder="Seleccionar lapso" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {termTypes.map((type) => (
+                                                    <SelectItem
+                                                        key={type.id}
+                                                        value={type.id.toString()}
+                                                    >
+                                                        {type.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError message={errors.term_type_id} />
+                                    </div>
                                 </div>
 
                                 <div className="grid gap-6 md:grid-cols-2">
@@ -254,39 +265,6 @@ export default function SchoolTermEdit({
                             </div>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex items-center justify-end gap-3">
-                            <Button
-                                variant="outline"
-                                asChild
-                                disabled={processing}
-                            >
-                                <Link
-                                    href={
-                                        schoolTermsIndex({
-                                            query: {
-                                                academic_year_id:
-                                                    data.academic_year_id || 0,
-                                            },
-                                        }).url
-                                    }
-                                >
-                                    Cancelar
-                                </Link>
-                            </Button>
-                            <Button type="submit" disabled={processing} data-test="submit-button">
-                                {processing ? (
-                                    'Guardando...'
-                                ) : (
-                                    <>
-                                        <Save className="mr-2 h-4 w-4" />
-                                        {isEditing
-                                            ? 'Actualizar Lapso'
-                                            : 'Crear Lapso'}
-                                    </>
-                                )}
-                            </Button>
-                        </div>
                     </form>
                 </div>
             </SettingsLayout>

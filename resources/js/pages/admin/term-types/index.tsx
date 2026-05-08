@@ -201,7 +201,7 @@ export default function TermTypesIndex({ termTypes }: Props) {
                                         >
                                             #{type.order}
                                         </Badge>
-                                        <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                                        <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                                             {type.name}
                                         </span>
                                     </div>
@@ -209,7 +209,7 @@ export default function TermTypesIndex({ termTypes }: Props) {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8"
+                                            className="h-8 w-8 text-neutral-500"
                                             onClick={() => startEdit(type)}
                                         >
                                             <Edit className="h-4 w-4" />

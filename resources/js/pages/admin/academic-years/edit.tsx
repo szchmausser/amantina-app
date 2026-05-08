@@ -73,17 +73,6 @@ export default function AcademicYearEdit({ academicYear }: Props) {
                     {/* Header */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
                         <div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                asChild
-                                className="mb-2 -ml-2 h-8"
-                            >
-                                <Link href={academicYearsIndex().url}>
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Volver al listado
-                                </Link>
-                            </Button>
                             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                                 {isEditing
                                     ? 'Editar Año Escolar'
@@ -95,13 +84,15 @@ export default function AcademicYearEdit({ academicYear }: Props) {
                                     : 'Registra un nuevo ciclo académico en el sistema.'}
                             </p>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
                                 asChild
+                                className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30"
                             >
                                 <Link href={academicYearsIndex().url}>
-                                    Cancelar
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Volver
                                 </Link>
                             </Button>
                             <Button
