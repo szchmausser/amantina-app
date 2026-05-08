@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AcademicYear;
 use App\Models\Attendance;
+use App\Models\ExternalHour;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -61,6 +62,7 @@ class HourAccumulatorService
         // External hours are not tied to a specific academic year —
         // they are prior hours from another institution and always
         // contribute only to the all-time total, never to a single year.
+        // Use calculateExternalHours() separately when building the all-time total.
         $externalHours = 0.0;
 
         $totalHours = $jornadaHours + $externalHours;
@@ -134,7 +136,7 @@ class HourAccumulatorService
 
         foreach ($students as $student) {
             $jornadaHours = $this->calculateJornadaHours($student->student_id, $yearId);
-            $totalHours = $jornadaHours; // + external_hours (Hito 12)
+            $totalHours = $jornadaHours;
             $percentage = $quota > 0 ? ($totalHours / $quota) * 100 : 0;
 
             $result[$student->student_id] = [
@@ -1050,6 +1052,14 @@ class HourAccumulatorService
         }
 
         return (float) ($query->sum('attendance_activities.hours') ?? 0);
+    }
+
+    /**
+     * Calculate total external hours for a student (all-time, not year-specific).
+     */
+    protected function calculateExternalHours(int $userId): float
+    {
+        return (float) ExternalHour::where('user_id', $userId)->sum('hours');
     }
 
     /**
