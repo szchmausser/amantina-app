@@ -452,7 +452,7 @@ Solo un administrador puede cargar horas externas porque es un proceso formal qu
 
 | Campo                            | Razón de existir                                                                                                                                                                        |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `academic_year_id` (FK)          | Necesario por diseño, no solo desnormalización. Las horas externas no se originan de una jornada del sistema, por lo que es la única forma de saber a qué periodo académico imputarlas. |
+| `period` (VARCHAR)               | Identifica el periodo en la institución de origen. Al no ser horas del sistema local, no se ligan a un `academic_year_id` específico y siempre suman al total acumulado histórico.       |
 | `user_id` (FK -> estudiante)     | El estudiante beneficiado por las horas.                                                                                                                                                |
 | `admin_id` (FK -> usuario admin) | El administrador que cargó las horas. Ambos apuntan a `users` pero con roles distintos. Permite trazabilidad de quién autorizó la acreditación.                                         |
 | `institution_name` (VARCHAR)     | Nombre de la institución de origen. Junto al documento adjunto, sustenta la validez de las horas.                                                                                       |
@@ -467,8 +467,6 @@ Horas por año escolar:
     JOIN attendances WHERE user_id = X
       AND academic_year_id = Y
       AND attended = true
-  + SUM(external_hours.hours)
-      WHERE user_id = X AND academic_year_id = Y
 
 Horas por lapso:
   SUM(attendance_activities.hours)
@@ -476,8 +474,9 @@ Horas por lapso:
     JOIN field_sessions WHERE school_term_id = Z
       AND attended = true
 
-Total histórico:
-  SUM de todos los años escolares cursados
+Total histórico (Acumulado):
+  SUM(jornada_hours de todos los años escolares cursados)
+  + SUM(external_hours.hours)
 
 Horas restantes:
   academic_years.required_hours - Total histórico
@@ -752,7 +751,7 @@ attendance_activities
 
 external_hours
   id                BIGINT UNSIGNED PK
-  academic_year_id  FK -> academic_years
+  period            VARCHAR(255)  NOT NULL  -- ej: "1er Año (Colegio X)"
   user_id           FK -> users (estudiante)
   admin_id          FK -> users (administrador que carga)
   hours             DECIMAL(8,2)  NOT NULL
