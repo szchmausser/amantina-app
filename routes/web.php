@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('users/{user}/pdf', StudentPdfController::class)->name('users.pdf');
         Route::resource('roles', RoleController::class)->only(['index', 'show', 'edit', 'update']);
         Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
+        Route::get('permissions/{permission}', [PermissionController::class, 'show'])->name('permissions.show');
 
         // Academic Structure (show redirects to index/academic year)
         Route::resource('academic-years', AcademicYearController::class);

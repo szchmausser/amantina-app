@@ -29,6 +29,7 @@ class GradeController extends Controller
             ->where('academic_year_id', $academicYearId)
             ->ordered()
             ->with('sections')
+            ->withCount('enrollments')
             ->paginate($request->query('per_page', 10))
             ->withQueryString();
 

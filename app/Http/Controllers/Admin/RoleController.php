@@ -34,6 +34,7 @@ class RoleController extends Controller
 
         return Inertia::render('admin/roles/show', [
             'role' => $role->load('permissions'),
+            'users' => $role->users()->select('id', 'name', 'cedula', 'email')->limit(100)->get(),
         ]);
     }
 

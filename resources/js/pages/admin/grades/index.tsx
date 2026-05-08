@@ -44,6 +44,7 @@ interface Grade {
     order: number;
     academic_year_id: number;
     sections: Section[];
+    enrollments_count: number;
 }
 
 interface AcademicYear {
@@ -131,6 +132,7 @@ export default function GradesIndex({
             <DataTableHead>
                 <DataTableTH className="w-12">#</DataTableTH>
                 <DataTableTH>Grado</DataTableTH>
+                <DataTableTH className="w-28 text-center">Alumnos</DataTableTH>
                 <DataTableTH className="w-48 text-right">Acciones</DataTableTH>
             </DataTableHead>
             <DataTableBody>
@@ -165,6 +167,11 @@ export default function GradesIndex({
                                     </Link>
                                 </span>
                             </div>
+                        </DataTableTD>
+                        <DataTableTD className="text-center">
+                            <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                                {grade.enrollments_count}
+                            </span>
                         </DataTableTD>
                         <DataTableTD className="text-right">
                             <div className="flex items-center justify-end gap-1">
@@ -233,6 +240,9 @@ export default function GradesIndex({
                             </p>
                         </div>
                         <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => window.history.back()}>
+                                Volver
+                            </Button>
                             <Button variant="outline" asChild>
                                 <Link href="/admin/grade-definitions">
                                     <Settings2 className="mr-2 h-4 w-4" />

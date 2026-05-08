@@ -92,7 +92,7 @@ class FieldSessionsSeeder extends Seeder
         $bar->start();
 
         for ($i = 0; $i < $numSessions; $i++) {
-            $bar->setMessage("Jornada " . ($i + 1) . "/{$numSessions}");
+            $bar->setMessage('Jornada '.($i + 1)."/{$numSessions}");
             $bar->advance();
             // Seleccionar un término aleatorio
             $term = $terms->random();

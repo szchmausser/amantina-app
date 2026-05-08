@@ -1,8 +1,15 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ChevronDown, ChevronRight, Edit, Eye, Shield } from 'lucide-react';
+import { ChevronDown, ChevronRight, Edit, Eye, Shield, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
@@ -47,6 +54,7 @@ export default function RolesIndex({ roles }: Props) {
     const { auth } = usePage<any>().props;
     const hasPermission = (p: string) => auth.permissions.includes(p);
     const [openRoleIds, setOpenRoleIds] = useState<Set<number>>(new Set());
+    const [selectedPerm, setSelectedPerm] = useState<string | null>(null);
 
     const toggleRole = (roleId: number) => {
         setOpenRoleIds((prev) => {
@@ -203,18 +211,23 @@ export default function RolesIndex({ roles }: Props) {
                                                                     {actions.map(
                                                                         (
                                                                             action,
-                                                                        ) => (
-                                                                            <span
-                                                                                key={
-                                                                                    action
-                                                                                }
-                                                                                className="rounded border bg-white px-1.5 py-0.5 text-xs text-neutral-600 capitalize dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400"
-                                                                            >
-                                                                                {
-                                                                                    action
-                                                                                }
-                                                                            </span>
-                                                                        ),
+                                                                        ) => {
+                                                                            const permName = `${module}.${action}`;
+                                                                            return (
+                                                                                <button
+                                                                                    key={
+                                                                                        action
+                                                                                    }
+                                                                                    type="button"
+                                                                                    onClick={() => setSelectedPerm(permName)}
+                                                                                    className="cursor-pointer rounded border bg-white px-1.5 py-0.5 text-xs text-neutral-600 capitalize transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                                                                                >
+                                                                                    {
+                                                                                        action
+                                                                                    }
+                                                                                </button>
+                                                                            );
+                                                                        },
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -236,6 +249,61 @@ export default function RolesIndex({ roles }: Props) {
                         })}
                     </div>
                 </div>
+
+                {/* Permission Detail Dialog */}
+                <Dialog open={selectedPerm !== null} onOpenChange={(open) => { if (!open) setSelectedPerm(null); }}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <ShieldCheck className="h-5 w-5 text-neutral-500" />
+                                Capacidad del Rol
+                            </DialogTitle>
+                            <DialogDescription>
+                                Permiso que este rol concede al usuario.
+                            </DialogDescription>
+                        </DialogHeader>
+                        {selectedPerm && (() => {
+                            const parts = selectedPerm.split('.');
+                            const moduleKey = parts[0] || '';
+                            const actionKey = parts[1] || '';
+
+                            const actionDescriptions: Record<string, string> = {
+                                view: 'consultar y visualizar',
+                                create: 'crear nuevos registros de',
+                                edit: 'editar y modificar',
+                                delete: 'eliminar',
+                            };
+                            const actionDesc = actionDescriptions[actionKey] || actionKey;
+
+                            const moduleLabel = moduleKey
+                                .replace(/_/g, ' ')
+                                .replace(/\b\w/g, (c) => c.toUpperCase());
+
+                            return (
+                                <div className="space-y-5">
+                                    <div className="rounded-lg border bg-neutral-50 p-5 dark:bg-neutral-900/50">
+                                        <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+                                            Este rol permite al usuario <strong className="text-neutral-900 dark:text-neutral-100">puede {actionDesc}</strong> <strong className="text-neutral-900 dark:text-neutral-100">{moduleLabel.toLowerCase()}</strong> en el sistema.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <h4 className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                                            Permiso
+                                        </h4>
+                                        <code className="block rounded-md border bg-neutral-50 px-3 py-2 text-xs font-mono text-neutral-600 dark:bg-neutral-900 dark:text-neutral-400">
+                                            {selectedPerm}
+                                        </code>
+                                    </div>
+
+                                    <div className="text-xs text-neutral-400 italic">
+                                        Presiona ESC o haz clic fuera para cerrar.
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </DialogContent>
+                </Dialog>
             </SettingsLayout>
         </AppLayout>
     );
