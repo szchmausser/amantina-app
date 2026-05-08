@@ -1,19 +1,13 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ChevronDown, ChevronRight, Edit, Eye, Shield, ShieldCheck } from 'lucide-react';
+import { ChevronDown, ChevronRight, Edit, Eye, Pencil, PlusCircle, Shield, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { edit as roleEdit, show as roleShow } from '@/routes/admin/roles';
+import { show as permissionShow } from '@/routes/admin/permissions';
 import type { BreadcrumbItem } from '@/types';
 
 interface Permission {
@@ -31,30 +25,48 @@ interface Props {
     roles: Role[];
 }
 
-const PROTECTED_ROLES = ['admin', 'profesor', 'alumno', 'representante'];
-
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Roles', href: '/admin/roles' },
 ];
 
-function groupPermissions(permissions: Permission[]): Record<string, string[]> {
-    const groups: Record<string, string[]> = {};
+function groupPermissions(permissions: Permission[]): Record<string, Permission[]> {
+    const groups: Record<string, Permission[]> = {};
     permissions.forEach((p) => {
-        const [module, action] = p.name.split('.');
+        const module = p.name.split('.')[0];
         if (!groups[module]) {
             groups[module] = [];
         }
-        groups[module].push(action);
+        groups[module].push(p);
     });
     return groups;
+}
+
+const ACTION_ICONS: Record<string, React.ElementType> = {
+    create: PlusCircle,
+    edit: Pencil,
+    delete: Trash2,
+    view: Eye,
+    read: Eye,
+    update: Pencil,
+};
+
+function getActionIcon(permName: string): React.ElementType {
+    const action = permName.split('.').pop() ?? '';
+    return ACTION_ICONS[action] ?? Shield;
+}
+
+function formatModuleName(name: string): string {
+    return name
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 }
 
 export default function RolesIndex({ roles }: Props) {
     const { auth } = usePage<any>().props;
     const hasPermission = (p: string) => auth.permissions.includes(p);
     const [openRoleIds, setOpenRoleIds] = useState<Set<number>>(new Set());
-    const [selectedPerm, setSelectedPerm] = useState<string | null>(null);
 
     const toggleRole = (roleId: number) => {
         setOpenRoleIds((prev) => {
@@ -97,9 +109,6 @@ export default function RolesIndex({ roles }: Props) {
                     {/* Roles List */}
                     <div className="space-y-4">
                         {roles.map((role) => {
-                            const isProtected = PROTECTED_ROLES.includes(
-                                role.name,
-                            );
                             const groups = groupPermissions(role.permissions);
                             const isOpen = openRoleIds.has(role.id);
 
@@ -126,18 +135,11 @@ export default function RolesIndex({ roles }: Props) {
                                             <Link
                                                 href={roleShow(role.id).url}
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="text-xs font-semibold tracking-wider text-neutral-500 uppercase hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400 transition-colors"
+                                                className="text-sm font-semibold tracking-wider text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400 transition-colors"
                                             >
-                                                {role.name}
+                                                {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
                                             </Link>
-                                            {isProtected && (
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="text-[10px]"
-                                                >
-                                                    Rol base
-                                                </Badge>
-                                            )}
+
                                             <Badge
                                                 variant="outline"
                                                 className="text-[10px]"
@@ -194,50 +196,47 @@ export default function RolesIndex({ roles }: Props) {
 
                                     {/* Collapsible content */}
                                     {isOpen && (
-                                        <CardContent className="p-6">
+                                        <CardContent className="px-6 pb-6 pt-0">
+                                            <div className="mb-4 flex items-center justify-between">
+                                                <span className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+                                                    Permisos del rol
+                                                </span>
+                                                <span className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+                                                    Módulo
+                                                </span>
+                                            </div>
                                             {role.permissions.length > 0 ? (
-                                                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                                                <div className="grid gap-4 grid-cols-1">
                                                     {Object.entries(groups).map(
-                                                        ([module, actions]) => (
+                                                        ([module, modulePerms]) => (
                                                             <div
                                                                 key={module}
-                                                                className="space-y-2 rounded-lg border bg-neutral-50/50 p-3 dark:border-neutral-800 dark:bg-neutral-800/30"
+                                                                className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-neutral-50/50 px-3 py-2 dark:border-neutral-700/50 dark:bg-neutral-800/30"
                                                             >
-                                                                <h3 className="flex items-center justify-between text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                                                                    {module}
-                                                                    <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
-                                                                        {
-                                                                            actions.length
-                                                                        }
-                                                                    </span>
-                                                                </h3>
-                                                                <div className="flex flex-wrap gap-1">
-                                                                    {actions.map(
-                                                                        (
-                                                                            action,
-                                                                        ) => {
-                                                                            const permName = `${module}.${action}`;
+                                                                <div className="flex flex-wrap gap-1.5">
+                                                                    {modulePerms.map(
+                                                                        (perm) => {
+                                                                            const ActionIcon = getActionIcon(perm.name);
                                                                             return (
-                                                                                <button
-                                                                                    key={
-                                                                                        action
-                                                                                    }
-                                                                                    type="button"
-                                                                                    onClick={() => setSelectedPerm(permName)}
-                                                                                    className="cursor-pointer rounded border bg-white px-1.5 py-0.5 text-xs text-neutral-600 capitalize transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                                                                                <Link
+                                                                                    key={perm.id}
+                                                                                    href={permissionShow(perm.id).url}
+                                                                                    className="inline-flex items-center gap-1.5 rounded bg-neutral-100 px-2.5 py-1 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
                                                                                 >
-                                                                                    {
-                                                                                        action
-                                                                                    }
-                                                                                </button>
+                                                                                    <ActionIcon className="h-3.5 w-3.5 text-neutral-400" />
+                                                                                    {perm.name.split('.').pop()}
+                                                                                </Link>
                                                                             );
                                                                         },
                                                                     )}
-                                                                </div>
-                                                            </div>
-                                                        ),
-                                                    )}
-                                                </div>
+                                                                 </div>
+                                                                 <span className="inline-flex shrink-0 items-center rounded-md border border-neutral-200 px-2 py-0.5 text-xs font-medium capitalize text-neutral-600 dark:border-neutral-700 dark:text-neutral-400">
+                                                                     {formatModuleName(module)}
+                                                                 </span>
+                                                             </div>
+                                                         ),
+                                                     )}
+                                                 </div>
                                             ) : (
                                                 <div className="flex flex-col items-center justify-center py-6 text-neutral-400">
                                                     <Shield className="mb-2 h-8 w-8 opacity-10" />
@@ -254,60 +253,7 @@ export default function RolesIndex({ roles }: Props) {
                     </div>
                 </div>
 
-                {/* Permission Detail Dialog */}
-                <Dialog open={selectedPerm !== null} onOpenChange={(open) => { if (!open) setSelectedPerm(null); }}>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                <ShieldCheck className="h-5 w-5 text-neutral-500" />
-                                Capacidad del Rol
-                            </DialogTitle>
-                            <DialogDescription>
-                                Permiso que este rol concede al usuario.
-                            </DialogDescription>
-                        </DialogHeader>
-                        {selectedPerm && (() => {
-                            const parts = selectedPerm.split('.');
-                            const moduleKey = parts[0] || '';
-                            const actionKey = parts[1] || '';
 
-                            const actionDescriptions: Record<string, string> = {
-                                view: 'consultar y visualizar',
-                                create: 'crear nuevos registros de',
-                                edit: 'editar y modificar',
-                                delete: 'eliminar',
-                            };
-                            const actionDesc = actionDescriptions[actionKey] || actionKey;
-
-                            const moduleLabel = moduleKey
-                                .replace(/_/g, ' ')
-                                .replace(/\b\w/g, (c) => c.toUpperCase());
-
-                            return (
-                                <div className="space-y-5">
-                                    <div className="rounded-lg border bg-neutral-50 p-5 dark:bg-neutral-900/50">
-                                        <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
-                                            Este rol permite al usuario <strong className="text-neutral-900 dark:text-neutral-100">puede {actionDesc}</strong> <strong className="text-neutral-900 dark:text-neutral-100">{moduleLabel.toLowerCase()}</strong> en el sistema.
-                                        </p>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <h4 className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
-                                            Permiso
-                                        </h4>
-                                        <code className="block rounded-md border bg-neutral-50 px-3 py-2 text-xs font-mono text-neutral-600 dark:bg-neutral-900 dark:text-neutral-400">
-                                            {selectedPerm}
-                                        </code>
-                                    </div>
-
-                                    <div className="text-xs text-neutral-400 italic">
-                                        Presiona ESC o haz clic fuera para cerrar.
-                                    </div>
-                                </div>
-                            );
-                        })()}
-                    </DialogContent>
-                </Dialog>
             </SettingsLayout>
         </AppLayout>
     );
