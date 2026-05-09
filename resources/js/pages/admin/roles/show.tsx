@@ -239,15 +239,15 @@ export default function Show({ role, users, filters }: Props) {
                                         Rol Personalizado
                                     </Badge>
                                 )}
-                                <Badge variant="outline" className="text-[10px] text-neutral-500">
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200">
+                                    {role.permissions.length} Permisos
+                                </Badge>
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200">
                                     {users.total} Usuarios
                                 </Badge>
                             </div>
-                            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400 max-w-2xl">
-                                {ROLE_DESCRIPTIONS[role.name.toLowerCase()] || 'Gestión de permisos y accesos para este rol personalizado.'}
-                            </p>
                         </div>
-                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                             <Button variant="outline" asChild>
                                 <Link href={roleIndex().url}>
                                     Volver
@@ -262,34 +262,66 @@ export default function Show({ role, users, filters }: Props) {
                         </div>
                     </div>
 
-                    {/* Protected role info - Moved to top and refined */}
-                    {isProtected && (
-                        <div className="rounded-xl border border-blue-100 bg-blue-50/30 p-4 dark:border-blue-900/20 dark:bg-blue-950/10">
-                            <div className="flex gap-3">
-                                <Info className="h-4 w-4 shrink-0 text-blue-500 mt-0.5" />
-                                <div className="space-y-1">
-                                    <p className="text-xs font-bold text-blue-700 uppercase tracking-wider dark:text-blue-400">
-                                        Rol de Sistema
-                                    </p>
-                                    <p className="text-sm text-blue-800/80 leading-relaxed dark:text-blue-300/80">
-                                        {ROLE_DESCRIPTIONS[role.name.toLowerCase()]}
-                                    </p>
-                                    <p className="text-[11px] font-medium text-blue-600/70 dark:text-blue-500/60 italic">
-                                        * Este es un rol fundamental. Su propósito está protegido, pero puedes ajustar sus permisos según sea necesario.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     <div className="grid gap-6">
-                        {/* Permissions Card */}
+                        {/* Information Card - Vertical Stack matching Permissions */}
+                        <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
+                            <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                <div className="flex items-center gap-2">
+                                    <Info className="h-4 w-4 text-neutral-500" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        Información del Rol
+                                    </h2>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                <div className="space-y-6">
+                                    <div className="flex items-start gap-5">
+                                        <div className={`rounded-xl p-3 ${isProtected ? 'bg-primary/10' : 'bg-neutral-100'} dark:bg-neutral-800`}>
+                                            <Shield className={`h-8 w-8 ${isProtected ? 'text-primary' : 'text-neutral-500'}`} />
+                                        </div>
+                                        <div className="space-y-1.5 pt-1">
+                                            <h4 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                                                {isProtected ? 'Rol del Sistema' : 'Rol Personalizado'}
+                                            </h4>
+                                            <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                                                {ROLE_DESCRIPTIONS[role.name.toLowerCase()] || 'Gestión de permisos y accesos para este rol personalizado.'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className={`rounded-xl border p-6 transition-all ${isProtected ? 'border-blue-100 bg-blue-50/30 dark:border-blue-900/20 dark:bg-blue-950/10' : 'border-neutral-100 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-800/30'}`}>
+                                        <p className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
+                                            {isProtected 
+                                                ? `Este es un rol fundamental del sistema. Su propósito está protegido para garantizar la integridad operativa, permitiendo una gestión precisa de las capacidades de ${role.name.toLowerCase()}.`
+                                                : `Este es un rol personalizado creado para extender las capacidades del sistema, permitiendo definir un conjunto específico de permisos para los usuarios asignados.`
+                                            }
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 pl-1">
+                                            Identificador del Sistema
+                                        </p>
+                                        <div className="flex items-center justify-between rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
+                                            <code className="text-sm font-mono font-bold text-neutral-600 dark:text-neutral-400">
+                                                {role.name}
+                                            </code>
+                                            <div className="flex gap-1">
+                                                <div className={`h-2 w-2 rounded-full ${isProtected ? 'bg-primary animate-pulse' : 'bg-neutral-400'}`} />
+                                                <div className={`h-2 w-2 rounded-full ${isProtected ? 'bg-primary/40' : 'bg-neutral-300'}`} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        {/* Permissions Card - Vertical Stack matching Permissions */}
                         <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
                             <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                 <div className="flex items-center gap-2">
                                     <ShieldCheck className="h-4 w-4 text-neutral-500" />
                                     <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
-                                        Permisos Asignados
+                                        Permisos de este Rol
                                     </h2>
                                 </div>
                             </CardHeader>
@@ -322,9 +354,9 @@ export default function Show({ role, users, filters }: Props) {
                                                                         key={perm.id}
                                                                         type="button"
                                                                         onClick={() => setSelectedPerm(perm.name)}
-                                                                        className="inline-flex items-center gap-1.5 rounded bg-neutral-100 px-2.5 py-1 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                                                                        className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary dark:border-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300 dark:hover:border-primary/50 dark:hover:bg-primary/10"
                                                                     >
-                                                                        <ActionIcon className="h-3.5 w-3.5 text-neutral-400" />
+                                                                        <ActionIcon className="h-3.5 w-3.5 opacity-60" />
                                                                         {perm.name.split('.').pop()}
                                                                     </button>
                                                                 );
@@ -347,7 +379,7 @@ export default function Show({ role, users, filters }: Props) {
                             </CardContent>
                         </Card>
 
-                        {/* Users with this role */}
+                        {/* Users Card - Vertical Stack matching Permissions */}
                         <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
                             <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                 <div className="flex items-center gap-2">

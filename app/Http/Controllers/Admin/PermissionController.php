@@ -19,7 +19,11 @@ class PermissionController extends Controller
         Gate::authorize('permissions.view');
 
         return Inertia::render('admin/permissions/index', [
-            'permissions' => Permission::with('roles')->orderBy('name')->get(),
+            'permissions' => Permission::query()
+                ->select(['id', 'name'])
+                ->withCount('roles')
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 

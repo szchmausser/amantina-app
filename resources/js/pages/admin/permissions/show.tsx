@@ -92,19 +92,21 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
     const moduleKey = parts[0] || '';
     const actionKey = parts[1] || '';
 
-    const actionDescriptions: Record<string, string> = {
-        view: 'consultar y visualizar',
-        create: 'crear nuevos registros de',
-        edit: 'editar y modificar',
-        delete: 'eliminar',
+    const actionData: Record<string, { label: string, color: string, bg: string, desc: string }> = {
+        view: { label: 'Visualización', color: 'text-primary', bg: 'bg-primary/10', desc: 'Consultar y visualizar registros' },
+        read: { label: 'Visualización', color: 'text-primary', bg: 'bg-primary/10', desc: 'Consultar y visualizar registros' },
+        create: { label: 'Creación', color: 'text-green-600', bg: 'bg-green-500/10', desc: 'Generar nuevos registros' },
+        edit: { label: 'Edición', color: 'text-amber-600', bg: 'bg-amber-500/10', desc: 'Modificar datos existentes' },
+        update: { label: 'Edición', color: 'text-amber-600', bg: 'bg-amber-500/10', desc: 'Modificar datos existentes' },
+        delete: { label: 'Eliminación', color: 'text-red-600', bg: 'bg-red-500/10', desc: 'Eliminar registros del sistema' },
     };
-    const actionDesc = actionDescriptions[actionKey] || actionKey;
+
+    const currentAction = actionData[actionKey] || { label: 'Acción', color: 'text-neutral-600', bg: 'bg-neutral-100', desc: 'Realizar operaciones' };
 
     const moduleLabel = moduleKey
         .replace(/_/g, ' ')
         .replace(/\b\w/g, (c) => c.toUpperCase());
 
-    // Effect that triggers search when debounced value, role, or perPage changes
     useEffect(() => {
         if (isFirstRender.current) {
             isFirstRender.current = false;
@@ -129,15 +131,6 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
 
     const handleRoleChange = (value: string) => {
         setRole(value);
-        router.get(
-            permissionUsers(permission.id).url,
-            {
-                search,
-                role: value === 'all' ? undefined : value,
-                per_page: perPage,
-            },
-            { preserveState: true, replace: true },
-        );
     };
 
     const handleClearFilters = () => {
@@ -148,7 +141,6 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
 
     const hasFilters = Boolean(search || role !== 'all' || perPage !== 5);
 
-    // Prepare pagination for DataTable
     const pagination: PaginationInfo | undefined =
         users.last_page > 1
             ? {
@@ -166,7 +158,7 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                 <DataTableTH className="w-32">Cédula</DataTableTH>
                 <DataTableTH>Nombre</DataTableTH>
                 <DataTableTH>Email</DataTableTH>
-                <DataTableTH className="w-40">Rol</DataTableTH>
+                <DataTableTH className="w-40 text-right">Roles</DataTableTH>
             </DataTableHead>
             <DataTableBody>
                 {users.data.map((user, index) => (
@@ -180,7 +172,7 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                         <DataTableTD>
                             <Link
                                 href={userShow(user.id).url}
-                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100"
+                                className="font-bold text-neutral-900 hover:text-primary dark:text-neutral-100"
                             >
                                 {user.name}
                             </Link>
@@ -188,12 +180,12 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                         <DataTableTD className="text-neutral-500">
                             {user.email}
                         </DataTableTD>
-                        <DataTableTD>
-                            <div className="flex flex-wrap gap-1">
+                        <DataTableTD className="text-right">
+                            <div className="flex flex-wrap gap-1 justify-end">
                                 {user.roles?.map((r) => (
                                     <span
                                         key={r.name}
-                                        className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+                                        className="inline-flex items-center rounded-lg bg-neutral-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
                                     >
                                         {r.name}
                                     </span>
@@ -206,13 +198,12 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
         </>
     );
 
-    // Role filter select
     const roleFilterSelect = (
         <Select value={role} onValueChange={handleRoleChange}>
-            <SelectTrigger className="h-10 w-full sm:w-44">
+            <SelectTrigger className="h-10 w-full sm:w-44 rounded-xl">
                 <SelectValue placeholder="Filtrar por rol" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
                 <SelectItem value="all">Todos los roles</SelectItem>
                 {availableRoles.map((r) => (
                     <SelectItem key={r} value={r}>
@@ -233,16 +224,16 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                                {actionKey.charAt(0).toUpperCase() + actionKey.slice(1)}
+                                {moduleLabel}: {actionKey.charAt(0).toUpperCase() + actionKey.slice(1)}
                             </h1>
                             <div className="flex items-center gap-2 mt-1">
-                                <Badge variant="outline" className="text-[10px] text-neutral-500">
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200">
                                     {moduleLabel}
                                 </Badge>
-                                <Badge variant="outline" className="text-[10px] text-neutral-500">
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200">
                                     {permission.roles.length} Roles
                                 </Badge>
-                                <Badge variant="outline" className="text-[10px] text-neutral-500">
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200">
                                     {users.total} Usuarios
                                 </Badge>
                             </div>
@@ -257,66 +248,91 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                     </div>
 
                     <div className="grid gap-6">
-                        {/* Permission Info Card */}
-                        <Card className="overflow-hidden rounded-xl border shadow-none">
-                            <CardHeader className="border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                        {/* Information Card - Vertical Stack matching Roles */}
+                        <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
+                            <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                <div className="flex items-center gap-2">
                                     <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                    Información del Permiso
-                                </CardTitle>
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        Información del Permiso
+                                    </h2>
+                                </div>
                             </CardHeader>
                             <CardContent className="p-6">
-                                <div className="space-y-5">
-                                    <div className="rounded-lg border bg-neutral-50 p-5 dark:bg-neutral-900/50">
-                                        <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
-                                            Este permiso permite al usuario <strong className="text-neutral-900 dark:text-neutral-100">puede {actionDesc}</strong> <strong className="text-neutral-900 dark:text-neutral-100">{moduleLabel.toLowerCase()}</strong> en el sistema.
+                                <div className="space-y-6">
+                                    <div className="flex items-start gap-5">
+                                        <div className={`rounded-xl p-3 ${currentAction.bg} dark:bg-neutral-800`}>
+                                            <ShieldCheck className={`h-8 w-8 ${currentAction.color}`} />
+                                        </div>
+                                        <div className="space-y-1.5 pt-1">
+                                            <h4 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                                                Acción de {currentAction.label}
+                                            </h4>
+                                            <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                                                {currentAction.desc} en el módulo de {moduleLabel.toLowerCase()}.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="rounded-xl border border-neutral-100 bg-neutral-50/50 p-6 dark:border-neutral-800 dark:bg-neutral-800/30">
+                                        <p className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
+                                            Este permiso garantiza que los usuarios asignados puedan <span className="font-bold text-neutral-950 dark:text-neutral-50 underline decoration-primary/40 underline-offset-4 decoration-2">{currentAction.desc.toLowerCase()}</span> dentro de este componente. Es una capacidad clave para la gestión de datos en el sistema.
                                         </p>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <h4 className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
-                                            Código del Permiso
-                                        </h4>
-                                        <code className="block rounded-md border bg-neutral-50 px-3 py-2 text-xs font-mono text-neutral-600 dark:bg-neutral-900 dark:text-neutral-400">
-                                            {permission.name}
-                                        </code>
+                                    <div className="space-y-4">
+                                        <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 pl-1">
+                                            Identificador del Sistema
+                                        </p>
+                                        <div className="flex items-center justify-between rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
+                                            <code className="text-sm font-mono font-bold text-neutral-600 dark:text-neutral-400">
+                                                {permission.name}
+                                            </code>
+                                            <div className="flex gap-1">
+                                                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                                <div className="h-2 w-2 rounded-full bg-primary/40" />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        {/* Roles with this permission */}
-                        <Card className="overflow-hidden rounded-xl border shadow-none">
-                            <CardHeader className="border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                        {/* Roles Card - Vertical Stack matching Roles */}
+                        <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
+                            <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                <div className="flex items-center gap-2">
                                     <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                    Roles que tienen este permiso
-                                </CardTitle>
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        Roles con este permiso
+                                    </h2>
+                                </div>
                             </CardHeader>
                             <CardContent className="p-0">
                                 {permission.roles.length > 0 ? (
-                                    <div className="divide-y divide-border">
+                                    <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
                                         {permission.roles.map((role) => (
                                             <Link
                                                 key={role.id}
                                                 href={roleShow(role.id).url}
-                                                className="flex items-center justify-between px-6 py-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
+                                                className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                                        <ShieldCheck className="h-4 w-4 text-neutral-500" />
+                                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-800">
+                                                        <ShieldCheck className="h-5 w-5 text-neutral-400" />
                                                     </div>
-                                                    <p className="text-sm font-medium capitalize text-neutral-900 dark:text-neutral-100">
+                                                    <p className="text-sm font-bold capitalize text-neutral-700 dark:text-neutral-200">
                                                         {role.name}
                                                     </p>
                                                 </div>
+                                                <div className="h-1.5 w-1.5 rounded-full bg-neutral-200" />
                                             </Link>
                                         ))}
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-12 text-center text-neutral-400">
-                                        <ShieldCheck className="mb-2 h-10 w-10 opacity-20" />
-                                        <p className="text-sm italic">
+                                        <ShieldCheck className="mb-3 h-12 w-12 opacity-10" />
+                                        <p className="text-xs font-medium italic px-6">
                                             Ningún rol tiene este permiso asignado.
                                         </p>
                                     </div>
@@ -324,16 +340,18 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                             </CardContent>
                         </Card>
 
-                        {/* Users with this permission */}
-                        <Card className="overflow-hidden rounded-xl border shadow-none">
-                            <CardHeader className="border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                        {/* Users Card - Vertical Stack matching Roles */}
+                        <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
+                            <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                <div className="flex items-center gap-2">
                                     <Users className="h-4 w-4 text-neutral-500" />
-                                    Usuarios con este permiso
-                                </CardTitle>
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        Usuarios con este permiso
+                                    </h2>
+                                </div>
                             </CardHeader>
                             <CardContent className="p-0">
-                                <div className="border-b px-4 py-3">
+                                <div className="border-b bg-white dark:bg-neutral-900/50 px-6 py-4">
                                     <TableFilters
                                         searchValue={search}
                                         onSearchChange={setSearch}
