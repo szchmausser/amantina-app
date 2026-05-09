@@ -21,7 +21,7 @@ class RoleController extends Controller
         Gate::authorize('roles.view');
 
         return Inertia::render('admin/roles/index', [
-            'roles' => Role::with('permissions')->get(),
+            'roles' => Role::select('id', 'name')->withCount('permissions')->get(),
         ]);
     }
 
@@ -86,6 +86,7 @@ class RoleController extends Controller
         return Inertia::render('admin/roles/edit', [
             'role' => $role->load('permissions'),
             'allPermissions' => Permission::orderBy('name')->get(),
+            'is_protected' => auth()->user()->hasRole($role->name),
         ]);
     }
 
@@ -94,7 +95,19 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
     {
-        Gate::authorize('roles.edit');
+        // Prevent removing permissions from roles the current user has
+        if ($request->user()->hasRole($role->name)) {
+            $currentPermissionNames = $role->permissions->pluck('name')->toArray();
+            $newPermissionNames = $request->validated('permissions') ?? [];
+
+            $removedPermissions = array_diff($currentPermissionNames, $newPermissionNames);
+
+            if (count($removedPermissions) > 0) {
+                return back()->withErrors([
+                    'permissions' => 'No puedes eliminar permisos de un rol que tienes asignado para evitar bloquearte el acceso.',
+                ]);
+            }
+        }
 
         $role->syncPermissions($request->validated('permissions') ?? []);
 
