@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, Eye, Layers, Plus, Settings2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Eye, Layers, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -240,6 +240,14 @@ export default function SectionsIndex({
                             </p>
                         </div>
                         <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                className="text-neutral-600 dark:text-neutral-400"
+                                onClick={() => window.history.back()}
+                            >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
+                            </Button>
                             <Button variant="outline" asChild>
                                 <Link href="/admin/section-definitions">
                                     <Settings2 className="mr-2 h-4 w-4" />

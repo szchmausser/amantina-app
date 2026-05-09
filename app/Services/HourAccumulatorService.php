@@ -232,6 +232,10 @@ class HourAccumulatorService
         // Sort at-risk students by percentage ascending
         usort($atRiskStudents, fn ($a, $b) => $a['percentage'] <=> $b['percentage']);
 
+        // Calculate general ranking of students by hours (excluding zero hours)
+        $topStudents = array_merge($outstandingStudents, $onTrackStudents, $inProgressStudents, $atRiskStudents);
+        usort($topStudents, fn ($a, $b) => $b['hours'] <=> $a['hours']);
+
         $totalStudents = $allStudents->count();
         $globalPercentage = $totalStudents > 0 ? ($metQuota / $totalStudents) * 100 : 0;
         $averageHours = $totalStudents > 0 ? $totalHoursAll / $totalStudents : 0;
@@ -476,6 +480,7 @@ class HourAccumulatorService
             'inProgressStudents' => $inProgressStudents,
             'atRiskStudents' => $atRiskStudents,
             'outstandingStudents' => $outstandingStudents,
+            'topStudents' => $topStudents,
             'studentsWithNoHours' => $studentsWithNoHours,
             'topSections' => $topSections,
             'concerningSections' => $concerningSections,
