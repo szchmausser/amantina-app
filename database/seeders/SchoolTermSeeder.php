@@ -45,18 +45,18 @@ class SchoolTermSeeder extends Seeder
         $terms = [
             [
                 'term_type_order' => 1,
-                'start_date' => '2024-09-15',
-                'end_date' => '2024-12-15',
+                'start_date' => '2025-09-15',
+                'end_date' => '2025-12-15',
             ],
             [
                 'term_type_order' => 2,
-                'start_date' => '2025-01-07',
-                'end_date' => '2025-04-10',
+                'start_date' => '2026-01-07',
+                'end_date' => '2026-04-10',
             ],
             [
                 'term_type_order' => 3,
-                'start_date' => '2025-04-25',
-                'end_date' => '2025-07-15',
+                'start_date' => '2026-04-25',
+                'end_date' => '2026-07-15',
             ],
         ];
 

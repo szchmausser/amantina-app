@@ -1,6 +1,6 @@
 # Multi-Year Idempotent Seeder — Amantina App
 
-Refactorizar el sistema de seeders para que cada ejecución de `CompleteTestDataSeeder` (o el nuevo orquestador) cree un **año escolar completo distinto**, con datos temporalmente realistas, promoviendo automáticamente los alumnos entre años. El objetivo es tener tres años históricos (2023-2024, 2024-2025, 2025-2026) para validar el cálculo de horas acumuladas multi-año y el lapso activo en curso.
+Refactorizar el sistema de seeders para que realicen la ejecución de `CompleteTestDataSeeder` (o un nuevo orquestador) cree un **año escolar completo distinto**, con datos temporalmente realistas * (esto es definir los lapsos en fechas realistas para cada periodos escolar es decir primero el 1er lapso, luego el 2do, luego el 3ero, cada uno enmarcado en rangos de fechas acordes a una cronologia real y sin superposiciones entre si, para permitir calcular horas acumuladas por lapso), a la vez de ir promoviendo automáticamente los alumnos entre años. El objetivo es tener tres años escolares con datos históricos realistas (2023-2024, 2024-2025, 2025-2026) para validar el correcto registro y cálculo de horas externas, horas acumuladas multi-año y lo acumulado en horas para el año activo en curso.
 
 ---
 
