@@ -39,7 +39,7 @@ class StudentPdfController extends Controller
         $activeYear = AcademicYear::active()->first();
         $currentYearData = $hourAccumulator->getStudentTotalHours($user->id, $activeYear?->id);
 
-        $allYears = AcademicYear::all();
+        $allYears = AcademicYear::currentAndPast()->get();
         $totalHoursAllYears = 0.0;
         $totalQuotaAllYears = 0.0;
 

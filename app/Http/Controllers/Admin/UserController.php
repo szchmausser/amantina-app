@@ -166,7 +166,7 @@ class UserController extends Controller
             $currentYearData = $hourAccumulator->getStudentTotalHours($user->id, $activeYear?->id);
 
             // Acumulado general: jornadas de todos los años + horas externas (una sola vez)
-            $allYears = AcademicYear::all();
+            $allYears = AcademicYear::currentAndPast()->get();
             $totalJornadaAllYears = 0;
             $totalQuotaAllYears = 0;
 

@@ -710,7 +710,7 @@ class HourAccumulatorService
         $progress = $this->getStudentTotalHours($studentId, $yearId);
 
         // Breakdown by year
-        $years = AcademicYear::orderBy('start_date')->get();
+        $years = AcademicYear::currentAndPast()->orderBy('start_date')->get();
         $breakdownByYear = [];
         foreach ($years as $year) {
             $hours = $this->calculateJornadaHours($studentId, $year->id);
