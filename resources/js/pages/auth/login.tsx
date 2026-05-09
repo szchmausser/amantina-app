@@ -109,6 +109,7 @@ export default function Login({
                                 tabIndex={5}
                                 disabled={processing}
                                 data-test="login-button"
+                                data-testid="login-button"
                             >
                                 {processing && <Spinner />}
                                 Iniciar sesión

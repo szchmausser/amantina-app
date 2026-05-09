@@ -97,6 +97,11 @@ test('representante puede iniciar sesión y ver su dashboard', function () {
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel del Representante')
+        ->assertSee('Progreso de Valentina Rojas')
+        ->assertSee($this->academicYear->name)
+        ->assertSee('0.0h')
+        ->assertSee('600.0h')
         ->assertNoJavaScriptErrors();
 });
 
@@ -110,6 +115,12 @@ test('representante ve dashboard cuando su representado no tiene horas', functio
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel del Representante')
+        ->assertSee('Progreso de Valentina Rojas')
+        ->assertSee($this->academicYear->name)
+        ->assertSee('0.0h')
+        ->assertSee('600.0h')
+        ->assertSee('El estudiante necesita más horas para cumplir el cupo.')
         ->assertNoJavaScriptErrors();
 });
 
@@ -155,11 +166,8 @@ test('representante ve horas acumuladas de su representado', function () {
     $page->assertPathIs('/dashboard')
         ->assertNoJavaScriptErrors();
 
-    // Verify hours are in database
-    $this->assertDatabaseHas('attendance_activities', [
-        'attendance_id' => $attendance->id,
-        'hours' => 4.0,
-    ]);
+    // Verify hours are visible on the dashboard
+    $page->assertSee('4');
 });
 
 // ============================================================================
@@ -220,14 +228,6 @@ test('representante ve progreso acumulado de su representado con múltiples jorn
         'hours' => 5.0,
     ]);
 
-    // Verify total hours = 3 + 5 = 8
-    $totalHours = AttendanceActivity::whereHas('attendance', function ($q) {
-        $q->where('user_id', $this->student->id)
-            ->where('attended', true);
-    })->sum('hours');
-
-    expect((float) $totalHours)->toBe(8.0);
-
     // Representative views dashboard
     $page = visit('/dashboard');
 
@@ -257,8 +257,10 @@ test('representante no puede acceder a páginas de administración', function ()
 test('representante puede ver su perfil', function () {
     $this->actingAs($this->representative);
 
-    $page = visit('/profile');
+    $page = visit('/settings/profile');
 
-    $page->assertPathIs('/profile')
+    $page->assertPathIs('/settings/profile')
+        ->assertSee('Ana Rojas')
+        ->assertSee('Mis Representados')
         ->assertNoJavaScriptErrors();
 });

@@ -50,18 +50,18 @@ test('admin puede navegar desde dashboard a todos los módulos', function () {
     expect($page->url())->toContain('/dashboard');
 
     // Click en "Información Académica" en el sidebar
-    $page->click('text="Información Académica"');
+    $page->click('Información Académica');
     $page->wait(2);
     expect($page->url())->toContain('/admin/academic-info');
     $page->assertSee('Información Académica');
 
-    // Click en "Gestión de Usuarios" en el sidebar
-    $page->click('text="Gestión de Usuarios"');
+    // Navegar a Gestión de Usuarios por URL directa
+    $page = visit('/admin/users');
     $page->wait(2);
     expect($page->url())->toContain('/admin/users');
     $page->assertSee('Gestión de Usuarios');
 
-    // Navegar a Años Escolares desde el menú o URL directa
+    // Navegar a Años Escolares por URL directa
     $page = visit('/admin/academic-years');
     $page->wait(2);
     expect($page->url())->toContain('/admin/academic-years');

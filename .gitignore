@@ -28,7 +28,7 @@ yarn-error.log
 /.zed
 
 # Browser Testing
-/tests/Browser/Screenshots/
+# /tests/Browser/Screenshots/
 /.temp/
 /playwright-report/
 /test-results/

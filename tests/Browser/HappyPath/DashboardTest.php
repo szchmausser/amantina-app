@@ -23,7 +23,7 @@ beforeEach(function () {
 });
 
 test('admin ve el dashboard administrativo', function () {
-    $admin = User::factory()->create();
+    $admin = User::factory()->create(['name' => 'Admin Test']);
     $admin->assignRole('admin');
 
     $this->actingAs($admin);
@@ -31,11 +31,16 @@ test('admin ve el dashboard administrativo', function () {
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel de Administración')
+        ->assertSee('2024-2025')
+        ->assertSee('600h requeridas')
+        ->assertSee('Estudiantes Activos: 0')
+        ->assertSee('No hay secciones registradas')
         ->assertNoJavaScriptErrors();
 });
 
 test('profesor ve el dashboard de profesor', function () {
-    $profesor = User::factory()->create();
+    $profesor = User::factory()->create(['name' => 'Profesor Test']);
     $profesor->assignRole('profesor');
 
     $this->actingAs($profesor);
@@ -43,11 +48,14 @@ test('profesor ve el dashboard de profesor', function () {
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel del Profesor')
+        ->assertSee('2024-2025')
+        ->assertSee('No tienes secciones asignadas')
         ->assertNoJavaScriptErrors();
 });
 
 test('alumno ve el dashboard de estudiante', function () {
-    $student = User::factory()->create();
+    $student = User::factory()->create(['name' => 'Carlos Estudiante']);
     $student->assignRole('alumno');
 
     Enrollment::factory()
@@ -62,11 +70,15 @@ test('alumno ve el dashboard de estudiante', function () {
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('Mi Progreso')
+        ->assertSee('2024-2025')
+        ->assertSee('Sin datos suficientes')
+        ->assertSee('No has registrado asistencia aún')
         ->assertNoJavaScriptErrors();
 });
 
 test('representante ve el dashboard de representante', function () {
-    $student = User::factory()->create();
+    $student = User::factory()->create(['name' => 'Valentina Rojas']);
     $student->assignRole('alumno');
 
     Enrollment::factory()
@@ -76,7 +88,7 @@ test('representante ve el dashboard de representante', function () {
         ->for($student, 'student')
         ->create();
 
-    $representante = User::factory()->create();
+    $representante = User::factory()->create(['name' => 'Ana Rojas']);
     $representante->assignRole('representante');
 
     $relationshipType = RelationshipType::firstOrCreate(['name' => 'Padre/Madre']);
@@ -92,6 +104,12 @@ test('representante ve el dashboard de representante', function () {
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel del Representante')
+        ->assertSee('Progreso de Valentina Rojas')
+        ->assertSee('2024-2025')
+        ->assertSee('0.0h')
+        ->assertSee('600.0h')
+        ->assertSee('El estudiante necesita más horas para cumplir el cupo.')
         ->assertNoJavaScriptErrors();
 });
 

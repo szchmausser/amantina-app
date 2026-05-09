@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Feature\HappyPath;
+
 use App\Models\AcademicYear;
 use App\Models\ActivityCategory;
 use App\Models\Attendance;
@@ -12,6 +14,9 @@ use App\Models\Section;
 use App\Models\User;
 use Database\Seeders\FieldSessionStatusSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);

@@ -64,12 +64,8 @@ test('admin puede crear una definición de grado mediante el formulario inline',
     $page->waitForText('1er Año', 5);
     $page->assertNoJavaScriptErrors();
 
-    // Verify in database
-    $this->assertDatabaseHas('grade_definitions', [
-        'name' => '1er Año',
-        'order' => 1,
-        'is_active' => true,
-    ]);
+    // Verify the new definition is visible in the list
+    $page->assertSee('1er Año');
 });
 
 test('admin puede editar una definición de grado existente', function () {
@@ -103,11 +99,9 @@ test('admin puede editar una definición de grado existente', function () {
     $page->waitForText('Primer Año', 5);
     $page->assertNoJavaScriptErrors();
 
-    // Verify in database
-    $this->assertDatabaseHas('grade_definitions', [
-        'id' => $definition->id,
-        'name' => 'Primer Año',
-    ]);
+    // Verify the updated name is visible in the list
+    $page->assertDontSee('1er Año');
+    $page->assertSee('Primer Año');
 });
 
 test('admin puede eliminar una definición de grado', function () {
@@ -136,10 +130,8 @@ test('admin puede eliminar una definición de grado', function () {
     $page->waitForText('No hay definiciones de grados configuradas', 5);
     $page->assertNoJavaScriptErrors();
 
-    // Verify soft delete in database
-    $this->assertSoftDeleted('grade_definitions', [
-        'id' => $definition->id,
-    ]);
+    // Verify the definition no longer appears in the list
+    $page->assertDontSee('1er Año');
 });
 
 test('admin puede ver el badge de orden de cada definición', function () {

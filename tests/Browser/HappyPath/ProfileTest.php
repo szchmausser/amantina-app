@@ -21,7 +21,7 @@ test('usuario autenticado puede ver su perfil', function () {
 });
 
 test('usuario puede ver la página de configuración de seguridad', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['name' => 'Seguridad Test']);
     $user->assignRole('admin');
 
     $this->actingAs($user);
@@ -29,8 +29,9 @@ test('usuario puede ver la página de configuración de seguridad', function () 
     // security.edit requiere confirmación de contraseña, redirige
     $page = visit('/settings/security');
 
-    // Debe redirigir a confirmación de contraseña o mostrar la página
-    $page->assertNoJavaScriptErrors();
+    $page->assertPathIs('/user/confirm-password')
+        ->assertSee('Confirm your password')
+        ->assertNoJavaScriptErrors();
 });
 
 test('usuario no autenticado no puede ver el perfil', function () {
