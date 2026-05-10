@@ -110,12 +110,19 @@ class LocationControllerTest extends TestCase
         Location::factory()->count(2)->create();
         $response = $this->actingAs($profesor)->get(route('admin.locations.index'));
         $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('admin/locations/index')
+            ->has('locations.data', 2)
+        );
 
         // Create
         $response = $this->actingAs($profesor)->post(route('admin.locations.store'), [
             'name' => 'Nueva Ubicación',
         ]);
         $response->assertRedirect(route('admin.locations.index'));
+        $this->assertDatabaseHas('locations', [
+            'name' => 'Nueva Ubicación',
+        ]);
 
         // Update
         $location = Location::first();
@@ -123,10 +130,15 @@ class LocationControllerTest extends TestCase
             'name' => 'Ubicación Editada',
         ]);
         $response->assertRedirect(route('admin.locations.index'));
+        $this->assertDatabaseHas('locations', [
+            'id' => $location->id,
+            'name' => 'Ubicación Editada',
+        ]);
 
         // Delete
         $response = $this->actingAs($profesor)->delete(route('admin.locations.destroy', $location));
         $response->assertRedirect(route('admin.locations.index'));
+        $this->assertSoftDeleted('locations', ['id' => $location->id]);
     }
 
     public function test_non_admin_without_permission_cannot_manage_locations(): void

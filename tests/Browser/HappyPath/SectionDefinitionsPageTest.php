@@ -121,20 +121,22 @@ test('admin puede eliminar una definición de sección', function () {
     $page->assertNoJavaScriptErrors();
 });
 
-test('admin puede ver el estado activo/inactivo de cada definición', function () {
+test('admin puede ver definiciones de secciones activas e inactivas en el listado', function () {
     SectionDefinition::factory()->create(['name' => 'A', 'is_active' => true]);
     SectionDefinition::factory()->create(['name' => 'B', 'is_active' => false]);
 
     $page = visit('/admin/section-definitions');
     $page->wait(2);
 
-    // Verify both definitions are visible
+    // Verify page title anchors assertions to the correct context
+    $page->assertSee('Definiciones de Secciones');
+    // Verify both active and inactive definitions appear in the list
     $page->assertSee('A');
     $page->assertSee('B');
     $page->assertNoJavaScriptErrors();
 });
 
-test('admin puede ver nombres de sección como badges', function () {
+test('admin puede ver los nombres de sección como texto en el listado', function () {
     SectionDefinition::factory()->create(['name' => 'A']);
     SectionDefinition::factory()->create(['name' => 'B']);
     SectionDefinition::factory()->create(['name' => 'C']);
@@ -142,6 +144,8 @@ test('admin puede ver nombres de sección como badges', function () {
     $page = visit('/admin/section-definitions');
     $page->wait(2);
 
+    // Verify page title anchors assertions to the correct context
+    $page->assertSee('Definiciones de Secciones');
     // Verify all section names are visible
     $page->assertSee('A');
     $page->assertSee('B');
@@ -163,11 +167,11 @@ test('usuario sin permiso no puede acceder a definiciones de secciones', functio
     $page->assertSee('403');
 });
 
-test('link de definiciones de secciones aparece en sidebar para admin', function () {
+test('admin puede acceder a la página de definiciones de secciones', function () {
     $page = visit('/dashboard');
     $page->wait(2);
 
-    // Navigate to settings area where the sidebar link should be
+    // Navigate directly to verify the page is accessible
     $page = visit('/admin/section-definitions');
     $page->wait(2);
 

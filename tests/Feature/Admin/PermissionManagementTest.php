@@ -63,6 +63,10 @@ class PermissionManagementTest extends TestCase
         $response = $this->actingAs($profesor)->get(route('admin.permissions.index'));
 
         $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('admin/permissions/index')
+            ->has('permissions')
+        );
     }
 
     /**

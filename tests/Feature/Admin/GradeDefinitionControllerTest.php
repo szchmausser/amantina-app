@@ -115,5 +115,6 @@ class GradeDefinitionControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('admin.grade-definitions.store'), ['name' => 'Test', 'order' => 1]);
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('grade_definitions', ['name' => 'Test']);
     }
 }

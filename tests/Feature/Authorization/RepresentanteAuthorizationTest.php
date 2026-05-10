@@ -12,6 +12,7 @@ use App\Models\StudentRepresentative;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class RepresentanteAuthorizationTest extends TestCase
@@ -134,6 +135,9 @@ class RepresentanteAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->representante)->get(route('dashboard'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('representative/dashboard'),
+        );
     }
 
     /**
@@ -143,6 +147,9 @@ class RepresentanteAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->representante)->get(route('profile.edit'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('settings/profile'),
+        );
     }
 
     /**
@@ -299,6 +306,9 @@ class RepresentanteAuthorizationTest extends TestCase
         ]);
 
         $response->assertForbidden();
+
+        // Verify account was NOT deleted
+        $this->assertDatabaseHas('users', ['id' => $this->representante->id]);
     }
 
     /**

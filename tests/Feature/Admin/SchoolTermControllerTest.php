@@ -57,6 +57,9 @@ class SchoolTermControllerTest extends TestCase
         ]));
 
         $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('admin/school-terms/index')
+        );
     }
 
     public function test_admin_can_create_school_term(): void

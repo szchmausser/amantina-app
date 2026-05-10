@@ -215,6 +215,10 @@ class AttendanceControllerTest extends TestCase
         );
 
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('attendances', [
+            'field_session_id' => $session->id,
+            'user_id' => $student->id,
+        ]);
     }
 
     public function test_can_register_bulk_students_attendance(): void
@@ -379,6 +383,11 @@ class AttendanceControllerTest extends TestCase
         );
 
         $response->assertStatus(403);
+        // Verify original data was NOT modified
+        $this->assertDatabaseHas('attendances', [
+            'id' => $attendance->id,
+            'attended' => true,
+        ]);
     }
 
     public function test_admin_can_delete_attendance(): void

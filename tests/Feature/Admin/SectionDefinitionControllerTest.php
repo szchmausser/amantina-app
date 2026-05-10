@@ -134,5 +134,6 @@ class SectionDefinitionControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('admin.section-definitions.store'), ['name' => 'A']);
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('section_definitions', ['name' => 'A']);
     }
 }

@@ -180,5 +180,6 @@ class SectionControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('admin.sections.store'), []);
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('sections', []);
     }
 }

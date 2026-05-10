@@ -16,12 +16,22 @@ uses(RefreshDatabase::class, Browsable::class);
 /**
  * FASE 5: TESTS DE VALIDACIÓN FRONTEND
  *
- * Estos tests verifican que las validaciones del lado del cliente funcionan correctamente:
+ * Estos tests verifican que las validaciones del lado del servidor se reflejan
+ * correctamente en la interfaz de usuario mediante mensajes de error visibles:
  * - Campos requeridos muestran error
  * - Validación de formato de fechas
  * - Validación de rangos numéricos
  * - Validación de emails
  * - Validación de contraseñas
+ *
+ * PRINCIPIO 7 (browser-testing): El test PRIMERO verifica que el mensaje de
+ * error aparece en pantalla, y SECUNDARIAMENTE verifica que la URL no cambió.
+ *
+ * NOTA TÉCNICA: Algunos formularios usan validación HTML5 (required, type="email",
+ * type="number") que impide el envío del formulario al servidor. Para probar la
+ * validación del lado del servidor (Laravel/Inertia), se usa script() para
+ * deshabilitar la validación HTML5 (noValidate) antes de enviar, lo que permite
+ * que Inertia reciba los errores del servidor y los muestre en pantalla.
  */
 beforeEach(function () {
     // Seed roles, permissions, term types, and field session statuses
@@ -51,11 +61,17 @@ it('formulario de año escolar muestra error cuando campos requeridos están vac
 
     $page->assertSee('Nuevo Año Escolar');
 
+    // Deshabilitar validación HTML5 para probar la validación del servidor
+    $page->script('document.querySelector("form").noValidate = true');
+
     // Intentar submit sin llenar campos
     $page->click('button[type="submit"]');
-    $page->wait(1);
+    $page->wait(2);
 
-    // Verificar que NO redirecciona (se queda en el formulario por validación)
+    // PRIMARIO: verificar que el mensaje de error aparece en pantalla
+    $page->assertSee('The name field is required.');
+
+    // SECUNDARIO: verificar que NO redirecciona (se queda en el formulario)
     expect($page->url())->toContain('/admin/academic-years/create');
 });
 
@@ -68,17 +84,25 @@ it('formulario de lapso muestra error cuando campos requeridos están vacíos', 
 
     $page->assertSee('Nuevo Lapso Académico');
 
-    // Seleccionar año escolar pero NO llenar fechas ni tipo
+    // Seleccionar año escolar pero NO llenar fechas
+    // NOTA: term_type_id tiene un valor por defecto en el formulario (primer tipo),
+    // por lo que los campos requeridos que faltan son start_date y end_date
     $page->click('[data-test="academic-year-select-trigger"]');
     $page->wait(1);
     $page->click('[role="option"]:has-text("'.$academicYear->name.'")');
     $page->wait(1);
 
-    // Intentar submit sin llenar fechas ni tipo
-    $page->click('button[type="submit"]');
-    $page->wait(1);
+    // Deshabilitar validación HTML5 para probar la validación del servidor
+    $page->script('document.querySelector("form").noValidate = true');
 
-    // Verificar que NO redirecciona (se queda en el formulario por validación)
+    // Intentar submit sin llenar fechas
+    $page->click('button[type="submit"]');
+    $page->wait(2);
+
+    // PRIMARIO: verificar que el mensaje de error aparece en pantalla
+    $page->assertSee('The start date field is required.');
+
+    // SECUNDARIO: verificar que NO redirecciona (se queda en el formulario)
     expect($page->url())->toContain('/admin/school-terms/create');
 });
 
@@ -90,20 +114,23 @@ it('formulario de grado muestra error cuando nombre está vacío', function () {
 
     $page->assertSee('Nuevo Grado');
 
-    // Seleccionar año escolar pero NO llenar nombre
+    // Seleccionar año escolar pero NO seleccionar definición de grado
     $page->click('[data-test="academic-year-select-trigger"]');
     $page->wait(1);
     $page->click('[role="option"]:has-text("'.$academicYear->name.'")');
     $page->wait(1);
 
-    // Llenar orden pero NO nombre
+    // Llenar orden pero NO definición de grado
     $page->type('[data-test="grade-order-input"]', '1');
 
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(1);
+    $page->wait(2);
 
-    // Verificar que NO redirecciona (se queda en el formulario por validación)
+    // PRIMARIO: verificar que el mensaje de error aparece en pantalla
+    $page->assertSee('The grade definition id field is required.');
+
+    // SECUNDARIO: verificar que NO redirecciona
     expect($page->url())->toContain('/admin/grades/create');
 });
 
@@ -116,7 +143,7 @@ it('formulario de sección muestra error cuando nombre está vacío', function (
 
     $page->assertSee('Nueva Sección');
 
-    // Seleccionar año y grado pero NO llenar nombre
+    // Seleccionar año y grado pero NO seleccionar definición de sección
     $page->click('[data-test="academic-year-select-trigger"]');
     $page->wait(1);
     $page->click('[role="option"]:has-text("'.$academicYear->name.'")');
@@ -127,11 +154,14 @@ it('formulario de sección muestra error cuando nombre está vacío', function (
     $page->click('[role="option"]:has-text("'.$grade->name.'")');
     $page->wait(1);
 
-    // Intentar submit sin nombre
+    // Intentar submit sin definición de sección
     $page->click('button[type="submit"]');
-    $page->wait(1);
+    $page->wait(2);
 
-    // Verificar que NO redirecciona (se queda en el formulario por validación)
+    // PRIMARIO: verificar que el mensaje de error aparece en pantalla
+    $page->assertSee('The section definition id field is required.');
+
+    // SECUNDARIO: verificar que NO redirecciona
     expect($page->url())->toContain('/admin/sections/create');
 });
 
@@ -143,9 +173,13 @@ it('formulario de usuario muestra error cuando campos requeridos están vacíos'
 
     // Intentar submit sin llenar nada
     $page->click('button[type="submit"]');
-    $page->wait(1);
+    $page->wait(2);
 
-    // Verificar que NO redirecciona (se queda en el formulario por validación)
+    // PRIMARIO: verificar que los mensajes de error aparecen en pantalla
+    $page->assertSee('The name field is required.');
+    $page->assertSee('The email field is required.');
+
+    // SECUNDARIO: verificar que NO redirecciona (se queda en el formulario)
     expect($page->url())->toContain('/admin/users/create');
 });
 
@@ -178,12 +212,18 @@ it('formulario de lapso valida que fecha de inicio sea anterior a fecha de fin',
     $page->type('[data-test="start-date-input"]', '2025-12-31');
     $page->type('[data-test="end-date-input"]', '2025-09-01');
 
+    // Deshabilitar validación HTML5 para probar la validación del servidor
+    $page->script('document.querySelector("form").noValidate = true');
+
     // Intentar submit
     $page->click('button[type="submit"]');
     $page->wait(2);
 
-    // Verificar que NO redirecciona (validación backend rechaza, se queda en el formulario)
-    expect($page->url())->toContain('/admin/school-terms');
+    // PRIMARIO: verificar que el mensaje de error de validación aparece en pantalla
+    $page->assertSee('The end date field must be a date after start date.');
+
+    // SECUNDARIO: verificar que se queda en el formulario (no redirige)
+    expect($page->url())->toContain('/admin/school-terms/create');
 });
 
 it('formulario de año escolar valida que fecha de inicio sea anterior a fecha de fin', function () {
@@ -200,13 +240,18 @@ it('formulario de año escolar valida que fecha de inicio sea anterior a fecha d
     // Llenar horas requeridas (campo obligatorio)
     $page->type('#required_hours', '120');
 
+    // Deshabilitar validación HTML5 para probar la validación del servidor
+    $page->script('document.querySelector("form").noValidate = true');
+
     // Intentar submit
     $page->click('button[type="submit"]');
     $page->wait(2);
 
-    // Verificar que NO redirecciona o muestra error
-    // La validación puede ser frontend (Inertia) o backend
-    expect($page->url())->toContain('/admin/academic-years');
+    // PRIMARIO: verificar que el mensaje de error de validación aparece en pantalla
+    $page->assertSee('The end date field must be a date after start date.');
+
+    // SECUNDARIO: verificar que se queda en el formulario (no redirige)
+    expect($page->url())->toContain('/admin/academic-years/create');
 });
 
 // ============================================================================
@@ -228,11 +273,17 @@ it('formulario de usuario valida formato de email', function () {
     $page->click('[data-test="role-checkbox-alumno"]');
     $page->wait(0.5);
 
+    // Deshabilitar validación HTML5 (type="email" bloquea envíos con email inválido)
+    $page->script('document.querySelector("form").noValidate = true');
+
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(1);
+    $page->wait(2);
 
-    // Verificar que NO redirecciona (se queda en el formulario por validación)
+    // PRIMARIO: verificar que el mensaje de error de email aparece en pantalla
+    $page->assertSee('The email field must be a valid email address.');
+
+    // SECUNDARIO: verificar que NO redirecciona (se queda en el formulario)
     expect($page->url())->toContain('/admin/users/create');
 });
 
@@ -253,9 +304,12 @@ it('formulario de usuario valida que contraseñas coincidan', function () {
 
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(1);
+    $page->wait(2);
 
-    // Verificar que NO redirecciona (se queda en el formulario por validación)
+    // PRIMARIO: verificar que el mensaje de error de confirmación aparece en pantalla
+    $page->assertSee('The password field confirmation does not match.');
+
+    // SECUNDARIO: verificar que NO redirecciona (se queda en el formulario)
     expect($page->url())->toContain('/admin/users/create');
 });
 
@@ -274,11 +328,17 @@ it('formulario de usuario valida longitud mínima de contraseña', function () {
     $page->click('[data-test="role-checkbox-alumno"]');
     $page->wait(0.5);
 
+    // Deshabilitar validación HTML5 (minLength en input password puede bloquear)
+    $page->script('document.querySelector("form").noValidate = true');
+
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(1);
+    $page->wait(2);
 
-    // Verificar que NO redirecciona (se queda en el formulario por validación)
+    // PRIMARIO: verificar que el mensaje de error de longitud mínima aparece en pantalla
+    $page->assertSee('The password field must be at least 8 characters.');
+
+    // SECUNDARIO: verificar que NO redirecciona (se queda en el formulario)
     expect($page->url())->toContain('/admin/users/create');
 });
 
@@ -304,13 +364,19 @@ it('formulario de grado valida que orden sea número positivo', function () {
     $page->click('[role="option"]:has-text("1er Año")');
     $page->wait(0.5);
 
-    // Intentar ingresar orden negativo
+    // Ingresar orden inválido (-1 no cumple min:1)
     $page->type('[data-test="grade-order-input"]', '-1');
+
+    // Deshabilitar validación HTML5 (type="number" con min puede bloquear envío)
+    $page->script('document.querySelector("form").noValidate = true');
 
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(1);
+    $page->wait(2);
 
-    // Verificar que NO redirecciona o muestra error (se queda en el formulario por validación)
-    expect($page->url())->toContain('/admin/grades');
+    // PRIMARIO: verificar que el mensaje de error aparece en pantalla
+    $page->assertSee('The order field must be at least 1.');
+
+    // SECUNDARIO: verificar que se queda en el formulario (no redirige)
+    expect($page->url())->toContain('/admin/grades/create');
 });

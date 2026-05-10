@@ -90,6 +90,7 @@ test('asistencia registrada aparece en la pantalla', function () {
     $page = visit("/admin/field-sessions/{$this->fieldSession->id}/attendance");
 
     $page->assertSee('Luis Estudiante')
+        ->assertSee('Sin horas')
         ->assertNoJavaScriptErrors();
 });
 

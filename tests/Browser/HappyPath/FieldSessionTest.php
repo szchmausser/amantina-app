@@ -43,6 +43,7 @@ test('admin puede ver el listado de jornadas de campo', function () {
 
     $page->assertPathIs('/admin/field-sessions')
         ->assertSee('Jornadas')
+        ->assertSee('No hay jornadas de campo registradas.')
         ->assertNoJavaScriptErrors();
 });
 
@@ -64,6 +65,8 @@ test('admin puede acceder al formulario de creación de jornada', function () {
     $page = visit('/admin/field-sessions/create');
 
     $page->assertPathIs('/admin/field-sessions/create')
+        ->assertSee('Nueva Jornada de Campo')
+        ->assertSee('Nombre de la Jornada')
         ->assertNoJavaScriptErrors();
 });
 
@@ -93,8 +96,9 @@ test('admin puede acceder al formulario de edición de jornada', function () {
 
     $page = visit("/admin/field-sessions/{$session->id}/edit");
 
-    // Verificar que la página carga (sin verificar contenido específico por ahora)
     $page->assertPathIs("/admin/field-sessions/{$session->id}/edit")
+        ->assertSee('Editar Jornada')
+        ->assertSee('Riego de Plantas')
         ->assertNoJavaScriptErrors();
 });
 

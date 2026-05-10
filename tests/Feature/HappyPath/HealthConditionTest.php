@@ -206,6 +206,10 @@ test('alumno cannot create health condition', function () {
     ]);
 
     $response->assertForbidden();
+
+    $this->assertDatabaseMissing('health_conditions', [
+        'name' => 'Diabetes',
+    ]);
 });
 
 test('alumno cannot update health condition', function () {
@@ -222,6 +226,11 @@ test('alumno cannot update health condition', function () {
     ]);
 
     $response->assertForbidden();
+
+    $this->assertDatabaseHas('health_conditions', [
+        'id' => $healthCondition->id,
+        'name' => 'Diabetes', // No cambió
+    ]);
 });
 
 test('alumno cannot delete health condition', function () {
@@ -235,6 +244,11 @@ test('alumno cannot delete health condition', function () {
     $response = $this->delete("/admin/health-conditions/{$healthCondition->id}");
 
     $response->assertForbidden();
+
+    $this->assertDatabaseHas('health_conditions', [
+        'id' => $healthCondition->id,
+        'deleted_at' => null,
+    ]);
 });
 
 // ============================================================================
@@ -258,6 +272,10 @@ test('representante cannot create health condition', function () {
     ]);
 
     $response->assertForbidden();
+
+    $this->assertDatabaseMissing('health_conditions', [
+        'name' => 'Diabetes',
+    ]);
 });
 
 test('representante cannot update health condition', function () {
@@ -274,6 +292,11 @@ test('representante cannot update health condition', function () {
     ]);
 
     $response->assertForbidden();
+
+    $this->assertDatabaseHas('health_conditions', [
+        'id' => $healthCondition->id,
+        'name' => 'Diabetes', // No cambió
+    ]);
 });
 
 test('representante cannot delete health condition', function () {
@@ -287,6 +310,11 @@ test('representante cannot delete health condition', function () {
     $response = $this->delete("/admin/health-conditions/{$healthCondition->id}");
 
     $response->assertForbidden();
+
+    $this->assertDatabaseHas('health_conditions', [
+        'id' => $healthCondition->id,
+        'deleted_at' => null,
+    ]);
 });
 
 // ============================================================================

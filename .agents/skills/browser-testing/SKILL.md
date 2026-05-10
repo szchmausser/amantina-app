@@ -269,6 +269,136 @@ beforeEach(function () {
 
 ---
 
+### Principio 7 — Un test que no verifica nada útil es peor que no tener test
+
+Este es el principio más frecuentemente violado en suites generadas por herramientas o
+por IA: el test existe, la barra se pone verde, pero no prueba absolutamente nada que
+importe. Da una falsa sensación de cobertura y es activamente engañoso.
+
+**Un test sin alma tiene alguna de estas características:**
+
+- Solo verifica que se llegó a una ruta: `->assertPathIs('/usuarios')`
+- Solo verifica que la página no tiene errores de JavaScript
+- Solo verifica que existe un elemento genérico en pantalla (`->assertSee('Guardar')`)
+- Ejecuta una acción (guardar, registrar, eliminar) pero no verifica que esa acción
+  produjo un resultado visible y concreto en la UI o en la base de datos
+
+**La pregunta que debe responderse antes de escribir cualquier aserción:**
+
+> *¿Si esta funcionalidad estuviera completamente rota, este test fallaría?*
+
+Si la respuesta es "no" o "tal vez", las aserciones no son suficientes.
+
+---
+
+#### Qué verificar según el tipo de test
+
+**Browser test — verifica lo que el usuario realmente ve:**
+
+Después de registrar un usuario, el test debe confirmar que los datos de ese usuario
+aparecen en algún lugar de la interfaz: su nombre en la tabla, su correo en el detalle,
+su cédula en el perfil. No alcanza con verificar que se redirigió a `/usuarios` o que
+apareció un toast genérico de "éxito".
+
+```php
+// ❌ TEST VACÍO — pasa aunque el registro haya fallado silenciosamente
+it('registra un nuevo usuario', function () {
+    $this->actingAs($this->admin)->browse(function (Browser $browser) {
+        $browser->visit(route('usuarios.crear'))
+                ->type('[name="name"]', 'Carlos Mendoza')
+                ->type('[name="email"]', 'carlos@ejemplo.com')
+                ->type('[name="cedula"]', '12345678')
+                ->press('Guardar')
+                ->assertPathIs('/usuarios'); // ← solo verifica la ruta, no el resultado
+    });
+});
+
+// ✅ TEST CON PROPÓSITO — falla si el registro no funcionó correctamente
+it('registra un nuevo usuario y lo muestra en el listado', function () {
+    $this->actingAs($this->admin)->browse(function (Browser $browser) {
+        $browser->visit(route('usuarios.crear'))
+                ->type('[name="name"]', 'Carlos Mendoza')
+                ->type('[name="email"]', 'carlos@ejemplo.com')
+                ->type('[name="cedula"]', '12345678')
+                ->press('Guardar')
+                ->waitForText('Carlos Mendoza')       // el nombre aparece en el listado
+                ->assertSee('carlos@ejemplo.com')     // el correo es visible
+                ->assertSee('12345678');              // la cédula es visible
+    });
+});
+```
+
+**Feature test — verifica el estado real en la base de datos:**
+
+Después de una operación de escritura, el test debe confirmar que el dato existe (o
+desapareció) en la base de datos con los valores correctos, no solo que la respuesta
+HTTP fue un 200 o un redirect.
+
+```php
+// ❌ TEST VACÍO — pasa aunque no se haya guardado nada
+it('registra un usuario', function () {
+    $response = $this->actingAs($this->admin)
+                     ->post(route('usuarios.store'), [
+                         'name'   => 'Carlos Mendoza',
+                         'email'  => 'carlos@ejemplo.com',
+                         'cedula' => '12345678',
+                     ]);
+
+    $response->assertRedirect(route('usuarios.index')); // ← solo verifica la redirección
+});
+
+// ✅ TEST CON PROPÓSITO — falla si el dato no fue persistido correctamente
+it('registra un usuario y lo persiste en la base de datos', function () {
+    $this->actingAs($this->admin)
+         ->post(route('usuarios.store'), [
+             'name'   => 'Carlos Mendoza',
+             'email'  => 'carlos@ejemplo.com',
+             'cedula' => '12345678',
+         ]);
+
+    $this->assertDatabaseHas('users', [
+        'name'   => 'Carlos Mendoza',
+        'email'  => 'carlos@ejemplo.com',
+        'cedula' => '12345678',
+    ]);
+});
+```
+
+---
+
+#### El estándar mínimo por tipo de operación
+
+| Operación | Browser test debe verificar | Feature test debe verificar |
+|---|---|---|
+| **Crear registro** | Los datos del nuevo registro aparecen en la UI (tabla, detalle, confirmación) | `assertDatabaseHas` con los valores exactos ingresados |
+| **Editar registro** | Los datos actualizados son visibles en pantalla | `assertDatabaseHas` con los nuevos valores; `assertDatabaseMissing` con los anteriores si aplica |
+| **Eliminar registro** | El registro desaparece de la UI | `assertDatabaseMissing` con los datos del registro eliminado |
+| **Login** | El usuario llega a la pantalla post-login y ve contenido de su sesión | La sesión está autenticada (`assertAuthenticated`) |
+| **Logout** | El usuario es redirigido a la pantalla pública y no puede acceder a rutas protegidas | La sesión está vacía (`assertGuest`) |
+| **Validación** | El mensaje de error correcto aparece en pantalla junto al campo correspondiente | Los errores de validación existen en la respuesta (`assertSessionHasErrors`) |
+| **Permisos** | El usuario sin permiso no ve el recurso o es redirigido | La respuesta es 403 o redirect, y el dato no fue modificado en DB |
+
+---
+
+#### Señales de que un test no tiene propósito suficiente
+
+Si el test solo contiene alguna de estas aserciones como **única verificación**, no
+está probando nada significativo y debe ser fortalecido:
+
+```php
+->assertPathIs('/alguna-ruta')          // ← insuficiente solo
+->assertSee('Éxito')                    // ← insuficiente si 'Éxito' es texto genérico
+->assertSee('Guardar')                  // ← esto solo prueba que el botón existe
+->assertStatus(200)                     // ← insuficiente solo en feature test
+->assertRedirect(route('index'))        // ← insuficiente solo en feature test
+```
+
+Estas aserciones pueden ser parte de un test completo, pero nunca pueden ser
+**la única** verificación. Siempre deben acompañarse de una verificación sobre el
+**resultado concreto** de la operación.
+
+---
+
 ## PARTE 2 — Crear tests desde cero
 
 ---
@@ -784,7 +914,12 @@ $browser->screenshot('estado-antes-de-guardar');
 - [ ] Se usa `actingAs()` cuando el login es precondición, no lo que se prueba
 - [ ] Todos los datos necesarios se crean en `beforeEach` o al inicio del test
 - [ ] El test puede ejecutarse solo, en cualquier orden, y pasar siempre
-- [ ] Las aserciones son sobre lo que el usuario ve en pantalla, no sobre la base de datos
+- [ ] **Si la funcionalidad estuviera completamente rota, este test fallaría** — si la
+      respuesta es "tal vez no", las aserciones son insuficientes y el test debe reforzarse
+- [ ] Las operaciones de escritura verifican el resultado concreto: los datos creados,
+      editados o eliminados son visibles en la UI (browser) o confirmados en DB (feature)
+- [ ] No hay aserciones genéricas como única verificación: `assertPathIs`, `assertSee('Éxito')`,
+      `assertStatus(200)` o `assertRedirect` sin verificar también el efecto de la operación
 - [ ] Se usa `->waitFor()` / `->waitForText()` en lugar de `sleep()` para esperas
 - [ ] Los selectores usan `data-testid` o atributos semánticos, no clases CSS
 - [ ] Si no existen selectores estables, se agrega `data-testid` al componente
@@ -793,6 +928,8 @@ $browser->screenshot('estado-antes-de-guardar');
 
 - [ ] Se diagnosticó la causa raíz antes de tocar el código
 - [ ] Solo cambió la interacción — la lógica de aserción se conservó
+- [ ] Si el test original tenía aserciones insuficientes (solo ruta, solo status), se
+      aprovecha la reparación para fortalecerlo con verificaciones sobre el resultado concreto
 - [ ] No quedan selectores por clase CSS en el código de los tests
 - [ ] Los `data-testid` nuevos están commiteados junto con los tests
 - [ ] El test pasa ejecutado de forma aislada: `./vendor/bin/pest tests/Browser/ElTest.php`

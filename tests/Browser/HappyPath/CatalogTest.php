@@ -31,6 +31,8 @@ test('admin puede ver el listado de categorías de actividades', function () {
     $page = visit('/admin/activity-categories');
 
     $page->assertPathIs('/admin/activity-categories')
+        ->assertSee('Categorías de Actividades')
+        ->assertSee('Nueva Categoría')
         ->assertNoJavaScriptErrors();
 });
 
@@ -89,6 +91,8 @@ test('admin puede ver el listado de condiciones de salud', function () {
     $page = visit('/admin/health-conditions');
 
     $page->assertPathIs('/admin/health-conditions')
+        ->assertSee('Condiciones de Salud')
+        ->assertSee('Nueva Condición')
         ->assertNoJavaScriptErrors();
 });
 
@@ -109,7 +113,7 @@ test('admin puede ver el listado de roles', function () {
     $page = visit('/admin/roles');
 
     $page->assertPathIs('/admin/roles')
-        ->assertSee('Roles')
+        ->assertSee('Roles del Sistema')
         ->assertNoJavaScriptErrors();
 });
 
@@ -117,6 +121,7 @@ test('admin puede ver el listado de permisos', function () {
     $page = visit('/admin/permissions');
 
     $page->assertPathIs('/admin/permissions')
+        ->assertSee('Permisos del Sistema')
         ->assertNoJavaScriptErrors();
 });
 

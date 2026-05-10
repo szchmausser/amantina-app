@@ -629,33 +629,45 @@ test('admin puede configurar toda la estructura académica en secuencia', functi
     ]);
 
     // 3. Create grades via factory (using definitions)
+    // Note: 'name' and 'grade_definition_name' must match what the controller
+    // stores — the definition's name (e.g. "1er Año"), not a random factory word.
     $grade1Def = GradeDefinition::where('name', '1er Año')->first();
     $grade1 = Grade::factory()->create([
         'academic_year_id' => $academicYear->id,
+        'name' => $grade1Def->name,
         'grade_definition_id' => $grade1Def->id,
+        'grade_definition_name' => $grade1Def->name,
         'order' => 1,
     ]);
 
     $grade2Def = GradeDefinition::where('name', '2do Año')->first();
     Grade::factory()->create([
         'academic_year_id' => $academicYear->id,
+        'name' => $grade2Def->name,
         'grade_definition_id' => $grade2Def->id,
+        'grade_definition_name' => $grade2Def->name,
         'order' => 2,
     ]);
 
     // 4. Create sections via factory (using definitions)
+    // Note: 'name' must match the definition name (e.g. "A"), not a random factory word.
+    // The page renders "Sección {section.name}", so name="A" → "Sección A".
     $sectionADef = SectionDefinition::where('name', 'A')->first();
     $sectionA = Section::factory()->create([
         'academic_year_id' => $academicYear->id,
         'grade_id' => $grade1->id,
+        'name' => $sectionADef->name,
         'section_definition_id' => $sectionADef->id,
+        'section_definition_name' => $sectionADef->name,
     ]);
 
     $sectionBDef = SectionDefinition::where('name', 'B')->first();
     Section::factory()->create([
         'academic_year_id' => $academicYear->id,
         'grade_id' => $grade1->id,
+        'name' => $sectionBDef->name,
         'section_definition_id' => $sectionBDef->id,
+        'section_definition_name' => $sectionBDef->name,
     ]);
 
     // 5. Create teacher and student
@@ -680,8 +692,37 @@ test('admin puede configurar toda la estructura académica en secuencia', functi
         'academic_year_id' => $academicYear->id,
     ]);
 
-    // 8. Verify the academic structure overview page
+    // 8. Verify the academic structure overview page shows created data
     $page = visit('/admin/academic-info');
     $page->wait(2);
     $page->assertPathIs('/admin/academic-info');
+
+    // Verify the academic year name appears in the "Año Escolar Activo" card
+    // (fails if no active year exists — page would show "No hay Año Escolar activo")
+    $page->assertSee($academicYearName);
+
+    // Verify grade names appear in the CollapsibleTriggers (always visible)
+    // (fails if no grades exist — page would show "No se han definido grados")
+    $page->assertSee('1er Año');
+    $page->assertSee('2do Año');
+
+    // Verify summary stats in the "Resumen General" card
+    // (fails if counts are wrong — proves enrollment and structure data)
+    $page->assertSee('2 Grados');
+    $page->assertSee('1 Alumnos');
+
+    $page->assertNoJavaScriptErrors();
+
+    // 9. Navigate to section detail to verify teacher assignment and enrollment
+    $page = visit("/admin/sections/{$sectionA->id}");
+    $page->wait(2);
+    $page->assertPathIs("/admin/sections/{$sectionA->id}");
+
+    // Verify the assigned teacher appears in the section detail
+    $page->assertSee('Prof. Happy Path');
+
+    // Verify the enrolled student appears in the section detail
+    $page->assertSee('Alumno Happy Path');
+
+    $page->assertNoJavaScriptErrors();
 });

@@ -6,6 +6,7 @@ use App\Models\User;
 use Database\Seeders\InstitutionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 use Tests\TestCase;
 
@@ -26,6 +27,9 @@ class RegistrationTest extends TestCase
         $response = $this->get(route('register'));
 
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('auth/register'),
+        );
     }
 
     public function test_new_users_can_register()

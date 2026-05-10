@@ -134,27 +134,31 @@ test('admin puede eliminar una definición de grado', function () {
     $page->assertDontSee('1er Año');
 });
 
-test('admin puede ver el badge de orden de cada definición', function () {
+test('admin puede ver las definiciones de grado con sus nombres en el listado', function () {
     GradeDefinition::factory()->create(['name' => '1er Año', 'order' => 1]);
     GradeDefinition::factory()->create(['name' => '2do Año', 'order' => 2]);
 
     $page = visit('/admin/grade-definitions');
     $page->wait(2);
 
-    // Verify order badges are visible
+    // Verify page title anchors assertions to the correct context
+    $page->assertSee('Definiciones de Grados');
+    // Verify grade names are visible in the list
     $page->assertSee('1er Año');
     $page->assertSee('2do Año');
     $page->assertNoJavaScriptErrors();
 });
 
-test('admin puede ver el estado activo/inactivo de cada definición', function () {
+test('admin puede ver definiciones de grados activas e inactivas en el listado', function () {
     GradeDefinition::factory()->create(['name' => '1er Año', 'is_active' => true]);
     GradeDefinition::factory()->create(['name' => '2do Año', 'is_active' => false]);
 
     $page = visit('/admin/grade-definitions');
     $page->wait(2);
 
-    // Verify both definitions are visible
+    // Verify page title anchors assertions to the correct context
+    $page->assertSee('Definiciones de Grados');
+    // Verify both active and inactive definitions appear in the list
     $page->assertSee('1er Año');
     $page->assertSee('2do Año');
     $page->assertNoJavaScriptErrors();
@@ -174,11 +178,11 @@ test('usuario sin permiso no puede acceder a definiciones de grados', function (
     $page->assertSee('403');
 });
 
-test('link de definiciones de grados aparece en sidebar para admin', function () {
+test('admin puede acceder a la página de definiciones de grados', function () {
     $page = visit('/dashboard');
     $page->wait(2);
 
-    // Navigate to settings area where the sidebar link should be
+    // Navigate directly to verify the page is accessible
     $page = visit('/admin/grade-definitions');
     $page->wait(2);
 

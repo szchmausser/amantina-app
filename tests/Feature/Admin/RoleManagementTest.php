@@ -146,6 +146,10 @@ class RoleManagementTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+
+        // Verify role permissions were not modified
+        $role->refresh();
+        $this->assertTrue($role->hasPermissionTo('users.view'), 'Permission should remain unchanged after denied update');
     }
 
     /**

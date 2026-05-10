@@ -163,11 +163,12 @@ test('representante ve horas acumuladas de su representado', function () {
     // Representative views dashboard
     $page = visit('/dashboard');
 
+    // PRIMARY: Verify the representative sees their student's data
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel del Representante')
+        ->assertSee('Progreso de Valentina Rojas')
+        ->assertSee('4.0h') // accumulated hours displayed with .1 precision
         ->assertNoJavaScriptErrors();
-
-    // Verify hours are visible on the dashboard
-    $page->assertSee('4');
 });
 
 // ============================================================================
@@ -228,10 +229,14 @@ test('representante ve progreso acumulado de su representado con múltiples jorn
         'hours' => 5.0,
     ]);
 
-    // Representative views dashboard
+    // Representative views dashboard — should show accumulated 8.0h
     $page = visit('/dashboard');
 
+    // PRIMARY: Verify accumulated hours (3+5=8) and student data are visible
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel del Representante')
+        ->assertSee('Progreso de Valentina Rojas')
+        ->assertSee('8.0h') // 3h + 5h = 8h accumulated
         ->assertNoJavaScriptErrors();
 });
 

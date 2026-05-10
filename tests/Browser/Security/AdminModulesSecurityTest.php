@@ -34,6 +34,7 @@ test('alumno no puede acceder a años escolares', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Años Escolares');
 });
 
 test('alumno no puede acceder a lapsos académicos', function () {
@@ -46,6 +47,7 @@ test('alumno no puede acceder a lapsos académicos', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Lapsos Académicos');
 });
 
 test('alumno no puede acceder a grados', function () {
@@ -58,6 +60,7 @@ test('alumno no puede acceder a grados', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Grados');
 });
 
 test('alumno no puede acceder a secciones', function () {
@@ -70,6 +73,7 @@ test('alumno no puede acceder a secciones', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Secciones');
 });
 
 test('alumno no puede acceder a inscripciones', function () {
@@ -82,6 +86,7 @@ test('alumno no puede acceder a inscripciones', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Inscripciones');
 });
 
 test('alumno no puede acceder a asignaciones de profesores', function () {
@@ -94,6 +99,7 @@ test('alumno no puede acceder a asignaciones de profesores', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Asignaciones Docentes');
 });
 
 test('alumno no puede acceder a jornadas de campo', function () {
@@ -106,6 +112,7 @@ test('alumno no puede acceder a jornadas de campo', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Jornadas de Campo');
 });
 
 test('alumno no puede acceder a catálogos (categorías de actividad)', function () {
@@ -118,6 +125,7 @@ test('alumno no puede acceder a catálogos (categorías de actividad)', function
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Categorías de Actividades');
 });
 
 test('alumno no puede acceder a catálogos (ubicaciones)', function () {
@@ -130,6 +138,7 @@ test('alumno no puede acceder a catálogos (ubicaciones)', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Ubicaciones');
 });
 
 test('alumno no puede acceder a catálogos (condiciones de salud)', function () {
@@ -142,6 +151,7 @@ test('alumno no puede acceder a catálogos (condiciones de salud)', function () 
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Condiciones de Salud');
 });
 
 // ============================================================================
@@ -158,6 +168,7 @@ test('representante no puede acceder a años escolares', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Años Escolares');
 });
 
 test('representante no puede acceder a lapsos académicos', function () {
@@ -170,6 +181,7 @@ test('representante no puede acceder a lapsos académicos', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Lapsos Académicos');
 });
 
 test('representante no puede acceder a grados', function () {
@@ -182,6 +194,7 @@ test('representante no puede acceder a grados', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Grados');
 });
 
 test('representante no puede acceder a secciones', function () {
@@ -194,6 +207,7 @@ test('representante no puede acceder a secciones', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Secciones');
 });
 
 test('representante no puede acceder a inscripciones', function () {
@@ -206,6 +220,7 @@ test('representante no puede acceder a inscripciones', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Inscripciones');
 });
 
 test('representante no puede acceder a asignaciones de profesores', function () {
@@ -218,6 +233,7 @@ test('representante no puede acceder a asignaciones de profesores', function () 
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Asignaciones Docentes');
 });
 
 test('representante no puede acceder a jornadas de campo', function () {
@@ -230,6 +246,7 @@ test('representante no puede acceder a jornadas de campo', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Jornadas de Campo');
 });
 
 test('representante no puede acceder a catálogos (categorías de actividad)', function () {
@@ -242,6 +259,7 @@ test('representante no puede acceder a catálogos (categorías de actividad)', f
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Categorías de Actividades');
 });
 
 test('representante no puede acceder a catálogos (ubicaciones)', function () {
@@ -254,6 +272,7 @@ test('representante no puede acceder a catálogos (ubicaciones)', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Ubicaciones');
 });
 
 test('representante no puede acceder a catálogos (condiciones de salud)', function () {
@@ -266,6 +285,7 @@ test('representante no puede acceder a catálogos (condiciones de salud)', funct
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Condiciones de Salud');
 });
 
 // ============================================================================
@@ -282,6 +302,7 @@ test('profesor no puede acceder a años escolares', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Años Escolares');
 });
 
 test('profesor no puede acceder a lapsos académicos', function () {
@@ -294,6 +315,7 @@ test('profesor no puede acceder a lapsos académicos', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Lapsos Académicos');
 });
 
 test('profesor no puede acceder a grados', function () {
@@ -306,6 +328,7 @@ test('profesor no puede acceder a grados', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Grados');
 });
 
 test('profesor no puede acceder a secciones', function () {
@@ -318,6 +341,7 @@ test('profesor no puede acceder a secciones', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Secciones');
 });
 
 test('profesor no puede acceder a asignaciones de profesores', function () {
@@ -330,6 +354,7 @@ test('profesor no puede acceder a asignaciones de profesores', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Asignaciones Docentes');
 });
 
 // Nota: Profesor SÍ puede acceder a estos módulos (tiene permisos):
@@ -349,4 +374,5 @@ test('profesor no puede acceder a catálogos (condiciones de salud)', function (
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Condiciones de Salud');
 });

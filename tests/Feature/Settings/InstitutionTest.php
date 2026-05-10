@@ -4,6 +4,7 @@ namespace Tests\Feature\Settings;
 
 use App\Models\Institution;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,13 +12,23 @@ class InstitutionTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
+
     public function test_institution_settings_page_can_be_rendered()
     {
         $user = User::factory()->create();
+        $user->assignRole('admin');
 
         $response = $this->actingAs($user)->get(route('institution.edit'));
 
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('settings/institution')
+        );
     }
 
     public function test_institution_settings_can_be_updated()

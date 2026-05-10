@@ -19,19 +19,19 @@ class UserSeederTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
 
-        // Total users: 1 (admin) + 99 (test users) = 100
-        $this->assertCount(100, User::all());
+        // Total users: 1 (admin from UserSeeder) + 17 (TestUsersSeeder: 5 prof + 2 rep + 10 alum) = 18
+        $this->assertCount(18, User::all());
 
         // Verify Admin count (created in UserSeeder)
         $this->assertCount(1, User::role('admin')->get());
 
-        // Verify Profesor count (5)
+        // Verify Profesor count (5 from TestUsersSeeder)
         $this->assertCount(5, User::role('profesor')->get());
 
-        // Verify Representante count (9)
-        $this->assertCount(9, User::role('representante')->get());
+        // Verify Representante count (2 from TestUsersSeeder)
+        $this->assertCount(2, User::role('representante')->get());
 
-        // Verify Alumno count (85)
-        $this->assertCount(85, User::role('alumno')->get());
+        // Verify Alumno count (10 from TestUsersSeeder)
+        $this->assertCount(10, User::role('alumno')->get());
     }
 }

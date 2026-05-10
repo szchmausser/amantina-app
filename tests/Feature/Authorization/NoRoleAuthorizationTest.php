@@ -7,6 +7,7 @@ use App\Models\FieldSession;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class NoRoleAuthorizationTest extends TestCase
@@ -73,6 +74,9 @@ class NoRoleAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->userWithoutRole)->get(route('dashboard'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('dashboard'),
+        );
     }
 
     /**
@@ -82,6 +86,9 @@ class NoRoleAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->userWithoutRole)->get(route('profile.edit'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('settings/profile'),
+        );
     }
 
     /**
@@ -295,6 +302,7 @@ class NoRoleAuthorizationTest extends TestCase
         ]);
 
         $response->assertForbidden();
+        $this->assertDatabaseHas('users', ['id' => $this->userWithoutRole->id]);
     }
 
     /**

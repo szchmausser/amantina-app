@@ -11,8 +11,8 @@ uses(RefreshDatabase::class, Browsable::class);
  * SECURITY TESTS: User Management Access Control
  *
  * Estos tests verifican que el control de acceso al módulo de usuarios funciona correctamente:
- * - Admin: acceso completo
- * - Profesor: puede ver listado (tiene permiso users.view)
+ * - Admin: acceso completo (view, create, edit, delete)
+ * - Profesor: puede ver listado y detalle (permiso users.view), pero NO puede crear ni editar otros usuarios
  * - Alumno: NO puede acceder (403)
  * - Representante: NO puede acceder (403)
  */
@@ -34,7 +34,7 @@ test('admin puede acceder al listado de usuarios', function () {
     $page->wait(2);
 
     $page->assertPathIs('/admin/users');
-    $page->assertSee('Usuarios');
+    $page->assertSee('Gestión de Usuarios');
 });
 
 test('admin puede acceder al formulario de creación', function () {
@@ -48,6 +48,7 @@ test('admin puede acceder al formulario de creación', function () {
 
     $page->assertPathIs('/admin/users/create');
     $page->assertSee('Nuevo Usuario');
+    $page->assertSee('Cédula');
 });
 
 test('admin puede acceder al detalle de un usuario', function () {
@@ -70,7 +71,7 @@ test('admin puede acceder al formulario de edición', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $user = User::factory()->create();
+    $user = User::factory()->create(['name' => 'Carlos Editable']);
     $user->assignRole('alumno');
 
     $this->actingAs($admin);
@@ -80,6 +81,7 @@ test('admin puede acceder al formulario de edición', function () {
 
     $page->assertPathIs("/admin/users/{$user->id}/edit");
     $page->assertSee('Editar Usuario');
+    $page->assertSee('Carlos Editable');
 });
 
 // ============================================================================
@@ -96,7 +98,7 @@ test('profesor puede acceder al listado de usuarios', function () {
     $page->wait(2);
 
     $page->assertPathIs('/admin/users');
-    $page->assertSee('Usuarios');
+    $page->assertSee('Gestión de Usuarios');
 });
 
 test('profesor puede ver detalle de un usuario', function () {
@@ -116,6 +118,39 @@ test('profesor puede ver detalle de un usuario', function () {
 });
 
 // ============================================================================
+// TESTS: Profesor NO puede crear ni editar otros usuarios
+// ============================================================================
+
+test('profesor no puede acceder al formulario de creación de usuarios', function () {
+    $profesor = User::factory()->create();
+    $profesor->assignRole('profesor');
+
+    $this->actingAs($profesor);
+
+    $page = visit('/admin/users/create');
+    $page->wait(2);
+
+    $page->assertSee('403');
+    $page->assertDontSee('Nuevo Usuario');
+});
+
+test('profesor no puede acceder al formulario de edición de otro usuario', function () {
+    $profesor = User::factory()->create();
+    $profesor->assignRole('profesor');
+
+    $user = User::factory()->create(['name' => 'Carlos NoEditable']);
+    $user->assignRole('alumno');
+
+    $this->actingAs($profesor);
+
+    $page = visit("/admin/users/{$user->id}/edit");
+    $page->wait(2);
+
+    $page->assertSee('403');
+    $page->assertDontSee('Editar Usuario');
+});
+
+// ============================================================================
 // TESTS: Alumno NO puede acceder (403)
 // ============================================================================
 
@@ -129,6 +164,7 @@ test('alumno no puede acceder al listado de usuarios', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Gestión de Usuarios');
 });
 
 test('alumno no puede acceder al formulario de creación', function () {
@@ -141,6 +177,7 @@ test('alumno no puede acceder al formulario de creación', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Nuevo Usuario');
 });
 
 test('alumno no puede acceder al detalle de un usuario', function () {
@@ -156,6 +193,7 @@ test('alumno no puede acceder al detalle de un usuario', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee($user->name);
 });
 
 test('alumno no puede acceder al formulario de edición', function () {
@@ -171,6 +209,7 @@ test('alumno no puede acceder al formulario de edición', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Editar Usuario');
 });
 
 // ============================================================================
@@ -187,6 +226,7 @@ test('representante no puede acceder al listado de usuarios', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Gestión de Usuarios');
 });
 
 test('representante no puede acceder al formulario de creación', function () {
@@ -199,6 +239,7 @@ test('representante no puede acceder al formulario de creación', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Nuevo Usuario');
 });
 
 test('representante no puede acceder al detalle de un usuario', function () {
@@ -214,6 +255,7 @@ test('representante no puede acceder al detalle de un usuario', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee($user->name);
 });
 
 test('representante no puede acceder al formulario de edición', function () {
@@ -229,4 +271,5 @@ test('representante no puede acceder al formulario de edición', function () {
     $page->wait(2);
 
     $page->assertSee('403');
+    $page->assertDontSee('Editar Usuario');
 });

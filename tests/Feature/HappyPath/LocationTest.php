@@ -187,6 +187,10 @@ test('alumno cannot create location', function () {
     ]);
 
     $response->assertForbidden();
+
+    $this->assertDatabaseMissing('locations', [
+        'name' => 'Biblioteca',
+    ]);
 });
 
 test('alumno cannot update location', function () {
@@ -201,6 +205,11 @@ test('alumno cannot update location', function () {
     ]);
 
     $response->assertForbidden();
+
+    $this->assertDatabaseHas('locations', [
+        'id' => $location->id,
+        'name' => 'Biblioteca', // No cambió
+    ]);
 });
 
 test('alumno cannot delete location', function () {
@@ -213,6 +222,11 @@ test('alumno cannot delete location', function () {
     $response = $this->delete("/admin/locations/{$location->id}");
 
     $response->assertForbidden();
+
+    $this->assertDatabaseHas('locations', [
+        'id' => $location->id,
+        'deleted_at' => null,
+    ]);
 });
 
 // ============================================================================
@@ -235,6 +249,10 @@ test('representante cannot create location', function () {
     ]);
 
     $response->assertForbidden();
+
+    $this->assertDatabaseMissing('locations', [
+        'name' => 'Biblioteca',
+    ]);
 });
 
 test('representante cannot update location', function () {
@@ -249,6 +267,11 @@ test('representante cannot update location', function () {
     ]);
 
     $response->assertForbidden();
+
+    $this->assertDatabaseHas('locations', [
+        'id' => $location->id,
+        'name' => 'Biblioteca', // No cambió
+    ]);
 });
 
 test('representante cannot delete location', function () {
@@ -261,6 +284,11 @@ test('representante cannot delete location', function () {
     $response = $this->delete("/admin/locations/{$location->id}");
 
     $response->assertForbidden();
+
+    $this->assertDatabaseHas('locations', [
+        'id' => $location->id,
+        'deleted_at' => null,
+    ]);
 });
 
 // ============================================================================

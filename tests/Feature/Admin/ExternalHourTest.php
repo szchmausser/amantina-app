@@ -91,6 +91,10 @@ class ExternalHourTest extends TestCase
             ->post(route('admin.external-hours.store', $this->student), $this->validPayload());
 
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('external_hours', [
+            'user_id' => $this->student->id,
+            'period' => '2019-2023',
+        ]);
     }
 
     public function test_store_requires_all_mandatory_fields(): void
@@ -202,6 +206,11 @@ class ExternalHourTest extends TestCase
             ->put(route('admin.external-hours.update', $externalHour), $this->validPayload());
 
         $response->assertStatus(403);
+        $this->assertDatabaseHas('external_hours', [
+            'id' => $externalHour->id,
+            'period' => $externalHour->period,
+            'hours' => $externalHour->hours,
+        ]);
     }
 
     // ── DESTROY ───────────────────────────────────────────────────────────────
@@ -236,6 +245,10 @@ class ExternalHourTest extends TestCase
             ->delete(route('admin.external-hours.destroy', $externalHour));
 
         $response->assertStatus(403);
+        $this->assertDatabaseHas('external_hours', [
+            'id' => $externalHour->id,
+            'user_id' => $this->student->id,
+        ]);
     }
 
     // ── HOUR ACCUMULATOR INTEGRATION ──────────────────────────────────────────
