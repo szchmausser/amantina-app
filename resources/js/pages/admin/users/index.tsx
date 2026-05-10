@@ -20,6 +20,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
+import SettingsLayout from '@/layouts/settings/layout';
 import {
     index as userIndex,
     destroy as userDestroy,
@@ -284,55 +285,57 @@ export default function Index({ users, filters, availableRoles }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gestión de Usuarios" />
 
-            <div className="flex h-full flex-1 flex-col gap-6 p-4 lg:p-8">
-                {/* Título */}
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                        Usuarios
-                    </h1>
-                    <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                        Administra las cuentas de usuario, roles y permisos del
-                        sistema.
-                    </p>
+            <SettingsLayout>
+                <div className="flex h-full flex-1 flex-col gap-6">
+                    {/* Título */}
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                            Usuarios
+                        </h1>
+                        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                            Administra las cuentas de usuario, roles y permisos del
+                            sistema.
+                        </p>
+                    </div>
+
+                    {/* Filtros usando componente reutilizable */}
+                    <TableFilters
+                        searchValue={search}
+                        onSearchChange={setSearch}
+                        searchPlaceholder="Buscar por nombre, correo o cédula..."
+                        searchLoading={isSearching}
+                        filterSelect={roleFilterSelect}
+                        hasFilters={hasFilters}
+                        onClearFilters={handleClearFilters}
+                        createButton={createButton}
+                    />
+
+                    {/* Tabla */}
+                    <DataTable
+                        data={users.data}
+                        columns={tableColumns}
+                        pagination={pagination}
+                        onPageChange={(page, url) => {
+                            router.get(
+                                url,
+                                {
+                                    search: search || undefined,
+                                    role: role === 'all' ? undefined : role,
+                                    per_page: perPage,
+                                },
+                                {
+                                    preserveState: true,
+                                    replace: true,
+                                },
+                            );
+                        }}
+                        perPage={perPage}
+                        onPerPageChange={setPerPage}
+                        perPageOptions={[5, 15, 25, 50, 100]}
+                        emptyMessage="No se encontraron usuarios que coincidan con los criterios de búsqueda."
+                    />
                 </div>
-
-                {/* Filtros usando componente reutilizable */}
-                <TableFilters
-                    searchValue={search}
-                    onSearchChange={setSearch}
-                    searchPlaceholder="Buscar por nombre, correo o cédula..."
-                    searchLoading={isSearching}
-                    filterSelect={roleFilterSelect}
-                    hasFilters={hasFilters}
-                    onClearFilters={handleClearFilters}
-                    createButton={createButton}
-                />
-
-                {/* Tabla */}
-                <DataTable
-                    data={users.data}
-                    columns={tableColumns}
-                    pagination={pagination}
-                    onPageChange={(page, url) => {
-                        router.get(
-                            url,
-                            {
-                                search: search || undefined,
-                                role: role === 'all' ? undefined : role,
-                                per_page: perPage,
-                            },
-                            {
-                                preserveState: true,
-                                replace: true,
-                            },
-                        );
-                    }}
-                    perPage={perPage}
-                    onPerPageChange={setPerPage}
-                    perPageOptions={[5, 15, 25, 50, 100]}
-                    emptyMessage="No se encontraron usuarios que coincidan con los criterios de búsqueda."
-                />
-            </div>
+            </SettingsLayout>
 
             {/* Confirmation Dialog */}
             <AlertDialog

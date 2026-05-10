@@ -11,8 +11,8 @@ use App\Models\FieldSession;
 use App\Models\FieldSessionStatus;
 use App\Models\Location;
 use App\Models\SchoolTerm;
-use App\Models\Section;
 use App\Models\TeacherAssignment;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class FieldSessionsSeeder extends Seeder
@@ -86,7 +86,14 @@ class FieldSessionsSeeder extends Seeder
         // Generar entre 120 y 180 jornadas totales (más jornadas para simular año cerca de terminar)
         $numSessions = rand(120, 180);
 
+        $bar = $this->command->getOutput()->createProgressBar($numSessions);
+        $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%% — %message%');
+        $bar->setMessage('Iniciando...');
+        $bar->start();
+
         for ($i = 0; $i < $numSessions; $i++) {
+            $bar->setMessage('Jornada '.($i + 1)."/{$numSessions}");
+            $bar->advance();
             // Seleccionar un término aleatorio
             $term = $terms->random();
 
@@ -97,8 +104,8 @@ class FieldSessionsSeeder extends Seeder
             $location = $locations->random();
 
             // Generar fecha aleatoria dentro del término
-            $startDate = \Carbon\Carbon::parse($term->start_date);
-            $endDate = \Carbon\Carbon::parse($term->end_date);
+            $startDate = Carbon::parse($term->start_date);
+            $endDate = Carbon::parse($term->end_date);
             $sessionDate = $startDate->copy()->addDays(rand(0, max(0, $startDate->diffInDays($endDate))));
 
             // Hora de inicio entre 7am y 2pm
@@ -187,6 +194,9 @@ class FieldSessionsSeeder extends Seeder
             }
         }
 
+        $bar->finish();
+        $this->command->newLine(2);
+
         $this->command->info("✅ Generadas {$totalSessions} jornadas de campo");
         $this->command->info("✅ Generadas {$totalAttendances} asistencias");
         $this->command->info("✅ Generadas {$totalActivities} actividades");
@@ -205,7 +215,7 @@ class FieldSessionsSeeder extends Seeder
             'Actividad de Servicio',
         ];
 
-        return $names[array_rand($names)] . ' #' . rand(1, 999);
+        return $names[array_rand($names)].' #'.rand(1, 999);
     }
 
     private function generateSessionDescription(): string

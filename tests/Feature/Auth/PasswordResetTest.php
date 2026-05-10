@@ -5,7 +5,9 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 use Tests\TestCase;
 
@@ -25,6 +27,9 @@ class PasswordResetTest extends TestCase
         $response = $this->get(route('password.request'));
 
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('auth/forgot-password'),
+        );
     }
 
     public function test_reset_password_link_can_be_requested()
@@ -50,6 +55,9 @@ class PasswordResetTest extends TestCase
             $response = $this->get(route('password.reset', $notification->token));
 
             $response->assertOk();
+            $response->assertInertia(fn (Assert $page) => $page
+                ->component('auth/reset-password'),
+            );
 
             return true;
         });
@@ -59,7 +67,7 @@ class PasswordResetTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        $user = User::factory()->create(['password' => bcrypt('old-password')]);
 
         $this->post(route('password.email'), ['email' => $user->email]);
 
@@ -67,13 +75,19 @@ class PasswordResetTest extends TestCase
             $response = $this->post(route('password.update'), [
                 'token' => $notification->token,
                 'email' => $user->email,
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'new-secure-password',
+                'password_confirmation' => 'new-secure-password',
             ]);
 
             $response
                 ->assertSessionHasNoErrors()
                 ->assertRedirect(route('login'));
+
+            // Verify password was actually changed
+            $this->assertTrue(
+                Hash::check('new-secure-password', $user->fresh()->password),
+                'Password was not updated in the database'
+            );
 
             return true;
         });

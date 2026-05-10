@@ -80,6 +80,10 @@ class FieldSessionControllerTest extends TestCase
         $response = $this->actingAs($this->profesor)->get(route('admin.field-sessions.index'));
 
         $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('admin/field-sessions/index')
+            ->has('fieldSessions.data')
+        );
     }
 
     public function test_admin_can_create_field_session(): void
@@ -246,6 +250,10 @@ class FieldSessionControllerTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+        $this->assertDatabaseHas('field_sessions', [
+            'id' => $session->id,
+            'name' => $session->name,
+        ]);
     }
 
     public function test_admin_can_delete_field_session(): void
@@ -271,6 +279,9 @@ class FieldSessionControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('admin.field-sessions.store'), []);
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('field_sessions', [
+            'name' => null,
+        ]);
     }
 
     public function test_base_hours_is_calculated_automatically(): void

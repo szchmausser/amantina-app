@@ -5,8 +5,11 @@ namespace Tests\Feature\Admin;
 use App\Models\AcademicYear;
 use App\Models\Grade;
 use App\Models\Section;
+use App\Models\SectionDefinition;
 use App\Models\User;
+use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Database\Seeders\SectionDefinitionSeeder;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -23,6 +26,8 @@ class SectionControllerTest extends TestCase
         $this->seed(RoleAndPermissionSeeder::class);
         $this->app->make(PermissionRegistrar::class)->forgetCachedPermissions();
         $this->withoutVite();
+        $this->seed(GradeDefinitionSeeder::class);
+        $this->seed(SectionDefinitionSeeder::class);
     }
 
     public function test_admin_can_view_sections_index(): void
@@ -56,11 +61,12 @@ class SectionControllerTest extends TestCase
 
         $year = AcademicYear::factory()->create();
         $grade = Grade::factory()->create(['academic_year_id' => $year->id]);
+        $definition = SectionDefinition::first();
 
         $response = $this->actingAs($admin)->post(route('admin.sections.store'), [
             'academic_year_id' => $year->id,
             'grade_id' => $grade->id,
-            'name' => 'Sección A',
+            'section_definition_id' => $definition->id,
         ]);
 
         $response->assertRedirect(route('admin.sections.index', [
@@ -71,7 +77,8 @@ class SectionControllerTest extends TestCase
         $this->assertDatabaseHas('sections', [
             'academic_year_id' => $year->id,
             'grade_id' => $grade->id,
-            'name' => 'Sección A',
+            'section_definition_id' => $definition->id,
+            'section_definition_name' => $definition->name,
         ]);
     }
 
@@ -82,13 +89,14 @@ class SectionControllerTest extends TestCase
 
         $year1 = AcademicYear::factory()->create();
         $year2 = AcademicYear::factory()->create();
+        $definition = SectionDefinition::first();
         $gradeFromYear1 = Grade::factory()->create(['academic_year_id' => $year1->id]);
 
         // Attempting to create a section for Year 2, but using a Grade from Year 1
         $response = $this->actingAs($admin)->post(route('admin.sections.store'), [
             'academic_year_id' => $year2->id,
             'grade_id' => $gradeFromYear1->id,
-            'name' => 'A',
+            'section_definition_id' => $definition->id,
         ]);
 
         $response->assertSessionHasErrors('grade_id');
@@ -100,11 +108,11 @@ class SectionControllerTest extends TestCase
         $admin->assignRole('admin');
 
         $section = Section::factory()->create();
+        $originalDefinitionName = $section->section_definition_name;
 
         $response = $this->actingAs($admin)->put(route('admin.sections.update', $section), [
             'academic_year_id' => $section->academic_year_id,
             'grade_id' => $section->grade_id,
-            'name' => 'Sección B',
         ]);
 
         $response->assertRedirect(route('admin.sections.index', [
@@ -114,7 +122,36 @@ class SectionControllerTest extends TestCase
 
         $this->assertDatabaseHas('sections', [
             'id' => $section->id,
-            'name' => 'Sección B',
+            'section_definition_id' => $section->section_definition_id,
+            'section_definition_name' => $originalDefinitionName,
+        ]);
+    }
+
+    public function test_section_edit_does_not_change_definition(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $definition = SectionDefinition::first();
+        $section = Section::factory()->create([
+            'section_definition_id' => $definition->id,
+            'section_definition_name' => $definition->name,
+        ]);
+
+        $response = $this->actingAs($admin)->put(route('admin.sections.update', $section), [
+            'academic_year_id' => $section->academic_year_id,
+            'grade_id' => $section->grade_id,
+        ]);
+
+        $response->assertRedirect(route('admin.sections.index', [
+            'academic_year_id' => $section->academic_year_id,
+            'grade_id' => $section->grade_id,
+        ]));
+
+        $this->assertDatabaseHas('sections', [
+            'id' => $section->id,
+            'section_definition_id' => $definition->id,
+            'section_definition_name' => $definition->name,
         ]);
     }
 
@@ -143,5 +180,6 @@ class SectionControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('admin.sections.store'), []);
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('sections', []);
     }
 }

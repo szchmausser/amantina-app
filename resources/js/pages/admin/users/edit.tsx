@@ -1,6 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
-    ArrowLeft,
     Save,
     ShieldCheck,
     User as UserIcon,
@@ -14,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
+import SettingsLayout from '@/layouts/settings/layout';
 import { index as userIndex, update as userUpdate } from '@/routes/admin/users';
 import type { BreadcrumbItem, User } from '@/types';
 
@@ -92,30 +92,33 @@ export default function Edit({ user, roles, allPermissions }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar Usuario: ${user.name}`} />
 
-            <div className="mx-auto max-w-2xl p-4 lg:p-8">
-                {/* Header */}
-                <div className="mb-6">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                        className="mb-2 -ml-2 h-8"
-                    >
-                        <Link href={userIndex().url}>
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Volver al listado
-                        </Link>
-                    </Button>
-                    <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                        Editar Usuario
-                    </h1>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                        Modifica los datos del perfil y los accesos de{' '}
-                        {user.name}.
-                    </p>
-                </div>
+            <SettingsLayout>
+                <div className="px-4 py-4">
+                    {/* Header */}
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                                Editar Usuario
+                            </h1>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                Modifica los datos del perfil y los accesos de{' '}
+                                {user.name}.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" asChild>
+                                <Link href={userIndex().url}>
+                                    Volver
+                                </Link>
+                            </Button>
+                            <Button type="submit" form="user-form" disabled={processing}>
+                                <Save className="mr-2 h-4 w-4" />
+                                Actualizar Usuario
+                            </Button>
+                        </div>
+                    </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                    <form id="user-form" onSubmit={handleSubmit} className="space-y-6">
                     {/* Profile Card */}
                     <div className="overflow-hidden rounded-xl border">
                         <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
@@ -338,19 +341,24 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                             </h2>
                         </div>
                         <div className="space-y-4 p-6">
-                            <p className="text-xs text-neutral-500">
-                                Asigna capacidades específicas adicionales. Los
-                                permisos otorgados por roles aparecen
-                                deshabilitados.
-                            </p>
-                            <div className="grid gap-6 sm:grid-cols-2">
+                            <div className="flex items-start gap-3 rounded-lg border bg-neutral-50 px-4 py-3 dark:bg-neutral-900/30 dark:border-neutral-700">
+                                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400" />
+                                <div className="text-xs text-neutral-600 dark:text-neutral-400">
+                                    <p className="font-medium text-neutral-700 dark:text-neutral-300">¿Qué son los permisos directos?</p>
+                                    <p className="mt-0.5">
+                                        Son capacidades que se asignan <strong>adicionalmente</strong> a un usuario, fuera de las que ya tiene por su rol.
+                                        Los que ya están cubiertos por el rol aparecen <strong>deshabilitados</strong> con la etiqueta <Badge variant="outline" className="mx-0.5 px-1 py-0 text-[8px] font-normal uppercase align-middle border-amber-200 text-amber-600 bg-amber-50 dark:border-amber-800 dark:text-amber-500 dark:bg-amber-950/30">rol</Badge>.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="grid sm:grid-cols-5 gap-y-6 divide-x divide-neutral-200 dark:divide-neutral-700">
                                 {Object.entries(groupedPermissions).map(
                                     ([module, perms]) => (
-                                        <div key={module} className="space-y-2">
-                                            <h3 className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                                        <div key={module} className="space-y-3 px-3">
+                                            <h3 className="border-b border-neutral-100 pb-1.5 text-[11px] font-bold tracking-wider text-neutral-500 uppercase dark:border-neutral-800">
                                                 {module}
                                             </h3>
-                                            <div className="space-y-1.5">
+                                            <div className="space-y-2.5">
                                                 {perms.map((perm) => {
                                                     const action =
                                                         perm.split('.')[1];
@@ -366,7 +374,8 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                                                     return (
                                                         <div
                                                             key={perm}
-                                                            className="flex items-center gap-2"
+                                                            className={`flex items-start gap-2.5 rounded px-1.5 py-1 -mx-1.5 ${isInherited ? 'bg-neutral-50 dark:bg-neutral-800/40' : ''}`}
+                                                            title={isInherited ? `Este permiso lo hereda del rol que tiene asignado. No se puede modificar directamente.` : undefined}
                                                         >
                                                             <Checkbox
                                                                 id={`direct-perm-${perm}`}
@@ -377,6 +386,7 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                                                                 disabled={
                                                                     isInherited
                                                                 }
+                                                                className={`mt-0.5 ${isInherited ? 'opacity-40' : ''}`}
                                                                 onCheckedChange={() =>
                                                                     toggleDirectPermission(
                                                                         perm,
@@ -385,15 +395,23 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                                                             />
                                                             <Label
                                                                 htmlFor={`direct-perm-${perm}`}
-                                                                className={`cursor-pointer text-sm capitalize ${isInherited ? 'text-neutral-400' : ''}`}
+                                                                className={`cursor-pointer text-sm leading-tight capitalize ${isInherited ? 'text-neutral-400 dark:text-neutral-500' : 'text-neutral-700 dark:text-neutral-300'}`}
                                                             >
                                                                 {action}
                                                                 {isInherited && (
                                                                     <Badge
                                                                         variant="outline"
-                                                                        className="ml-1 px-1 py-0 text-[8px] font-normal uppercase"
+                                                                        className="ml-1 px-1.5 py-0.5 text-[10px] font-medium uppercase align-middle border-amber-300 text-amber-700 bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:bg-amber-950/30"
                                                                     >
-                                                                        rol
+                                                                heredado
+                                                                    </Badge>
+                                                                )}
+                                                                {isDirectlyAssigned && !isInherited && (
+                                                                    <Badge
+                                                                        variant="outline"
+                                                                        className="ml-1 px-1.5 py-0.5 text-[10px] font-medium uppercase align-middle border-blue-300 text-blue-700 bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:bg-blue-950/30"
+                                                                    >
+                                                                asignado
                                                                     </Badge>
                                                                 )}
                                                             </Label>
@@ -408,24 +426,9 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                         </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center justify-end gap-3">
-                        <Button variant="outline" asChild disabled={processing}>
-                            <Link href={userIndex().url}>Cancelar</Link>
-                        </Button>
-                        <Button type="submit" disabled={processing}>
-                            {processing ? (
-                                'Guardando...'
-                            ) : (
-                                <>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    Actualizar Usuario
-                                </>
-                            )}
-                        </Button>
-                    </div>
                 </form>
-            </div>
+                </div>
+            </SettingsLayout>
         </AppLayout>
     );
 }

@@ -125,5 +125,8 @@ class SecurityTest extends TestCase
         $response
             ->assertSessionHasErrors('current_password')
             ->assertRedirect(route('security.edit'));
+
+        // Verify password was NOT changed
+        $this->assertTrue(Hash::check('password', $user->refresh()->password), 'Password should not have been changed with wrong current password');
     }
 }

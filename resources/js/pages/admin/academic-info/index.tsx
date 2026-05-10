@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import {
     BookOpen,
     Calendar,
@@ -32,8 +32,12 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { show as academicYearShow } from '@/routes/admin/academic-years';
+import { index as gradesIndex } from '@/routes/admin/grades';
+import { show as sectionShow } from '@/routes/admin/sections';
+import { edit as schoolTermEdit } from '@/routes/admin/school-terms';
+import { show as userShow } from '@/routes/admin/users';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 
 interface Student {
@@ -139,9 +143,14 @@ export default function AcademicInfo({
                             <Calendar className="h-5 w-5 opacity-80" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
+                            <Link
+                                href={academicYearShow({
+                                    academic_year: activeYear.id,
+                                }).url}
+                                className="text-2xl font-bold hover:underline"
+                            >
                                 {activeYear.name}
-                            </div>
+                            </Link>
                             <p className="mt-1 text-xs opacity-80">
                                 {activeYear.start_date} al {activeYear.end_date}
                             </p>
@@ -156,11 +165,20 @@ export default function AcademicInfo({
                             <BookOpen className="h-5 w-5 opacity-80" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {currentTerm
-                                    ? currentTerm.term_type_name
-                                    : 'Fuera de Período'}
-                            </div>
+                            {currentTerm ? (
+                                <Link
+                                    href={schoolTermEdit({
+                                        school_term: currentTerm.id,
+                                    }).url}
+                                    className="text-2xl font-bold hover:underline"
+                                >
+                                    {currentTerm.term_type_name}
+                                </Link>
+                            ) : (
+                                <div className="text-2xl font-bold">
+                                    Fuera de Período
+                                </div>
+                            )}
                             <p className="mt-1 text-xs opacity-80">
                                 {currentTerm
                                     ? `${currentTerm.start_date} al ${currentTerm.end_date}`
@@ -225,9 +243,12 @@ export default function AcademicInfo({
                                                     }
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-semibold">
+                                                    <Link
+                                                        href={gradesIndex().url}
+                                                        className="font-semibold hover:text-indigo-600 hover:underline dark:hover:text-indigo-400"
+                                                    >
                                                         {grade.name}
-                                                    </h3>
+                                                    </Link>
                                                     <p className="text-xs text-muted-foreground">
                                                         {grade.sections.length}{' '}
                                                         Secciones
@@ -260,11 +281,21 @@ export default function AcademicInfo({
                                                                     <Badge
                                                                         variant="outline"
                                                                         className="bg-white font-bold dark:bg-black"
+                                                                        asChild
                                                                     >
-                                                                        Sección{' '}
-                                                                        {
-                                                                            section.name
-                                                                        }
+                                                                        <Link
+                                                                            href={sectionShow(
+                                                                                {
+                                                                                    section:
+                                                                                        section.id,
+                                                                                },
+                                                                            ).url}
+                                                                        >
+                                                                            Sección{' '}
+                                                                            {
+                                                                                section.name
+                                                                            }
+                                                                        </Link>
                                                                     </Badge>
                                                                     <Users className="h-4 w-4 text-neutral-400 transition-colors group-hover:text-indigo-500" />
                                                                 </div>
@@ -288,11 +319,30 @@ export default function AcademicInfo({
                                                                                       .map(
                                                                                           (
                                                                                               t,
-                                                                                          ) =>
-                                                                                              t.name,
-                                                                                      )
-                                                                                      .join(
-                                                                                          ', ',
+                                                                                              i,
+                                                                                          ) => (
+                                                                                              <span
+                                                                                                  key={
+                                                                                                      t.id
+                                                                                                  }
+                                                                                              >
+                                                                                                  {i >
+                                                                                                      0 &&
+                                                                                                      ', '}
+                                                                                                  <Link
+                                                                                                      href={userShow(
+                                                                                                          {
+                                                                                                              user: t.id,
+                                                                                                          },
+                                                                                                      ).url}
+                                                                                                      className="text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                                                                  >
+                                                                                                      {
+                                                                                                          t.name
+                                                                                                      }
+                                                                                                  </Link>
+                                                                                              </span>
+                                                                                          ),
                                                                                       )
                                                                                 : 'Sin asignar'}
                                                                         </span>
@@ -405,11 +455,20 @@ export default function AcademicInfo({
                                                                                                                 student.cedula
                                                                                                             }
                                                                                                         </td>
-                                                                                                        <td className="px-4 py-3 font-medium">
-                                                                                                            {
-                                                                                                                student.name
-                                                                                                            }
-                                                                                                        </td>
+                                                                        <td className="px-4 py-3 font-medium">
+                                                                            <Link
+                                                                                href={userShow(
+                                                                                    {
+                                                                                        user: student.id,
+                                                                                    },
+                                                                                ).url}
+                                                                                className="text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                                            >
+                                                                                {
+                                                                                    student.name
+                                                                                }
+                                                                            </Link>
+                                                                        </td>
                                                                                                     </tr>
                                                                                                 ),
                                                                                             )}

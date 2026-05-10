@@ -26,14 +26,6 @@ class UpdateGradeRequest extends FormRequest
 
         return [
             'academic_year_id' => ['required', 'exists:academic_years,id'],
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('grades', 'name')
-                    ->where('academic_year_id', $academicYearId)
-                    ->ignore($grade->id),
-            ],
             'order' => [
                 'required',
                 'integer',

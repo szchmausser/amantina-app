@@ -48,7 +48,7 @@ interface FieldSession {
     location_name: string | null;
     academic_year: { name: string };
     school_term: { name: string } | null;
-    teacher: { name: string };
+    teacher: { id: number; name: string };
     status: { name: string; description: string | null };
 }
 
@@ -188,7 +188,12 @@ export default function FieldSessionsIndex({
                             {session.base_hours}h
                         </DataTableTD>
                         <DataTableTD className="text-sm text-neutral-600 dark:text-neutral-400">
-                            {session.teacher.name}
+                            <Link
+                                href={`/admin/users/${session.teacher.id}`}
+                                className="font-medium text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                                {session.teacher.name}
+                            </Link>
                         </DataTableTD>
                         <DataTableTD>
                             <Badge

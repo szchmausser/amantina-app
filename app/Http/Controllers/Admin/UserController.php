@@ -162,23 +162,22 @@ class UserController extends Controller
         if ($user->hasRole('alumno')) {
             $activeYear = AcademicYear::active()->first();
 
-            // Horas del año actual
+            // Horas del año actual (solo jornadas, las externas no son año-específicas)
             $currentYearData = $hourAccumulator->getStudentTotalHours($user->id, $activeYear?->id);
 
-            // Horas totales de todos los años (solo jornadas)
-            $allYears = AcademicYear::all();
-            $totalHoursAllYears = 0;
+            // Acumulado general: jornadas de todos los años + horas externas (una sola vez)
+            $allYears = AcademicYear::currentAndPast()->get();
+            $totalJornadaAllYears = 0;
             $totalQuotaAllYears = 0;
 
             foreach ($allYears as $year) {
                 $yearData = $hourAccumulator->getStudentTotalHours($user->id, $year->id);
-                $totalHoursAllYears += $yearData['total_hours'];
+                $totalJornadaAllYears += $yearData['jornada_hours'];
                 $totalQuotaAllYears += $year->required_hours;
             }
 
-            // Agregar horas externas al acumulado general
             $totalExternalHours = (float) ExternalHour::where('user_id', $user->id)->sum('hours');
-            $totalHoursAllYears += $totalExternalHours;
+            $totalHoursAllYears = $totalJornadaAllYears + $totalExternalHours;
 
             $totalPercentage = $totalQuotaAllYears > 0
                 ? ($totalHoursAllYears / $totalQuotaAllYears) * 100
@@ -226,9 +225,11 @@ class UserController extends Controller
 
             $hourStats = [
                 'current_year' => [
-                    'hours' => $currentYearData['total_hours'] ?? 0,
+                    'hours' => $currentYearData['jornada_hours'] ?? 0,
                     'required' => $activeYear?->required_hours ?? 0,
-                    'percentage' => $currentYearData['percentage'] ?? 0,
+                    'percentage' => $activeYear?->required_hours > 0
+                        ? round(($currentYearData['jornada_hours'] / $activeYear->required_hours) * 100, 2)
+                        : 0,
                     'year_name' => $activeYear?->name ?? 'N/A',
                 ],
                 'total' => [

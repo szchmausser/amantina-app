@@ -95,7 +95,7 @@ class GenerateAlertTestData extends Command
             ]);
         }
         $this->info("   ✓ Jornada creada: {$sessionNoActivities->name} (ID: {$sessionNoActivities->id})");
-        $this->info("   ✓ 3 asistencias creadas sin actividades");
+        $this->info('   ✓ 3 asistencias creadas sin actividades');
 
         // 3. Crear jornada CON asistencia y actividades pero con 0 horas
         $this->info('3. Creando asistencias con 0 horas...');
@@ -136,7 +136,7 @@ class GenerateAlertTestData extends Command
             ]);
         }
         $this->info("   ✓ Jornada creada: {$sessionZeroHours->name} (ID: {$sessionZeroHours->id})");
-        $this->info("   ✓ 2 asistencias creadas con actividades de 0 horas");
+        $this->info('   ✓ 2 asistencias creadas con actividades de 0 horas');
 
         $this->newLine();
         $this->info('✅ Datos de prueba generados exitosamente!');

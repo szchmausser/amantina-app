@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, GraduationCap, Plus, Trash2 } from 'lucide-react';
+import { Edit, GraduationCap, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import {
     AlertDialog,
@@ -44,6 +44,7 @@ interface Grade {
     order: number;
     academic_year_id: number;
     sections: Section[];
+    enrollments_count: number;
 }
 
 interface AcademicYear {
@@ -131,6 +132,7 @@ export default function GradesIndex({
             <DataTableHead>
                 <DataTableTH className="w-12">#</DataTableTH>
                 <DataTableTH>Grado</DataTableTH>
+                <DataTableTH className="w-28 text-center">Alumnos</DataTableTH>
                 <DataTableTH className="w-48 text-right">Acciones</DataTableTH>
             </DataTableHead>
             <DataTableBody>
@@ -140,12 +142,11 @@ export default function GradesIndex({
                             {(grades.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
                         <DataTableTD>
-                            <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-2">
                                 <span className="font-semibold text-neutral-900 dark:text-neutral-100">
                                     {grade.name}
                                 </span>
-                                <span className="flex flex-wrap items-center gap-1 text-sm text-neutral-500">
-                                    <span>Secciones:</span>
+                                <span className="flex flex-wrap items-center gap-1">
                                     {grade.sections?.length > 0 ? (
                                         grade.sections.map((s) => (
                                             <Link key={s.id} href={`/admin/sections/${s.id}`}>
@@ -155,8 +156,8 @@ export default function GradesIndex({
                                             </Link>
                                         ))
                                     ) : (
-                                        <span className="italic">Ninguna</span>
-                                    )}{' '}
+                                        <span className="text-xs italic text-neutral-400">Sin secciones</span>
+                                    )}
                                     <Link href={`/admin/academic-years/${grade.academic_year_id}`}>
                                         <Badge variant="outline" className="cursor-pointer text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                             {academicYears.find(
@@ -166,6 +167,11 @@ export default function GradesIndex({
                                     </Link>
                                 </span>
                             </div>
+                        </DataTableTD>
+                        <DataTableTD className="text-center">
+                            <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                                {grade.enrollments_count}
+                            </span>
                         </DataTableTD>
                         <DataTableTD className="text-right">
                             <div className="flex items-center justify-end gap-1">
@@ -233,14 +239,25 @@ export default function GradesIndex({
                                 escolar.
                             </p>
                         </div>
-                        <Button asChild>
-                            <Link
-                                href={`/admin/grades/create?academic_year_id=${selectedYearId}`}
-                            >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nuevo Grado
-                            </Link>
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => window.history.back()}>
+                                Volver
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <Link href="/admin/grade-definitions">
+                                    <Settings2 className="mr-2 h-4 w-4" />
+                                    Definiciones de grados
+                                </Link>
+                            </Button>
+                            <Button asChild>
+                                <Link
+                                    href={`/admin/grades/create?academic_year_id=${selectedYearId}`}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nuevo Grado
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Filtro */}

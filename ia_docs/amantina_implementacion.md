@@ -1065,7 +1065,7 @@ Entidades implementadas:
     - `period` obligatorio (texto libre)
     - `institution_name` obligatorio
 - **`ExternalHourPolicy`:** Solo `admin` puede `viewAny`, `view`, `create`, `update`, `delete`.
-- **`HourAccumulatorService` (ajustado):** El servicio tiene la lógica para sumar horas externas, pero **temporalmente hardcodeado en 0.0** (línea 43). **BUG IDENTIFICADO:** Una vez que se implemente la consulta real a `ExternalHour::where('user_id', $userId)->sum('hours')`, el cálculo funcionará.
+- **`HourAccumulatorService` (ajustado):** El servicio separa estrictamente las horas de jornada (por año) de las externas (históricas). El método `getStudentTotalHours` devuelve `external_hours = 0.0` por diseño para evitar el doble conteo en bucles multi-año. Se incluyó la utilidad `calculateExternalHours()` para ser consumida de forma independiente al calcular el acumulado general.
 - **`ExternalHourFactory`:** Factory para tests con datos realistas.
 
 #### Frontend
@@ -1128,19 +1128,16 @@ Entidades implementadas:
 > *El alumno puede ver sus horas externas en su dashboard/perfil (a implementar en UI)<br>
 > **El representante puede ver las horas externas de su representado
 
-#### 🚨 Bug Identificado en HourAccumulatorService
+#### ✅ Validación de Lógica en HourAccumulatorService
 
-En `app/Services/HourAccumulatorService.php` línea 43:
-```php
-$externalHours = 0.0; // ← HARDCODEADO
-```
+Se determinó que mantener `external_hours = 0.0` dentro de `getStudentTotalHours` es una decisión de diseño correcta y no un bug. Dado que las horas externas son históricas (all-time) y no pertenecen a un `academic_year_id`, incluirlas en un método que se consulta por año causaría un **doble conteo** al sumar los totales de varios años en los controladores.
 
-**Corrección necesaria:**
-```php
-$externalHours = ExternalHour::where('user_id', $userId)->sum('hours') ?? 0.0;
-```
+**Estrategia final:**
+1. `getStudentTotalHours(year_id)`: Solo devuelve horas de jornada de ese año.
+2. `calculateExternalHours(user_id)`: Método independiente para obtener el total histórico externo.
+3. **Controladores:** Suman las jornadas de todos los años y añaden las externas UNA sola vez al final.
 
-Esto debe corregirse para que el cálculo de `total_hours = jornada_hours + external_hours` funcione correctamente.
+Esta lógica fue validada y aplicada en `UserController` y `StudentPdfController` en el commit `3e9ebe6`.
 
 ---
 

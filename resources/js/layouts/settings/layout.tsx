@@ -1,7 +1,9 @@
 import { Link } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import {
+    BookOpen,
     Calendar,
+    CalendarDays,
     Clock,
     GraduationCap,
     UserPlus,
@@ -13,9 +15,12 @@ import {
     Palette,
     Building2,
     Layers,
+    Layout,
     Heart,
+    List,
     Tag,
     MapPin,
+    Users,
 } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
@@ -24,9 +29,13 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { index as academicYearsIndex } from '@/routes/admin/academic-years';
+import { index as gradeDefsIndex } from '@/routes/admin/grade-definitions';
 import { index as gradesIndex } from '@/routes/admin/grades';
 import { index as schoolTermsIndex } from '@/routes/admin/school-terms';
+import { index as sectionDefsIndex } from '@/routes/admin/section-definitions';
 import { index as sectionsIndex } from '@/routes/admin/sections';
+import { index as termTypesIndex } from '@/routes/admin/term-types';
+import { index as userIndex } from '@/routes/admin/users';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editInstitution } from '@/routes/institution';
 import { edit } from '@/routes/profile';
@@ -37,35 +46,16 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const { auth } = usePage<SharedData>().props;
     const { isCurrentOrParentUrl } = useCurrentUrl();
 
-    const sidebarNavItems: NavEntry[] = [
-        // ── Cuenta ──
-        { title: 'Cuenta', type: 'separator' },
-        {
-            title: 'Perfil',
-            href: edit(),
-            icon: User,
-        },
-        {
-            title: 'Seguridad',
-            href: editSecurity(),
-            icon: Lock,
-        },
-        {
-            title: 'Apariencia',
-            href: editAppearance(),
-            icon: Palette,
-        },
-        // ── Institución ──
-        { title: 'Institución', type: 'separator' },
+    const sidebarNavItems: NavEntry[] = [];
+
+    // ── Académico ──
+    const academicItems: NavItem[] = [
         {
             title: 'Datos Institucionales',
             href: editInstitution().url,
             icon: Building2,
         },
     ];
-
-    // ── Académico ──
-    const academicItems: NavItem[] = [];
 
     if (auth.permissions?.includes('academic_years.view')) {
         academicItems.push({
@@ -99,37 +89,14 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         });
     }
 
-    if (academicItems.length > 0) {
-        sidebarNavItems.push(
-            { title: 'Académico', type: 'separator' },
-            ...academicItems,
-        );
-    }
-
     // ── Operativo ──
     const operationalItems: NavItem[] = [];
 
-    if (auth.permissions?.includes('health_conditions.view')) {
+    if (auth.permissions?.includes('users.view')) {
         operationalItems.push({
-            title: 'Condiciones de Salud',
-            href: '/admin/health-conditions',
-            icon: Heart,
-        });
-    }
-
-    if (auth.permissions?.includes('activity_categories.view')) {
-        operationalItems.push({
-            title: 'Categorías',
-            href: '/admin/activity-categories',
-            icon: Tag,
-        });
-    }
-
-    if (auth.permissions?.includes('locations.view')) {
-        operationalItems.push({
-            title: 'Ubicaciones',
-            href: '/admin/locations',
-            icon: MapPin,
+            title: 'Gestión de Usuarios',
+            href: userIndex().url,
+            icon: Users,
         });
     }
 
@@ -151,10 +118,96 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
     if (operationalItems.length > 0) {
         sidebarNavItems.push(
-            { title: 'Operativo', type: 'separator' },
+            { title: 'Gestión Escolar', type: 'separator' },
             ...operationalItems,
         );
     }
+
+    // ── Definiciones ──
+    const definitionItems: NavItem[] = [];
+
+    if (auth.permissions?.includes('school_terms.view')) {
+        definitionItems.push({
+            title: 'Lapsos',
+            href: termTypesIndex().url,
+            icon: CalendarDays,
+        });
+    }
+
+    if (auth.permissions?.includes('grade_definitions.view')) {
+        definitionItems.push({
+            title: 'Grados',
+            href: gradeDefsIndex().url,
+            icon: GraduationCap,
+        });
+    }
+
+    if (auth.permissions?.includes('section_definitions.view')) {
+        definitionItems.push({
+            title: 'Secciones',
+            href: sectionDefsIndex().url,
+            icon: Layout,
+        });
+    }
+
+    if (auth.permissions?.includes('activity_categories.view')) {
+        definitionItems.push({
+            title: 'Actividades',
+            href: '/admin/activity-categories',
+            icon: List,
+        });
+    }
+
+    if (auth.permissions?.includes('locations.view')) {
+        definitionItems.push({
+            title: 'Ubicaciones',
+            href: '/admin/locations',
+            icon: MapPin,
+        });
+    }
+
+    if (auth.permissions?.includes('health_conditions.view')) {
+        definitionItems.push({
+            title: 'Condiciones de Salud',
+            href: '/admin/health-conditions',
+            icon: Heart,
+        });
+    }
+
+    if (academicItems.length > 0) {
+        sidebarNavItems.push(
+            { title: 'Gestión Académica', type: 'separator' },
+            ...academicItems,
+        );
+    }
+
+    // ── Definiciones ──
+    if (definitionItems.length > 0) {
+        sidebarNavItems.push(
+            { title: 'Definiciones', type: 'separator' },
+            ...definitionItems,
+        );
+    }
+
+    // ── Cuenta ──
+    sidebarNavItems.push(
+        { title: 'Cuenta', type: 'separator' },
+        {
+            title: 'Perfil',
+            href: edit(),
+            icon: User,
+        },
+        {
+            title: 'Seguridad',
+            href: editSecurity(),
+            icon: Lock,
+        },
+        {
+            title: 'Apariencia',
+            href: editAppearance(),
+            icon: Palette,
+        },
+    );
 
     // ── Accesos ──
     const accessItems: NavItem[] = [];

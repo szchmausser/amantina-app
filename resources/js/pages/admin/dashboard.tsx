@@ -10,6 +10,7 @@ import {
     Info,
     ExternalLink,
     MapPin,
+    Trophy,
 } from 'lucide-react';
 import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
@@ -76,6 +77,7 @@ interface Props {
     inProgressStudents: Student[];
     atRiskStudents: Student[];
     outstandingStudents: Student[];
+    topStudents: Student[];
     studentsWithNoHours: Student[];
     topSections: Section[];
     concerningSections: Section[];
@@ -134,6 +136,7 @@ export default function AdminDashboard({
     inProgressStudents,
     atRiskStudents,
     outstandingStudents,
+    topStudents,
     studentsWithNoHours,
     topSections,
     concerningSections,
@@ -369,8 +372,8 @@ export default function AdminDashboard({
                     </CardContent>
                 </Card>
 
-                {/* Outstanding vs At Risk Students */}
-                <div className="grid gap-4 lg:grid-cols-2">
+                {/* Rankings and Alerts */}
+                <div className="grid gap-4 xl:grid-cols-3 lg:grid-cols-2">
                     {/* Outstanding Students */}
                     <Card>
                         <CardHeader>
@@ -447,6 +450,84 @@ export default function AdminDashboard({
                                                 5,
                                             )}
                                             variant="success"
+                                            className="mt-2"
+                                        />
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Top Accumulated Hours Students */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                                    <Trophy className="h-5 w-5" />
+                                    Alumnos con más horas acumuladas
+                                </CardTitle>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button className="rounded-full p-1 hover:bg-accent">
+                                            <Info className="h-4 w-4 text-muted-foreground" />
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                        <p className="text-sm">
+                                            Listado general de estudiantes con horas acumuladas en el año escolar actual, ordenados de mayor a menor productividad.
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                                Ranking general por horas
+                            </p>
+                        </CardHeader>
+                        <CardContent>
+                            {topStudents.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    No hay datos de horas acumuladas
+                                </p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {topStudents.slice(0, 5).map((student) => (
+                                        <button
+                                            key={student.id}
+                                            onClick={() =>
+                                                router.visit(
+                                                    `/admin/users/${student.id}`,
+                                                )
+                                            }
+                                            className="flex w-full items-center justify-between rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent"
+                                        >
+                                            <div>
+                                                <p className="font-medium">
+                                                    {student.name}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {student.section} (
+                                                    {student.grade})
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                                    {student.hours}h
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {student.percentage.toFixed(
+                                                        1,
+                                                    )}
+                                                    %
+                                                </p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                    {topStudents.length > 5 && (
+                                        <StudentListBadge
+                                            count={topStudents.length - 5}
+                                            label="más"
+                                            students={topStudents.slice(5)}
+                                            variant="secondary"
                                             className="mt-2"
                                         />
                                     )}

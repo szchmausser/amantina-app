@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use App\Models\Grade;
 use App\Models\Section;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,7 +21,7 @@ class StudentPdfControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
+        $this->seed(RoleAndPermissionSeeder::class);
 
         $this->admin = User::factory()->create();
         $this->admin->assignRole('admin');

@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Edit, Plus, Save, Tag, Trash2, X } from 'lucide-react';
+import { Edit, Plus, Save, Tag, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -151,7 +151,7 @@ export default function ActivityCategoriesIndex({ activityCategories }: Props) {
                                 1}
                         </DataTableTD>
                         <DataTableTD>
-                            <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+                            <span className="font-medium text-neutral-900 dark:text-neutral-100">
                                 {category.name}
                             </span>
                         </DataTableTD>
@@ -167,7 +167,7 @@ export default function ActivityCategoriesIndex({ activityCategories }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                    className="h-8 w-8 text-neutral-500"
                                     onClick={() => startEdit(category)}
                                 >
                                     <Edit className="h-4 w-4" />
@@ -176,7 +176,7 @@ export default function ActivityCategoriesIndex({ activityCategories }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
                                     onClick={() => handleDelete(category.id)}
                                 >
                                     <Trash2 className="h-4 w-4" />
@@ -254,10 +254,9 @@ export default function ActivityCategoriesIndex({ activityCategories }: Props) {
                                 <div className="flex items-center justify-end gap-2">
                                     <Button
                                         type="button"
-                                        variant="ghost"
+                                        variant="outline"
                                         onClick={cancelEdit}
                                     >
-                                        <X className="mr-1 h-4 w-4" />
                                         Cancelar
                                     </Button>
                                     <Button type="submit" disabled={processing}>

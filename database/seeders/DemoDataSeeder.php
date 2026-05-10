@@ -5,7 +5,9 @@ namespace Database\Seeders;
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
 use App\Models\Grade;
+use App\Models\GradeDefinition;
 use App\Models\Section;
+use App\Models\SectionDefinition;
 use App\Models\TeacherAssignment;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -27,22 +29,39 @@ class DemoDataSeeder extends Seeder
             return;
         }
 
+        // Ensure definitions are seeded before creating grades/sections
+        $this->call([
+            GradeDefinitionSeeder::class,
+            SectionDefinitionSeeder::class,
+        ]);
+
         // Si no hay estructura, creamo una base para poder probar
         if ($activeYear->grades->isEmpty()) {
             $this->command->info('No hay grados configurados. Creando estructura básica de 5 grados con 3 secciones cada uno...');
 
-            for ($i = 1; $i <= 5; $i++) {
+            $gradeDefinitions = GradeDefinition::orderBy('order')->get();
+            $sectionDefinitions = SectionDefinition::all();
+
+            for ($i = 0; $i < 5; $i++) {
+                $def = $gradeDefinitions->get($i);
+
                 $grade = Grade::factory()->create([
                     'academic_year_id' => $activeYear->id,
-                    'name' => "{$i}er Año",
-                    'order' => $i,
+                    'name' => $def?->name ?? "{$i}er Año",
+                    'order' => $def?->order ?? ($i + 1),
+                    'grade_definition_id' => $def?->id,
+                    'grade_definition_name' => $def?->name,
                 ]);
 
                 foreach (['A', 'B', 'C'] as $sectionLetter) {
+                    $secDef = $sectionDefinitions->firstWhere('name', $sectionLetter);
+
                     Section::factory()->create([
                         'academic_year_id' => $activeYear->id,
                         'grade_id' => $grade->id,
                         'name' => "Sección {$sectionLetter}",
+                        'section_definition_id' => $secDef?->id,
+                        'section_definition_name' => $secDef?->name,
                     ]);
                 }
             }
@@ -60,9 +79,23 @@ class DemoDataSeeder extends Seeder
             'remember_token' => Str::random(10),
         ]);
 
+        $bar = $this->command->getOutput()->createProgressBar(count($students));
+        $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%% — %message%');
+        $bar->setMessage('Asignando rol alumno...');
+        $bar->start();
+
         foreach ($students as $student) {
             $student->assignRole('alumno');
+            $bar->advance();
         }
+
+        $bar->finish();
+        $this->command->newLine(2);
+
+        // Recargar con filtro explícito de rol para garantizar que solo se inscriban alumnos
+        $students = User::role('alumno')
+            ->whereIn('id', $students->pluck('id'))
+            ->get();
 
         $this->command->info("Generando 25 profesores aleatorios de prueba (password: 'password')...");
         $teachers = User::factory()->count(25)->create([
@@ -78,6 +111,12 @@ class DemoDataSeeder extends Seeder
         $this->command->info('Distribuyendo alumnos (20 a 30 por sección) y profesores (1 a 3 por sección)...');
 
         $studentIndex = 0;
+        $totalStudents = count($students);
+
+        $bar = $this->command->getOutput()->createProgressBar($totalStudents);
+        $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%% — %message%');
+        $bar->setMessage('Iniciando inscripciones...');
+        $bar->start();
 
         foreach ($activeYear->grades as $grade) {
             foreach ($grade->sections as $section) {
@@ -85,7 +124,7 @@ class DemoDataSeeder extends Seeder
                 $numStudents = rand(20, 30);
 
                 for ($i = 0; $i < $numStudents; $i++) {
-                    if ($studentIndex >= count($students)) {
+                    if ($studentIndex >= $totalStudents) {
                         break;
                     }
 
@@ -98,6 +137,8 @@ class DemoDataSeeder extends Seeder
                     ]);
 
                     $studentIndex++;
+                    $bar->setMessage("Inscribiendo alumno {$studentIndex}/{$totalStudents}");
+                    $bar->advance();
                 }
 
                 // Asignar de 1 a 3 profesores por sección
@@ -116,11 +157,14 @@ class DemoDataSeeder extends Seeder
             }
         }
 
+        $bar->finish();
+        $this->command->newLine(2);
+
         $enrolledCount = Enrollment::where('academic_year_id', $activeYear->id)->count();
         $this->command->info("¡Semilla plantada! Se inscribieron {$enrolledCount} alumnos en el año activo.");
 
-        if ($studentIndex < count($students)) {
-            $pending = count($students) - $studentIndex;
+        if ($studentIndex < $totalStudents) {
+            $pending = $totalStudents - $studentIndex;
             $this->command->warn("Quedaron {$pending} alumnos sin inscribir (útil para probar el formulario individual de Nuevo Ingreso).");
         }
     }

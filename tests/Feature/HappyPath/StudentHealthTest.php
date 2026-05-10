@@ -5,7 +5,6 @@ use App\Models\StudentHealthRecord;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
@@ -198,6 +197,10 @@ test('alumno cannot create student health record', function () {
     ]);
 
     $response->assertForbidden();
+
+    $this->assertDatabaseMissing('student_health_records', [
+        'user_id' => $this->alumno->id,
+    ]);
 });
 
 test('alumno cannot update student health record', function () {
@@ -217,6 +220,14 @@ test('alumno cannot update student health record', function () {
     ]);
 
     $response->assertForbidden();
+
+    // Verify record was NOT modified — compare by id, not received_at (SQLite stores datetime with time component)
+    $this->assertDatabaseHas('student_health_records', [
+        'id' => $record->id,
+        'user_id' => $this->alumno->id,
+        'health_condition_id' => $this->healthCondition->id,
+        'received_by' => $this->admin->id,
+    ]);
 });
 
 test('alumno cannot delete student health record', function () {
@@ -232,6 +243,11 @@ test('alumno cannot delete student health record', function () {
     $response = $this->delete("/admin/student-health-records/{$record->id}");
 
     $response->assertForbidden();
+
+    $this->assertDatabaseHas('student_health_records', [
+        'id' => $record->id,
+        'deleted_at' => null,
+    ]);
 });
 
 // ============================================================================
@@ -249,6 +265,10 @@ test('representante cannot create student health record', function () {
     ]);
 
     $response->assertForbidden();
+
+    $this->assertDatabaseMissing('student_health_records', [
+        'user_id' => $this->alumno->id,
+    ]);
 });
 
 test('representante cannot update student health record', function () {
@@ -268,6 +288,14 @@ test('representante cannot update student health record', function () {
     ]);
 
     $response->assertForbidden();
+
+    // Verify record was NOT modified — compare by id, not received_at (SQLite stores datetime with time component)
+    $this->assertDatabaseHas('student_health_records', [
+        'id' => $record->id,
+        'user_id' => $this->alumno->id,
+        'health_condition_id' => $this->healthCondition->id,
+        'received_by' => $this->admin->id,
+    ]);
 });
 
 test('representante cannot delete student health record', function () {
@@ -283,6 +311,11 @@ test('representante cannot delete student health record', function () {
     $response = $this->delete("/admin/student-health-records/{$record->id}");
 
     $response->assertForbidden();
+
+    $this->assertDatabaseHas('student_health_records', [
+        'id' => $record->id,
+        'deleted_at' => null,
+    ]);
 });
 
 // ============================================================================

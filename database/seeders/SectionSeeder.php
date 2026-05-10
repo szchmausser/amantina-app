@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Grade;
 use App\Models\Section;
+use App\Models\SectionDefinition;
 use Illuminate\Database\Seeder;
 
 class SectionSeeder extends Seeder
@@ -22,16 +23,33 @@ class SectionSeeder extends Seeder
             return;
         }
 
-        $sectionNames = ['A', 'B', 'C', 'D'];
+        $definitions = SectionDefinition::all();
+
+        if ($definitions->isEmpty()) {
+            $this->command->warn('No section definitions found. Please run SectionDefinitionSeeder first.');
+
+            return;
+        }
+
+        // Take first 4 definitions (A-D) matching the original behavior
+        $definitionNames = $definitions->pluck('name')->toArray();
+        $selectedNames = array_slice($definitionNames, 0, 4);
 
         foreach ($grades as $grade) {
             // Randomly decide how many sections this grade will have (2 to 4)
-            $sectionCount = fake()->numberBetween(2, 4);
+            $sectionCount = min(fake()->numberBetween(2, 4), count($selectedNames));
 
             for ($i = 0; $i < $sectionCount; $i++) {
+                $defName = $selectedNames[$i];
+                $definition = $definitions->firstWhere('name', $defName);
+
                 Section::updateOrCreate(
-                    ['grade_id' => $grade->id, 'name' => $sectionNames[$i]],
-                    ['academic_year_id' => $grade->academic_year_id]
+                    ['grade_id' => $grade->id, 'name' => $defName],
+                    [
+                        'academic_year_id' => $grade->academic_year_id,
+                        'section_definition_id' => $definition?->id,
+                        'section_definition_name' => $definition?->name,
+                    ]
                 );
             }
         }

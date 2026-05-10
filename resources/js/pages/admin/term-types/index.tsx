@@ -1,7 +1,6 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Edit, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Edit, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -188,20 +187,21 @@ export default function TermTypesIndex({ termTypes }: Props) {
 
                     {/* List */}
                     <div className="space-y-2">
+                        {/* Header labels */}
+                        <div className="flex px-1">
+                            <span className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+                                Nombre
+                            </span>
+                        </div>
                         {termTypes.length > 0 ? (
                             termTypes.map((type) => (
                                 <div
                                     key={type.id}
-                                    className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
+                                    className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-neutral-50/50 px-3 py-2 dark:border-neutral-700/50 dark:bg-neutral-800/30"
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <Badge
-                                            variant="secondary"
-                                            className="text-xs"
-                                        >
-                                            #{type.order}
-                                        </Badge>
-                                        <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                                    <div className="flex items-center gap-3">
+                                        <CalendarDays className="h-4 w-4 text-neutral-400" />
+                                        <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                                             {type.name}
                                         </span>
                                     </div>
@@ -209,7 +209,7 @@ export default function TermTypesIndex({ termTypes }: Props) {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8"
+                                            className="h-8 w-8 text-neutral-500"
                                             onClick={() => startEdit(type)}
                                         >
                                             <Edit className="h-4 w-4" />

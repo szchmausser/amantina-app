@@ -27,20 +27,27 @@ interface AcademicYear {
     name: string;
 }
 
+interface SectionDefinition {
+    id: number;
+    name: string;
+}
+
 interface Section {
     id: number;
     grade_id: number;
     academic_year_id: number;
     name: string;
+    section_definition_id: number | null;
 }
 
 interface Props {
     section?: Section;
     grades: Grade[];
     academicYears: AcademicYear[];
+    sectionDefinitions: SectionDefinition[];
 }
 
-export default function SectionEdit({ section, grades, academicYears }: Props) {
+export default function SectionEdit({ section, grades, academicYears, sectionDefinitions }: Props) {
     const isEditing = !!section;
     const { url } = usePage();
     const queryParams = new URLSearchParams(url.split('?')[1]);
@@ -56,7 +63,7 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
         grade_id:
             section?.grade_id ||
             (defaultGradeId ? parseInt(defaultGradeId) : grades[0]?.id),
-        name: section?.name || '',
+        section_definition_id: section?.section_definition_id || '',
     });
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -196,20 +203,37 @@ export default function SectionEdit({ section, grades, academicYears }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">
-                                        Nombre de la Sección
+                                    <Label htmlFor="section_definition_id">
+                                        Definición de Sección
                                     </Label>
-                                    <Input
-                                        id="name"
-                                        value={data.name}
-                                        onChange={(e) =>
-                                            setData('name', e.target.value)
+                                    <Select
+                                        value={data.section_definition_id?.toString()}
+                                        onValueChange={(val) =>
+                                            setData(
+                                                'section_definition_id',
+                                                parseInt(val),
+                                            )
                                         }
-                                        placeholder="Ej: A"
-                                        required
-                                        data-test="section-name-input"
+                                        disabled={isEditing}
+                                        data-test="section-definition-select"
+                                    >
+                                        <SelectTrigger data-test="section-definition-select-trigger">
+                                            <SelectValue placeholder="Seleccionar definición" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {sectionDefinitions.map((def) => (
+                                                <SelectItem
+                                                    key={def.id}
+                                                    value={def.id.toString()}
+                                                >
+                                                    {def.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError
+                                        message={errors.section_definition_id}
                                     />
-                                    <InputError message={errors.name} />
                                 </div>
                             </div>
                         </div>

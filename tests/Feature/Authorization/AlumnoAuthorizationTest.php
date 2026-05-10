@@ -10,6 +10,7 @@ use App\Models\Section;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class AlumnoAuthorizationTest extends TestCase
@@ -17,7 +18,9 @@ class AlumnoAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     protected User $alumno;
+
     protected User $otherAlumno;
+
     protected AcademicYear $academicYear;
 
     protected function setUp(): void
@@ -110,6 +113,9 @@ class AlumnoAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->alumno)->get(route('dashboard'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('student/dashboard'),
+        );
     }
 
     /**
@@ -119,6 +125,9 @@ class AlumnoAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->alumno)->get(route('profile.edit'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('settings/profile'),
+        );
     }
 
     /**
@@ -292,6 +301,7 @@ class AlumnoAuthorizationTest extends TestCase
         ]);
 
         $response->assertForbidden();
+        $this->assertDatabaseHas('users', ['id' => $this->alumno->id]);
     }
 
     /**

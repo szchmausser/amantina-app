@@ -4,7 +4,9 @@ namespace Tests\Feature\Admin;
 
 use App\Models\AcademicYear;
 use App\Models\Grade;
+use App\Models\GradeDefinition;
 use App\Models\User;
+use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,6 +24,7 @@ class GradeControllerTest extends TestCase
         $this->seed(RoleAndPermissionSeeder::class);
         $this->app->make(PermissionRegistrar::class)->forgetCachedPermissions();
         $this->withoutVite();
+        $this->seed(GradeDefinitionSeeder::class);
     }
 
     public function test_admin_can_view_grades_index(): void
@@ -47,65 +50,37 @@ class GradeControllerTest extends TestCase
         $admin->assignRole('admin');
 
         $year = AcademicYear::factory()->create();
+        $definition = GradeDefinition::first();
 
         $response = $this->actingAs($admin)->post(route('admin.grades.store'), [
             'academic_year_id' => $year->id,
-            'name' => '1er Año',
+            'grade_definition_id' => $definition->id,
             'order' => 1,
         ]);
 
         $response->assertRedirect(route('admin.grades.index', ['academic_year_id' => $year->id]));
         $this->assertDatabaseHas('grades', [
             'academic_year_id' => $year->id,
-            'name' => '1er Año',
+            'grade_definition_id' => $definition->id,
+            'grade_definition_name' => $definition->name,
             'order' => 1,
         ]);
     }
 
-    public function test_cannot_create_grade_with_duplicate_name_in_same_year(): void
+    public function test_cannot_create_grade_with_invalid_definition(): void
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
 
         $year = AcademicYear::factory()->create();
-        Grade::factory()->create([
-            'academic_year_id' => $year->id,
-            'name' => '1er Año',
-        ]);
 
         $response = $this->actingAs($admin)->post(route('admin.grades.store'), [
             'academic_year_id' => $year->id,
-            'name' => '1er Año',
-            'order' => 2,
-        ]);
-
-        $response->assertSessionHasErrors('name');
-    }
-
-    public function test_can_create_grade_with_same_name_in_different_years(): void
-    {
-        $admin = User::factory()->create();
-        $admin->assignRole('admin');
-
-        $year1 = AcademicYear::factory()->create();
-        $year2 = AcademicYear::factory()->create();
-
-        Grade::factory()->create([
-            'academic_year_id' => $year1->id,
-            'name' => '1er Año',
-        ]);
-
-        $response = $this->actingAs($admin)->post(route('admin.grades.store'), [
-            'academic_year_id' => $year2->id,
-            'name' => '1er Año',
+            'grade_definition_id' => 999,
             'order' => 1,
         ]);
 
-        $response->assertRedirect(route('admin.grades.index', ['academic_year_id' => $year2->id]));
-        $this->assertDatabaseHas('grades', [
-            'academic_year_id' => $year2->id,
-            'name' => '1er Año',
-        ]);
+        $response->assertSessionHasErrors('grade_definition_id');
     }
 
     public function test_admin_can_update_grade(): void
@@ -114,18 +89,45 @@ class GradeControllerTest extends TestCase
         $admin->assignRole('admin');
 
         $grade = Grade::factory()->create();
+        $originalDefinitionName = $grade->grade_definition_name;
 
         $response = $this->actingAs($admin)->put(route('admin.grades.update', $grade), [
             'academic_year_id' => $grade->academic_year_id,
-            'name' => 'Grado Actualizado',
             'order' => 5,
         ]);
 
         $response->assertRedirect(route('admin.grades.index', ['academic_year_id' => $grade->academic_year_id]));
         $this->assertDatabaseHas('grades', [
             'id' => $grade->id,
-            'name' => 'Grado Actualizado',
             'order' => 5,
+            'grade_definition_id' => $grade->grade_definition_id,
+            'grade_definition_name' => $originalDefinitionName,
+        ]);
+    }
+
+    public function test_grade_edit_does_not_change_definition(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $definition = GradeDefinition::first();
+        $grade = Grade::factory()->create([
+            'grade_definition_id' => $definition->id,
+            'grade_definition_name' => $definition->name,
+        ]);
+
+        // Attempt to update with a different definition (should be ignored)
+        $response = $this->actingAs($admin)->put(route('admin.grades.update', $grade), [
+            'academic_year_id' => $grade->academic_year_id,
+            'order' => 10,
+        ]);
+
+        $response->assertRedirect(route('admin.grades.index', ['academic_year_id' => $grade->academic_year_id]));
+        $this->assertDatabaseHas('grades', [
+            'id' => $grade->id,
+            'grade_definition_id' => $definition->id,
+            'grade_definition_name' => $definition->name,
+            'order' => 10,
         ]);
     }
 
@@ -152,5 +154,6 @@ class GradeControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('admin.grades.store'), []);
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('grades', []);
     }
 }

@@ -133,6 +133,10 @@ class AttendanceActivityControllerTest extends TestCase
         );
 
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('attendance_activities', [
+            'attendance_id' => $attendance->id,
+            'activity_category_id' => $this->category->id,
+        ]);
     }
 
     public function test_user_without_permission_cannot_store_activity(): void
@@ -150,6 +154,9 @@ class AttendanceActivityControllerTest extends TestCase
         );
 
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('attendance_activities', [
+            'attendance_id' => $attendance->id,
+        ]);
     }
 
     public function test_admin_can_update_activity(): void
@@ -223,6 +230,10 @@ class AttendanceActivityControllerTest extends TestCase
         );
 
         $response->assertStatus(403);
+        $this->assertDatabaseHas('attendance_activities', [
+            'id' => $activity->id,
+            'hours' => 1,
+        ]);
     }
 
     public function test_admin_can_delete_activity(): void
@@ -260,6 +271,10 @@ class AttendanceActivityControllerTest extends TestCase
         );
 
         $response->assertStatus(403);
+        $this->assertDatabaseHas('attendance_activities', [
+            'id' => $activity->id,
+            'deleted_at' => null,
+        ]);
     }
 
     public function test_store_activity_shows_warning_when_exceeding_base_hours(): void

@@ -92,6 +92,15 @@ class RoleAndPermissionSeeder extends Seeder
             'external_hours.create',
             'external_hours.edit',
             'external_hours.delete',
+            // Grade and Section Definitions (Hito 14)
+            'grade_definitions.view',
+            'grade_definitions.create',
+            'grade_definitions.edit',
+            'grade_definitions.delete',
+            'section_definitions.view',
+            'section_definitions.create',
+            'section_definitions.edit',
+            'section_definitions.delete',
         ];
 
         foreach ($permissions as $permission) {

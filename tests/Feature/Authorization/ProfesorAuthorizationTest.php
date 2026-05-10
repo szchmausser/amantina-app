@@ -3,7 +3,6 @@
 namespace Tests\Feature\Authorization;
 
 use App\Models\AcademicYear;
-use App\Models\Attendance;
 use App\Models\Enrollment;
 use App\Models\FieldSession;
 use App\Models\Grade;
@@ -12,6 +11,7 @@ use App\Models\TeacherAssignment;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ProfesorAuthorizationTest extends TestCase
@@ -19,11 +19,17 @@ class ProfesorAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     protected User $profesor;
+
     protected AcademicYear $academicYear;
+
     protected Grade $grade;
+
     protected Section $ownSection;
+
     protected Section $otherSection;
+
     protected User $ownStudent;
+
     protected User $otherStudent;
 
     protected function setUp(): void
@@ -151,6 +157,9 @@ class ProfesorAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->profesor)->get(route('dashboard'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('teacher/dashboard'),
+        );
     }
 
     /**
@@ -160,6 +169,9 @@ class ProfesorAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->profesor)->get(route('admin.users.index'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('admin/users/index'),
+        );
     }
 
     /**
@@ -217,6 +229,9 @@ class ProfesorAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->profesor)->get(route('admin.enrollments.index'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('admin/enrollments/index'),
+        );
     }
 
     /**
@@ -226,6 +241,9 @@ class ProfesorAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->profesor)->get(route('admin.academic-info.index'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('admin/academic-info/index'),
+        );
     }
 
     /**
@@ -235,6 +253,9 @@ class ProfesorAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->profesor)->get(route('admin.activity-categories.index'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('admin/activity-categories/index'),
+        );
 
         $categoryData = ['name' => 'Actividad del Profesor'];
         $response = $this->actingAs($this->profesor)->post(route('admin.activity-categories.store'), $categoryData);
@@ -250,6 +271,9 @@ class ProfesorAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->profesor)->get(route('admin.locations.index'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('admin/locations/index'),
+        );
 
         $locationData = ['name' => 'Ubicación del Profesor'];
         $response = $this->actingAs($this->profesor)->post(route('admin.locations.store'), $locationData);
@@ -265,6 +289,9 @@ class ProfesorAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->profesor)->get(route('admin.field-sessions.index'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('admin/field-sessions/index'),
+        );
     }
 
     /**
@@ -279,6 +306,9 @@ class ProfesorAuthorizationTest extends TestCase
 
         $response = $this->actingAs($this->profesor)->get(route('admin.field-sessions.edit', $fieldSession));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('admin/field-sessions/edit'),
+        );
     }
 
     /**
@@ -310,6 +340,9 @@ class ProfesorAuthorizationTest extends TestCase
 
         $response = $this->actingAs($this->profesor)->get(route('admin.field-sessions.attendance', $fieldSession));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('admin/attendances/index'),
+        );
     }
 
     /**
@@ -364,6 +397,9 @@ class ProfesorAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->profesor)->get(route('admin.users.show', $this->ownStudent));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('admin/users/show'),
+        );
     }
 
     /**
@@ -382,6 +418,9 @@ class ProfesorAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->profesor)->delete(route('admin.users.destroy', $this->ownStudent));
         $response->assertForbidden();
+
+        // Verify user was NOT deleted
+        $this->assertDatabaseHas('users', ['id' => $this->ownStudent->id]);
     }
 
     /**

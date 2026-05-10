@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Pest\Browser\Browsable;
 use Tests\TestCase;
@@ -51,7 +52,7 @@ pest()->extend(TestCase::class)
 // problemas de datos duplicados o residuales.
 //
 pest()->extend(TestCase::class)
-    ->use(Illuminate\Foundation\Testing\DatabaseTruncation::class)
+    ->use(DatabaseTruncation::class)
     ->use(Browsable::class)
     ->in('Browser');
 
@@ -92,9 +93,9 @@ pest()->extend(TestCase::class)
 */
 
 pest()->browser()
-    //->headed()                          // Modo visual - ver el navegador
+    // ->headed()                          // Modo visual - ver el navegador
     ->timeout(15000);                   // 15 segundos de timeout
-    // NO usar ->withHost() para que Pest use su servidor interno con .env.testing
+// NO usar ->withHost() para que Pest use su servidor interno con .env.testing
 
 /*
 |--------------------------------------------------------------------------

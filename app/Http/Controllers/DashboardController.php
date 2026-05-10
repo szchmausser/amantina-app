@@ -76,6 +76,7 @@ class DashboardController extends Controller
             'inProgressStudents' => $overview['inProgressStudents'] ?? [],
             'atRiskStudents' => $overview['atRiskStudents'] ?? [],
             'outstandingStudents' => $overview['outstandingStudents'] ?? [],
+            'topStudents' => $overview['topStudents'] ?? [],
             'studentsWithNoHours' => $overview['studentsWithNoHours'] ?? [],
             'topSections' => $overview['topSections'] ?? [],
             'concerningSections' => $overview['concerningSections'] ?? [],

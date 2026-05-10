@@ -19,6 +19,10 @@ test('admin puede ver el listado de usuarios', function () {
     $response = $this->actingAs($this->admin)->get(route('admin.users.index'));
 
     $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('admin/users/index')
+        ->has('users')
+    );
 });
 
 // ============================================================================

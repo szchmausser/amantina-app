@@ -110,12 +110,19 @@ class ActivityCategoryControllerTest extends TestCase
         ActivityCategory::factory()->count(2)->create();
         $response = $this->actingAs($profesor)->get(route('admin.activity-categories.index'));
         $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('admin/activity-categories/index')
+            ->has('activityCategories.data', 2)
+        );
 
         // Create
         $response = $this->actingAs($profesor)->post(route('admin.activity-categories.store'), [
             'name' => 'Nueva Categoría',
         ]);
         $response->assertRedirect(route('admin.activity-categories.index'));
+        $this->assertDatabaseHas('activity_categories', [
+            'name' => 'Nueva Categoría',
+        ]);
 
         // Update
         $category = ActivityCategory::first();
@@ -123,10 +130,15 @@ class ActivityCategoryControllerTest extends TestCase
             'name' => 'Categoría Editada',
         ]);
         $response->assertRedirect(route('admin.activity-categories.index'));
+        $this->assertDatabaseHas('activity_categories', [
+            'id' => $category->id,
+            'name' => 'Categoría Editada',
+        ]);
 
         // Delete
         $response = $this->actingAs($profesor)->delete(route('admin.activity-categories.destroy', $category));
         $response->assertRedirect(route('admin.activity-categories.index'));
+        $this->assertSoftDeleted('activity_categories', ['id' => $category->id]);
     }
 
     public function test_non_admin_without_permission_cannot_manage_activity_categories(): void

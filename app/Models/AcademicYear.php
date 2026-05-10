@@ -76,4 +76,14 @@ class AcademicYear extends Model
     {
         $query->where('is_active', true);
     }
+
+    /**
+     * Scope to only include academic years that have already started
+     * (past or current). Excludes future pre-created years that are
+     * not yet applicable for student requirement calculations.
+     */
+    public function scopeCurrentAndPast(Builder $query): void
+    {
+        $query->where('start_date', '<=', now());
+    }
 }

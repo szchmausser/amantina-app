@@ -21,19 +21,27 @@ interface AcademicYear {
     name: string;
 }
 
+interface GradeDefinition {
+    id: number;
+    name: string;
+    order: number;
+}
+
 interface Grade {
     id: number;
     academic_year_id: number;
     name: string;
     order: number;
+    grade_definition_id: number | null;
 }
 
 interface Props {
     grade?: Grade;
     academicYears: AcademicYear[];
+    gradeDefinitions: GradeDefinition[];
 }
 
-export default function GradeEdit({ grade, academicYears }: Props) {
+export default function GradeEdit({ grade, academicYears, gradeDefinitions }: Props) {
     const isEditing = !!grade;
     const { url } = usePage();
     const queryParams = new URLSearchParams(url.split('?')[1]);
@@ -43,7 +51,7 @@ export default function GradeEdit({ grade, academicYears }: Props) {
         academic_year_id:
             grade?.academic_year_id ||
             (defaultYearId ? parseInt(defaultYearId) : academicYears[0]?.id),
-        name: grade?.name || '',
+        grade_definition_id: grade?.grade_definition_id || '',
         order: grade?.order || 1,
     });
 
@@ -152,20 +160,37 @@ export default function GradeEdit({ grade, academicYears }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">
-                                        Nombre del Grado
+                                    <Label htmlFor="grade_definition_id">
+                                        Definición de Grado
                                     </Label>
-                                    <Input
-                                        id="name"
-                                        value={data.name}
-                                        onChange={(e) =>
-                                            setData('name', e.target.value)
+                                    <Select
+                                        value={data.grade_definition_id?.toString()}
+                                        onValueChange={(val) =>
+                                            setData(
+                                                'grade_definition_id',
+                                                parseInt(val),
+                                            )
                                         }
-                                        placeholder="Ej: 1er Año"
-                                        required
-                                        data-test="grade-name-input"
+                                        disabled={isEditing}
+                                        data-test="grade-definition-select"
+                                    >
+                                        <SelectTrigger data-test="grade-definition-select-trigger">
+                                            <SelectValue placeholder="Seleccionar definición" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {gradeDefinitions.map((def) => (
+                                                <SelectItem
+                                                    key={def.id}
+                                                    value={def.id.toString()}
+                                                >
+                                                    {def.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError
+                                        message={errors.grade_definition_id}
                                     />
-                                    <InputError message={errors.name} />
                                 </div>
 
                                 <div className="space-y-2">

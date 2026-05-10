@@ -3,17 +3,15 @@
 namespace Tests\Feature\Authorization;
 
 use App\Models\AcademicYear;
-use App\Models\ActivityCategory;
-use App\Models\Enrollment;
 use App\Models\FieldSession;
 use App\Models\Grade;
-use App\Models\HealthCondition;
-use App\Models\Location;
-use App\Models\SchoolTerm;
+use App\Models\GradeDefinition;
 use App\Models\Section;
-use App\Models\TeacherAssignment;
+use App\Models\SectionDefinition;
 use App\Models\User;
+use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Database\Seeders\SectionDefinitionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -28,6 +26,8 @@ class AdminAuthorizationTest extends TestCase
         parent::setUp();
 
         $this->seed(RoleAndPermissionSeeder::class);
+        $this->seed(GradeDefinitionSeeder::class);
+        $this->seed(SectionDefinitionSeeder::class);
 
         $this->admin = User::factory()->create();
         $this->admin->assignRole('admin');
@@ -76,9 +76,11 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.users.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/users/index'));
 
         $response = $this->actingAs($this->admin)->get(route('admin.users.create'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/users/create'));
     }
 
     /**
@@ -88,6 +90,7 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.roles.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/roles/index'));
     }
 
     /**
@@ -97,6 +100,7 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.permissions.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/permissions/index'));
     }
 
     /**
@@ -106,16 +110,20 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.academic-years.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/academic-years/index'));
 
         $response = $this->actingAs($this->admin)->get(route('admin.academic-years.create'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/academic-years/edit'));
 
         $academicYear = AcademicYear::factory()->create();
         $response = $this->actingAs($this->admin)->get(route('admin.academic-years.show', $academicYear));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/academic-years/show'));
 
         $response = $this->actingAs($this->admin)->get(route('admin.academic-years.edit', $academicYear));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/academic-years/edit'));
     }
 
     /**
@@ -123,11 +131,15 @@ class AdminAuthorizationTest extends TestCase
      */
     public function test_admin_can_access_school_terms_module(): void
     {
-        $response = $this->actingAs($this->admin)->get(route('admin.school-terms.index'));
-        $response->assertOk();
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
 
-        $response = $this->actingAs($this->admin)->get(route('admin.school-terms.create'));
+        $response = $this->actingAs($this->admin)->get(route('admin.school-terms.index', ['academic_year_id' => $academicYear->id]));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/school-terms/index'));
+
+        $response = $this->actingAs($this->admin)->get(route('admin.school-terms.create', ['academic_year_id' => $academicYear->id]));
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/school-terms/edit'));
     }
 
     /**
@@ -137,15 +149,18 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.grades.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/grades/index'));
 
         $response = $this->actingAs($this->admin)->get(route('admin.grades.create'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/grades/edit'));
 
         $academicYear = AcademicYear::factory()->create();
         $grade = Grade::factory()->for($academicYear)->create();
 
         $response = $this->actingAs($this->admin)->get(route('admin.grades.edit', $grade));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/grades/edit'));
     }
 
     /**
@@ -155,9 +170,11 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.sections.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/sections/index'));
 
         $response = $this->actingAs($this->admin)->get(route('admin.sections.create'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/sections/edit'));
 
         $academicYear = AcademicYear::factory()->create();
         $grade = Grade::factory()->for($academicYear)->create();
@@ -165,9 +182,11 @@ class AdminAuthorizationTest extends TestCase
 
         $response = $this->actingAs($this->admin)->get(route('admin.sections.show', $section));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/sections/show'));
 
         $response = $this->actingAs($this->admin)->get(route('admin.sections.edit', $section));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/sections/edit'));
     }
 
     /**
@@ -177,12 +196,15 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.enrollments.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/enrollments/index'));
 
         $response = $this->actingAs($this->admin)->get(route('admin.enrollments.create'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/enrollments/create'));
 
         $response = $this->actingAs($this->admin)->get(route('admin.enrollments.promote'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/enrollments/promote'));
     }
 
     /**
@@ -208,6 +230,7 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.academic-info.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/academic-info/index'));
     }
 
     /**
@@ -217,6 +240,7 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.health-conditions.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/health-conditions/index'));
     }
 
     /**
@@ -226,6 +250,7 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.activity-categories.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/activity-categories/index'));
     }
 
     /**
@@ -235,6 +260,7 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.locations.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/locations/index'));
     }
 
     /**
@@ -244,6 +270,7 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.field-sessions.index'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/field-sessions/index'));
 
         $academicYear = AcademicYear::factory()->create(['is_active' => true]);
         $profesor = User::factory()->create();
@@ -256,12 +283,15 @@ class AdminAuthorizationTest extends TestCase
 
         $response = $this->actingAs($this->admin)->get(route('admin.field-sessions.show', $fieldSession));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/field-sessions/show'));
 
         $response = $this->actingAs($this->admin)->get(route('admin.field-sessions.edit', $fieldSession));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/field-sessions/edit'));
 
         $response = $this->actingAs($this->admin)->get(route('admin.field-sessions.attendance', $fieldSession));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/attendances/index'));
     }
 
     /**
@@ -271,6 +301,7 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('dashboard'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('admin/dashboard'));
     }
 
     /**
@@ -378,29 +409,32 @@ class AdminAuthorizationTest extends TestCase
         $this->assertNotNull($academicYear);
 
         // Crear grado
+        $gradeDefinition = GradeDefinition::where('name', '1er Año')->first();
         $gradeData = [
             'academic_year_id' => $academicYear->id,
-            'name' => '1er Año',
+            'grade_definition_id' => $gradeDefinition->id,
             'order' => 1,
         ];
 
         $response = $this->actingAs($this->admin)->post(route('admin.grades.store'), $gradeData);
         $response->assertSessionHasNoErrors();
 
-        $grade = Grade::where('name', '1er Año')->where('academic_year_id', $academicYear->id)->first();
+        $grade = Grade::where('grade_definition_id', $gradeDefinition->id)
+            ->where('academic_year_id', $academicYear->id)
+            ->first();
         $this->assertNotNull($grade);
 
         // Crear sección
+        $sectionDefinition = SectionDefinition::where('name', 'A')->first();
         $sectionData = [
             'academic_year_id' => $academicYear->id,
             'grade_id' => $grade->id,
-            'name' => 'Sección A',
+            'section_definition_id' => $sectionDefinition->id,
         ];
-
         $response = $this->actingAs($this->admin)->post(route('admin.sections.store'), $sectionData);
         $response->assertSessionHasNoErrors();
 
-        $section = Section::where('name', 'Sección A')
+        $section = Section::where('section_definition_id', $sectionDefinition->id)
             ->where('academic_year_id', $academicYear->id)
             ->where('grade_id', $grade->id)
             ->first();
@@ -475,6 +509,7 @@ class AdminAuthorizationTest extends TestCase
             $user->assignRole('alumno');
             $response = $this->actingAs($this->admin)->get(route('admin.users.show', $user));
             $response->assertOk();
+            $response->assertInertia(fn ($page) => $page->component('admin/users/show'));
         }
     }
 
@@ -485,5 +520,6 @@ class AdminAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('institution.edit'));
         $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('settings/institution'));
     }
 }

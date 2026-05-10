@@ -5,7 +5,6 @@ namespace App\Http\Requests\Admin;
 use App\Models\Grade;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UpdateSectionRequest extends FormRequest
 {
@@ -36,25 +35,6 @@ class UpdateSectionRequest extends FormRequest
                     }
                 },
             ],
-            'name' => [
-                'required',
-                'string',
-                'max:20',
-                'regex:/^Sección [A-Z]$/', // "Sección A", "Sección B", etc.
-                Rule::unique('sections', 'name')
-                    ->where('academic_year_id', $this->academic_year_id)
-                    ->where('grade_id', $this->grade_id)
-                    ->whereNull('deleted_at')
-                    ->ignore($section->id),
-            ],
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'name.regex' => 'El nombre de la sección debe tener el formato "Sección A", "Sección B", etc.',
-            'name.unique' => 'Ya existe una sección con este nombre para el grado y año escolar seleccionados.',
         ];
     }
 }

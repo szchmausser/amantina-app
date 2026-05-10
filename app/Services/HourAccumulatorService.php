@@ -19,6 +19,28 @@ use Illuminate\Support\Facades\DB;
 class HourAccumulatorService
 {
     /**
+     * Get database-specific week truncation expression.
+     *
+     * PostgreSQL uses DATE_TRUNC('week', column).
+     * SQLite uses DATE(column, 'weekday 0', '-6 days').
+     *
+     * @param  string  $column  The column name to truncate
+     * @return string The database-specific SQL expression
+     *
+     * @throws \RuntimeException If the database driver is not supported
+     */
+    private function getWeekTruncationExpression(string $column): string
+    {
+        $driver = DB::getDriverName();
+
+        return match ($driver) {
+            'pgsql' => "DATE_TRUNC('week', {$column})",
+            'sqlite' => "DATE({$column}, 'weekday 0', '-6 days')",
+            default => throw new \RuntimeException("Unsupported database driver for week truncation: {$driver}"),
+        };
+    }
+
+    /**
      * Calculate total hours for a student.
      *
      * @return array{
@@ -40,6 +62,7 @@ class HourAccumulatorService
         // External hours are not tied to a specific academic year —
         // they are prior hours from another institution and always
         // contribute only to the all-time total, never to a single year.
+        // Use calculateExternalHours() separately when building the all-time total.
         $externalHours = 0.0;
 
         $totalHours = $jornadaHours + $externalHours;
@@ -113,7 +136,7 @@ class HourAccumulatorService
 
         foreach ($students as $student) {
             $jornadaHours = $this->calculateJornadaHours($student->student_id, $yearId);
-            $totalHours = $jornadaHours; // + external_hours (Hito 12)
+            $totalHours = $jornadaHours;
             $percentage = $quota > 0 ? ($totalHours / $quota) * 100 : 0;
 
             $result[$student->student_id] = [
@@ -161,7 +184,7 @@ class HourAccumulatorService
         $atRisk = 0;
         $noHours = 0;
         $totalHoursAll = 0;
-        
+
         $outstandingStudents = [];
         $atRiskStudents = [];
         $studentsWithNoHours = [];
@@ -204,10 +227,14 @@ class HourAccumulatorService
         }
 
         // Sort outstanding students by percentage descending
-        usort($outstandingStudents, fn($a, $b) => $b['percentage'] <=> $a['percentage']);
-        
+        usort($outstandingStudents, fn ($a, $b) => $b['percentage'] <=> $a['percentage']);
+
         // Sort at-risk students by percentage ascending
-        usort($atRiskStudents, fn($a, $b) => $a['percentage'] <=> $b['percentage']);
+        usort($atRiskStudents, fn ($a, $b) => $a['percentage'] <=> $b['percentage']);
+
+        // Calculate general ranking of students by hours (excluding zero hours)
+        $topStudents = array_merge($outstandingStudents, $onTrackStudents, $inProgressStudents, $atRiskStudents);
+        usort($topStudents, fn ($a, $b) => $b['hours'] <=> $a['hours']);
 
         $totalStudents = $allStudents->count();
         $globalPercentage = $totalStudents > 0 ? ($metQuota / $totalStudents) * 100 : 0;
@@ -226,7 +253,7 @@ class HourAccumulatorService
             ->get();
 
         $allSectionsData = [];
-        
+
         foreach ($sections as $section) {
             $students = $this->getSectionProgress($section->id, $yearId);
             if (empty($students)) {
@@ -251,18 +278,18 @@ class HourAccumulatorService
                 ->toArray();
 
             $avgProgress = array_sum(array_column($students, 'percentage')) / count($students);
-            
+
             // Count distribution
             $distribution = [
                 'onTrack' => 0,
                 'inProgress' => 0,
                 'atRisk' => 0,
             ];
-            
+
             $sectionOnTrackStudents = [];
             $sectionInProgressStudents = [];
             $sectionAtRiskStudents = [];
-            
+
             foreach ($students as $student) {
                 $studentData = [
                     'id' => $student['student_id'],
@@ -270,7 +297,7 @@ class HourAccumulatorService
                     'hours' => $student['total_hours'],
                     'percentage' => $student['percentage'],
                 ];
-                
+
                 if ($student['percentage'] >= 80) {
                     $distribution['onTrack']++;
                     $sectionOnTrackStudents[] = $studentData;
@@ -282,7 +309,7 @@ class HourAccumulatorService
                     $sectionAtRiskStudents[] = $studentData;
                 }
             }
-            
+
             $allSectionsData[] = [
                 'id' => $section->id,
                 'name' => $section->section_name,
@@ -299,10 +326,10 @@ class HourAccumulatorService
 
         // Sort all sections by average percentage
         usort($allSectionsData, fn ($a, $b) => $b['avgPercentage'] <=> $a['avgPercentage']);
-        
+
         // Top 3 sections (best performing)
         $topSections = array_slice($allSectionsData, 0, 3);
-        
+
         // Bottom 3 sections (need most attention) - reverse order so worst is first
         $concerningSections = array_slice(array_reverse($allSectionsData), 0, 3);
 
@@ -453,6 +480,7 @@ class HourAccumulatorService
             'inProgressStudents' => $inProgressStudents,
             'atRiskStudents' => $atRiskStudents,
             'outstandingStudents' => $outstandingStudents,
+            'topStudents' => $topStudents,
             'studentsWithNoHours' => $studentsWithNoHours,
             'topSections' => $topSections,
             'concerningSections' => $concerningSections,
@@ -682,7 +710,7 @@ class HourAccumulatorService
         $progress = $this->getStudentTotalHours($studentId, $yearId);
 
         // Breakdown by year
-        $years = AcademicYear::orderBy('start_date')->get();
+        $years = AcademicYear::currentAndPast()->orderBy('start_date')->get();
         $breakdownByYear = [];
         foreach ($years as $year) {
             $hours = $this->calculateJornadaHours($studentId, $year->id);
@@ -861,6 +889,8 @@ class HourAccumulatorService
         $progress = $this->getStudentTotalHours($studentId, $yearId);
 
         // Last 4 weeks trend
+        // Use database-agnostic week truncation (PostgreSQL vs SQLite compatibility)
+        $weekExpression = $this->getWeekTruncationExpression('field_sessions.start_datetime');
         $last4WeeksTrend = DB::table('attendances')
             ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
             ->leftJoin('attendance_activities', 'attendances.id', '=', 'attendance_activities.attendance_id')
@@ -871,7 +901,7 @@ class HourAccumulatorService
             ->whereNull('attendance_activities.deleted_at')
             ->where('field_sessions.start_datetime', '>=', now()->subWeeks(4))
             ->select(
-                DB::raw('DATE_TRUNC(\'week\', field_sessions.start_datetime) as week'),
+                DB::raw("{$weekExpression} as week"),
                 DB::raw('COALESCE(SUM(attendance_activities.hours), 0) as hours')
             )
             ->groupBy('week')
@@ -1027,6 +1057,14 @@ class HourAccumulatorService
         }
 
         return (float) ($query->sum('attendance_activities.hours') ?? 0);
+    }
+
+    /**
+     * Calculate total external hours for a student (all-time, not year-specific).
+     */
+    protected function calculateExternalHours(int $userId): float
+    {
+        return (float) ExternalHour::where('user_id', $userId)->sum('hours');
     }
 
     /**

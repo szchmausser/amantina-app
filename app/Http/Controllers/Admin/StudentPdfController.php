@@ -39,17 +39,17 @@ class StudentPdfController extends Controller
         $activeYear = AcademicYear::active()->first();
         $currentYearData = $hourAccumulator->getStudentTotalHours($user->id, $activeYear?->id);
 
-        $allYears = AcademicYear::all();
+        $allYears = AcademicYear::currentAndPast()->get();
         $totalHoursAllYears = 0.0;
         $totalQuotaAllYears = 0.0;
 
         foreach ($allYears as $year) {
             $yearData = $hourAccumulator->getStudentTotalHours($user->id, $year->id);
-            $totalHoursAllYears += $yearData['total_hours'];
+            $totalHoursAllYears += $yearData['jornada_hours'];
             $totalQuotaAllYears += (float) $year->required_hours;
         }
 
-        // Horas externas: suman solo al acumulado general
+        // External hours are not year-specific; add once to the all-time total
         $totalExternalHours = (float) ExternalHour::where('user_id', $user->id)->sum('hours');
         $totalHoursAllYears += $totalExternalHours;
 
@@ -99,9 +99,11 @@ class StudentPdfController extends Controller
 
         $hourStats = [
             'current_year' => [
-                'hours' => $currentYearData['total_hours'] ?? 0.0,
+                'hours' => $currentYearData['jornada_hours'] ?? 0.0,
                 'required' => (float) ($activeYear?->required_hours ?? 0),
-                'percentage' => $currentYearData['percentage'] ?? 0.0,
+                'percentage' => ($activeYear?->required_hours ?? 0) > 0
+                    ? round(($currentYearData['jornada_hours'] / $activeYear->required_hours) * 100, 2)
+                    : 0.0,
                 'year_name' => $activeYear?->name ?? 'N/A',
             ],
             'total' => [

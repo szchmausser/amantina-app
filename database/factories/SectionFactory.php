@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Grade;
 use App\Models\Section;
+use App\Models\SectionDefinition;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,6 +20,7 @@ class SectionFactory extends Factory
     public function definition(): array
     {
         $letter = $this->faker->unique()->randomElement(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
+        $sectionDefinition = SectionDefinition::inRandomOrder()->first();
 
         return [
             'grade_id' => Grade::factory(),
@@ -26,6 +28,8 @@ class SectionFactory extends Factory
                 return Grade::find($attributes['grade_id'])->academic_year_id;
             },
             'name' => "Sección {$letter}",
+            'section_definition_id' => $sectionDefinition?->id,
+            'section_definition_name' => $sectionDefinition?->name,
         ];
     }
 }

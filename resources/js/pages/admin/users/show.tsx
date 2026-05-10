@@ -1,7 +1,6 @@
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import { useMemo } from 'react';
 import {
-    ArrowLeft,
     Clock,
     Edit,
     ShieldCheck,
@@ -34,8 +33,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
+import SettingsLayout from '@/layouts/settings/layout';
 import {
     index as userIndex,
     edit as userEdit,
@@ -161,8 +168,21 @@ export default function Show({
     const [pendingDeleteHealthId, setPendingDeleteHealthId] = useState<number | null>(null);
     const [deleteExternalHourDialogOpen, setDeleteExternalHourDialogOpen] = useState(false);
     const [pendingDeleteExternalHourId, setPendingDeleteExternalHourId] = useState<number | null>(null);
+    const [permissionDetail, setPermissionDetail] = useState<string | null>(null);
 
     const hasPermission = (p: string) => auth.permissions?.includes(p);
+    const authRoles = auth.user?.roles?.map((r: any) => r.name) ?? [];
+    const canViewPermissionsTab = authRoles.includes('admin') || authRoles.includes('profesor');
+
+    const getRolesForPermission = (perm: string): string[] => {
+        const roleNames: string[] = [];
+        user.roles?.forEach((r: any) => {
+            if (r.permissions?.some((p: any) => p.name === perm)) {
+                roleNames.push(r.name);
+            }
+        });
+        return roleNames;
+    };
 
     const roles = user.roles ? user.roles.map((r: any) => r.name) : [];
     const directPermissions = user.permissions
@@ -175,7 +195,75 @@ export default function Show({
         r.permissions?.forEach((p: any) => rolePermissions.add(p.name));
     });
 
-    // Group all unique permissions by module
+    // All known permission modules and their standard actions
+    const ALL_MODULES: Record<string, string[]> = {
+        users: ['view', 'create', 'edit', 'delete'],
+        roles: ['view', 'create', 'edit', 'delete'],
+        permissions: ['view', 'create', 'edit', 'delete'],
+        academic_years: ['view', 'create', 'edit', 'delete'],
+        school_terms: ['view', 'create', 'edit', 'delete'],
+        grades: ['view', 'create', 'edit', 'delete'],
+        sections: ['view', 'create', 'edit', 'delete'],
+        enrollments: ['view', 'create', 'edit', 'delete'],
+        assignments: ['view', 'create', 'edit', 'delete'],
+        academic_info: ['view'],
+        health_conditions: ['view', 'create', 'edit', 'delete'],
+        student_health: ['view', 'create', 'edit', 'delete'],
+        activity_categories: ['view', 'create', 'edit', 'delete'],
+        locations: ['view', 'create', 'edit', 'delete'],
+        field_sessions: ['view', 'create', 'edit', 'delete'],
+        attendances: ['view', 'create', 'edit', 'delete'],
+        attendance_activities: ['view', 'create', 'edit', 'delete'],
+        dashboard: ['view'],
+        accumulated_hours: ['view'],
+        external_hours: ['view', 'create', 'edit', 'delete'],
+        grade_definitions: ['view', 'create', 'edit', 'delete'],
+        section_definitions: ['view', 'create', 'edit', 'delete'],
+    };
+
+    // Card background
+    const MODULE_CARD_BG = 'bg-neutral-50 dark:bg-neutral-900/20';
+    // Border color by completion: red=none, amber=partial, green=all
+    const moduleBorderClass = (assignedCount: number, totalActions: number): string => {
+        if (assignedCount === 0) return 'border-l-red-400 dark:border-l-red-500';
+        if (assignedCount === totalActions) return 'border-l-green-500 dark:border-l-green-600';
+        return 'border-l-amber-400 dark:border-l-amber-500';
+    };
+
+    const moduleNames: Record<string, string> = {
+        users: 'Usuarios',
+        roles: 'Roles',
+        permissions: 'Permisos',
+        academic_years: 'Años Académicos',
+        school_terms: 'Lapsos',
+        grades: 'Grados',
+        sections: 'Secciones',
+        enrollments: 'Inscripciones',
+        assignments: 'Asignaciones',
+        academic_info: 'Info. Académica',
+        health_conditions: 'Condiciones de Salud',
+        student_health: 'Salud Estudiantil',
+        activity_categories: 'Actividades',
+        locations: 'Ubicaciones',
+        field_sessions: 'Jornadas',
+        attendances: 'Asistencias',
+        attendance_activities: 'Act. de Asistencia',
+        dashboard: 'Dashboard',
+        accumulated_hours: 'Horas Acumuladas',
+        external_hours: 'Horas Externas',
+        grade_definitions: 'Def. de Grados',
+        section_definitions: 'Def. de Secciones',
+    };
+
+    // Build the full list: all modules sorted, each with its actions
+    const sortedModules = Object.keys(ALL_MODULES).sort();
+    const fullPermissionList = sortedModules.map((moduleKey) => ({
+        key: moduleKey,
+        label: moduleNames[moduleKey] || moduleKey,
+        actions: ALL_MODULES[moduleKey],
+    }));
+
+    // Group all unique permissions by module (only what the user has)
     const groupedPermissions: Record<string, string[]> = {};
     const allUserPermissions = Array.from(
         new Set([...Array.from(rolePermissions), ...directPermissions]),
@@ -188,6 +276,13 @@ export default function Show({
         }
         groupedPermissions[module].push(p);
     });
+
+    // Total standard permissions vs assigned
+    const totalStandardPerms = Object.values(ALL_MODULES).reduce((sum, actions) => sum + actions.length, 0);
+    const assignedStandardPerms = allUserPermissions.filter((p) => {
+        const [mod, act] = p.split('.');
+        return ALL_MODULES[mod]?.includes(act);
+    }).length;
 
     const isAlumno = roles.includes('alumno');
     const isRepresentante = roles.includes('representante');
@@ -257,19 +352,11 @@ export default function Show({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Usuario: ${user.name}`} />
 
-            <div className="p-4 lg:p-8">
+            <SettingsLayout>
+            <div>
                 {/* User Header */}
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => window.history.back()}
-                            className="mb-2 -ml-2 h-8"
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Volver
-                        </Button>
                         <div className="flex items-center gap-3">
                             {(user as any).avatar_url ? (
                                 <Avatar className="h-12 w-12">
@@ -314,8 +401,15 @@ export default function Show({
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.history.back()}
+                        >
+                            Volver
+                        </Button>
                         {isAlumno && (
-                            <Button variant="outline" asChild>
+                            <Button variant="outline" size="sm" asChild>
                                 <a
                                     href={userPdf(user.id).url}
                                     target="_blank"
@@ -328,7 +422,7 @@ export default function Show({
                         )}
                         {(hasPermission('users.edit') ||
                             (auth.user && auth.user.id === user.id)) && (
-                            <Button asChild>
+                            <Button variant="outline" size="sm" className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950/30" asChild>
                                 <Link href={userEdit(user.id).url}>
                                     <Edit className="mr-2 h-4 w-4" />
                                     Editar Perfil
@@ -344,27 +438,35 @@ export default function Show({
                     onValueChange={setActiveTab}
                     className="space-y-6"
                 >
-                    <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:grid-cols-4">
-                        <TabsTrigger value="general">General</TabsTrigger>
-                        {isAlumno && (
-                            <TabsTrigger value="salud">
-                                <Heart className="mr-1.5 h-3.5 w-3.5" />
-                                Salud
-                            </TabsTrigger>
-                        )}
-                        {isAlumno && (
-                            <TabsTrigger value="horas">
-                                <Clock className="mr-1.5 h-3.5 w-3.5" />
-                                Horas
-                            </TabsTrigger>
-                        )}
-                        <TabsTrigger value="permisos">Permisos</TabsTrigger>
-                    </TabsList>
+                    {(() => {
+                        const tabCount = 1 + (isAlumno ? 2 : 0) + (canViewPermissionsTab ? 1 : 0);
+                        const grid = tabCount === 1 ? 'grid-cols-1' : tabCount === 2 ? 'grid-cols-2' : tabCount === 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2 sm:grid-cols-4';
+                        return (
+                            <TabsList className={`grid w-full bg-neutral-100 sm:w-auto dark:bg-neutral-800 ${grid}`}>
+                                <TabsTrigger value="general">General</TabsTrigger>
+                                {isAlumno && (
+                                    <TabsTrigger value="salud">
+                                        <Heart className="mr-1.5 h-3.5 w-3.5" />
+                                        Salud
+                                    </TabsTrigger>
+                                )}
+                                {isAlumno && (
+                                    <TabsTrigger value="horas">
+                                        <Clock className="mr-1.5 h-3.5 w-3.5" />
+                                        Horas
+                                    </TabsTrigger>
+                                )}
+                                {canViewPermissionsTab && (
+                                    <TabsTrigger value="permisos">Permisos</TabsTrigger>
+                                )}
+                            </TabsList>
+                        );
+                    })()}
 
                     {/* Tab: General */}
                     <TabsContent value="general" className="space-y-6">
                         {/* Información Personal */}
-                        <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                        <div className="overflow-hidden rounded-xl border">
                             <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                 <UserIcon className="h-4 w-4 text-neutral-500" />
                                 <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
@@ -373,7 +475,7 @@ export default function Show({
                             </div>
                             <div className="grid gap-6 p-6 md:grid-cols-2">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                    <p className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                         Cédula
                                     </p>
                                     <p className="text-sm font-medium">
@@ -381,7 +483,7 @@ export default function Show({
                                     </p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                    <p className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                         Correo Electrónico
                                     </p>
                                     <p className="text-sm font-medium">
@@ -389,7 +491,7 @@ export default function Show({
                                     </p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                    <p className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                         Teléfono
                                     </p>
                                     <p className="text-sm font-medium">
@@ -397,7 +499,7 @@ export default function Show({
                                     </p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                    <p className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                         Dirección
                                     </p>
                                     <p className="text-sm font-medium">
@@ -410,7 +512,7 @@ export default function Show({
                         {/* Información Académica (Solo si es alumno) */}
                         {isAlumno && (
                             <>
-                                <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                <div className="overflow-hidden rounded-xl border">
                                     <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                         <BookOpen className="h-4 w-4 text-neutral-500" />
                                         <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
@@ -420,7 +522,7 @@ export default function Show({
                                     <div className="grid gap-6 p-6 md:grid-cols-2">
                                         {user.is_transfer && (
                                             <div className="space-y-1">
-                                                <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                                <p className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                                     Institución de Procedencia
                                                 </p>
                                                 <p className="text-sm font-medium">
@@ -431,7 +533,7 @@ export default function Show({
                                         )}
                                         {currentEnrollment ? (
                                             <div className="space-y-1">
-                                                <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+                                                <p className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                                     Grado y Sección
                                                 </p>
                                                 <div className="flex items-center gap-2">
@@ -469,7 +571,7 @@ export default function Show({
                                 </div>
 
                                 {/* Información Familiar (Representantes) */}
-                                <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                <div className="overflow-hidden rounded-xl border">
                                     <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                         <div className="flex items-center gap-2">
                                             <Users className="h-4 w-4 text-neutral-500" />
@@ -494,7 +596,7 @@ export default function Show({
                                     <div className="p-0">
                                         {user.representatives &&
                                         user.representatives.length > 0 ? (
-                                            <div className="divide-y divide-sidebar-border/70">
+                                            <div className="divide-y divide-border">
                                                 {user.representatives.map(
                                                     (rep) => (
                                                         <div
@@ -580,7 +682,7 @@ export default function Show({
 
                         {/* Información de Representados (Solo si es representante) */}
                         {isRepresentante && (
-                            <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                            <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <Users className="h-4 w-4 text-neutral-500" />
                                     <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
@@ -590,7 +692,7 @@ export default function Show({
                                 <div className="p-0">
                                     {user.represented_students &&
                                     user.represented_students.length > 0 ? (
-                                        <div className="divide-y divide-sidebar-border/70">
+                                        <div className="divide-y divide-border">
                                             {user.represented_students.map(
                                                 (student) => (
                                                     <div
@@ -649,99 +751,12 @@ export default function Show({
                             </div>
                         )}
 
-                        {/* Matriz de Permisos */}
-                        <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                            <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                <div className="flex items-center gap-2">
-                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
-                                        Capacidades y Permisos
-                                    </h2>
-                                </div>
-                                <div className="flex gap-3">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-2 w-2 rounded-full border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"></div>
-                                        <span className="text-[10px] font-bold tracking-tighter text-neutral-400 uppercase">
-                                            Heredado
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                                        <span className="text-[10px] font-bold tracking-tighter text-neutral-400 uppercase">
-                                            Directo
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="divide-y divide-sidebar-border/70 p-6">
-                                {Object.keys(groupedPermissions).length > 0 ? (
-                                    <div className="grid gap-6 sm:grid-cols-2">
-                                        {Object.entries(groupedPermissions).map(
-                                            ([module, perms]) => (
-                                                <div
-                                                    key={module}
-                                                    className="space-y-2"
-                                                >
-                                                    <h3 className="text-[10px] font-black tracking-widest text-neutral-400 uppercase dark:text-neutral-500">
-                                                        {module}
-                                                    </h3>
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {perms.map((perm) => {
-                                                            const action =
-                                                                perm.split(
-                                                                    '.',
-                                                                )[1];
-                                                            const isDirect =
-                                                                directPermissions.includes(
-                                                                    perm,
-                                                                );
-                                                            const isInherited =
-                                                                rolePermissions.has(
-                                                                    perm,
-                                                                );
-
-                                                            return (
-                                                                <Badge
-                                                                    key={perm}
-                                                                    variant="outline"
-                                                                    className={`px-2 py-0.5 text-[10px] font-normal ${
-                                                                        isDirect
-                                                                            ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400'
-                                                                            : 'text-neutral-500 dark:text-neutral-400'
-                                                                    }`}
-                                                                >
-                                                                    {action}
-                                                                    {isDirect &&
-                                                                        isInherited && (
-                                                                            <span className="ml-1 text-[8px] opacity-60">
-                                                                                (ambos)
-                                                                            </span>
-                                                                        )}
-                                                                </Badge>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            ),
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-8 text-center text-neutral-400">
-                                        <ShieldCheck className="mb-2 h-10 w-10 opacity-20" />
-                                        <p className="text-sm italic">
-                                            Sin permisos asignados.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
                     </TabsContent>
 
                     {/* Tab: Salud (solo para alumnos) */}
                     {isAlumno && (
                         <TabsContent value="salud" className="space-y-6">
-                            {/* Health Records Section */}
-                            <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                            <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <div className="flex items-center gap-2">
                                         <Heart className="h-4 w-4 text-red-500" />
@@ -765,136 +780,87 @@ export default function Show({
                                     )}
                                 </div>
                                 <div className="p-0">
-                                    {user.health_records &&
-                                    user.health_records.length > 0 ? (
-                                        <div className="divide-y divide-sidebar-border/70">
-                                            {user.health_records.map(
-                                                (record: any) => (
-                                                    <div
-                                                        key={record.id}
-                                                        className="p-4 px-6 transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
-                                                    >
-                                                        <div className="flex items-start justify-between">
-                                                            <div className="flex items-start gap-3">
-                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
-                                                                    <Heart className="h-4 w-4 text-red-500" />
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                                                                        {record
-                                                                            .condition
-                                                                            ?.name ||
-                                                                            'Sin condición'}
-                                                                    </p>
-                                                                    <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
-                                                                        <span className="flex items-center gap-1">
-                                                                            <Calendar className="h-3 w-3" />
-                                                                            {new Date(
-                                                                                record.received_at,
-                                                                            ).toLocaleDateString(
-                                                                                'es-ES',
-                                                                            )}
-                                                                        </span>
-                                                                        {record.received_at_location && (
-                                                                            <span className="flex items-center gap-1">
-                                                                                <MapPin className="h-3 w-3" />
-                                                                                {
-                                                                                    record.received_at_location
-                                                                                }
-                                                                            </span>
-                                                                        )}
-                                                                        <span>
-                                                                            Recibido
-                                                                            por:{' '}
-                                                                            {record
-                                                                                .received_by
-                                                                                ?.name ||
-                                                                                '—'}
-                                                                        </span>
-                                                                    </div>
-                                                                    {record.observations && (
-                                                                        <p className="mt-1 text-xs text-neutral-400 italic">
-                                                                            {
-                                                                                record.observations
-                                                                            }
-                                                                        </p>
-                                                                    )}
-                                                                    {record.media &&
-                                                                        record
-                                                                            .media
-                                                                            .length >
-                                                                            0 && (
-                                                                            <div className="mt-2 flex flex-wrap gap-2">
-                                                                                {record.media.map(
-                                                                                    (
-                                                                                        m: any,
-                                                                                    ) => (
-                                                                                        <a
-                                                                                            key={
-                                                                                                m.id
-                                                                                            }
-                                                                                            href={
-                                                                                                m.original_url ||
-                                                                                                m.url
-                                                                                            }
-                                                                                            target="_blank"
-                                                                                            rel="noopener noreferrer"
-                                                                                            className="inline-flex items-center gap-1 rounded border bg-neutral-50 px-2 py-1 text-xs text-neutral-600 transition-colors hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                                                                                        >
-                                                                                            <Paperclip className="h-3 w-3" />
-                                                                                            {m
-                                                                                                .custom_properties
-                                                                                                ?.description ||
-                                                                                                m.file_name}
-                                                                                            <Download className="h-3 w-3" />
-                                                                                        </a>
-                                                                                    ),
-                                                                                )}
-                                                                            </div>
-                                                                        )}
-                                                                </div>
+                                    {user.health_records && user.health_records.length > 0 ? (
+                                        <div className="divide-y divide-border">
+                                            {user.health_records.map((record: any) => (
+                                                <div
+                                                    key={record.id}
+                                                    className="p-4 px-6 transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
+                                                >
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex items-start gap-3">
+                                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
+                                                                <Heart className="h-4 w-4 text-red-500" />
                                                             </div>
-                                                            <div className="flex gap-1">
-                                                                {hasPermission(
-                                                                    'student_health.edit',
-                                                                ) && (
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-7 w-7 text-neutral-500 hover:text-blue-600"
-                                                                    >
-                                                                        <Edit className="h-3.5 w-3.5" />
-                                                                    </Button>
-                                                                )}
-                                                                {hasPermission(
-                                                                    'student_health.delete',
-                                                                ) && (
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
-                                                                        onClick={() =>
-                                                                            handleDeleteHealthRecord(
-                                                                                record.id,
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                                    </Button>
+                                                            <div>
+                                                                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                                                                    {record.condition?.name || 'Sin condición'}
+                                                                </p>
+                                                                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                                                    <span className="flex items-center gap-1">
+                                                                        <Calendar className="h-3 w-3" />
+                                                                        {new Date(record.received_at).toLocaleDateString('es-ES')}
+                                                                    </span>
+                                                                    {record.received_at_location && (
+                                                                        <span className="flex items-center gap-1">
+                                                                            <MapPin className="h-3 w-3" />
+                                                                            {record.received_at_location}
+                                                                        </span>
+                                                                    )}
+                                                                    <span>Recibido por: {record.received_by?.name || '—'}</span>
+                                                                </div>
+                                                                {record.observations && (
+                                                                    <p className="mt-1 text-xs text-neutral-400 italic">{record.observations}</p>
                                                                 )}
                                                             </div>
                                                         </div>
+                                                        <div className="flex gap-1">
+                                                            {hasPermission('student_health.edit') && (
+                                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500 hover:text-blue-600">
+                                                                    <Edit className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            )}
+                                                            {hasPermission('student_health.delete') && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                                                    onClick={() => handleDeleteHealthRecord(record.id)}
+                                                                >
+                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                ),
-                                            )}
+                                                </div>
+                                            ))}
                                         </div>
                                     ) : (
-                                        <div className="py-12 text-center text-neutral-400">
-                                            <Heart className="mx-auto mb-2 h-10 w-10 opacity-20" />
-                                            <p className="text-sm italic">
-                                                No hay registros de salud para
-                                                este estudiante.
-                                            </p>
+                                        <div className="flex flex-col items-center gap-3 py-16 text-center">
+                                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+                                                <Heart className="h-7 w-7 text-neutral-300 dark:text-neutral-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                                                    Sin registros de salud
+                                                </p>
+                                                <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">
+                                                    Este estudiante no tiene condiciones de salud registradas.
+                                                </p>
+                                            </div>
+                                            {hasPermission('student_health.create') && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setEditingHealthRecord(null);
+                                                        setIsHealthModalOpen(true);
+                                                    }}
+                                                >
+                                                    <Plus className="mr-1.5 h-3 w-3" />
+                                                    Agregar primer registro
+                                                </Button>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -909,7 +875,7 @@ export default function Show({
                             {hourStats && (
                                 <div className="grid gap-4 md:grid-cols-2">
                                     {/* Año Actual */}
-                                    <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                    <div className="overflow-hidden rounded-xl border">
                                         <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                             <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300">
                                                 {
@@ -993,7 +959,7 @@ export default function Show({
                                     </div>
 
                                     {/* Acumulado Total */}
-                                    <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                    <div className="overflow-hidden rounded-xl border">
                                         <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                             <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300">
                                                 Acumulado General
@@ -1073,7 +1039,7 @@ export default function Show({
 
                             {/* Desglose por Lapso */}
                             {hourStats && hourStats.breakdown_by_term && hourStats.breakdown_by_term.length > 0 && (
-                                <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                <div className="overflow-hidden rounded-xl border">
                                     <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                         <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300">
                                             Desglose por Lapso ({hourStats.current_year.year_name})
@@ -1110,7 +1076,7 @@ export default function Show({
                             )}
 
                             {/* Horas Externas Acreditadas */}
-                            <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                            <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <div className="flex items-center gap-2">
                                         <Building2 className="h-4 w-4 text-indigo-500" />
@@ -1137,7 +1103,7 @@ export default function Show({
                                 </div>
                                 <div className="p-0">
                                     {externalHours.length > 0 ? (
-                                        <div className="divide-y divide-sidebar-border/70">
+                                        <div className="divide-y divide-border">
                                             {externalHours.map((item) => (
                                                 <div
                                                     key={item.id}
@@ -1284,7 +1250,7 @@ export default function Show({
                             </div>
 
                             {/* Historial de Horas */}
-                            <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                            <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <Clock className="h-4 w-4 text-green-600" />
                                     <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
@@ -1293,13 +1259,13 @@ export default function Show({
                                 </div>
                                  <div className="p-0">
                                      {groupedHistory && groupedHistory.sortedYears.length > 0 ? (
-                                         <div className="divide-y divide-sidebar-border/70">
+                                         <div className="divide-y divide-border">
                                              {groupedHistory.sortedYears.map((yearName) => (
                                                  <div key={yearName}>
                                                      {/* Year Header */}
                                                      <div className="bg-neutral-100/50 px-6 py-2 dark:bg-neutral-800/30">
-                                                         <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
-                                                             {yearName}
+                                                          <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                                                              {yearName}
                                                          </span>
                                                      </div>
                                                      {/* Sessions for this year */}
@@ -1433,95 +1399,87 @@ export default function Show({
                         </TabsContent>
                     )}
 
-                    {/* Tab: Permisos */}
-                    <TabsContent value="permisos" className="space-y-6">
-                        <div className="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                            <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                <div className="flex items-center gap-2">
-                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
-                                        Capacidades y Permisos
-                                    </h2>
-                                </div>
-                                <div className="flex gap-3">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-2 w-2 rounded-full border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"></div>
-                                        <span className="text-[10px] font-bold tracking-tighter text-neutral-400 uppercase">
-                                            Heredado
-                                        </span>
+                    {canViewPermissionsTab && (
+                        <TabsContent value="permisos" className="space-y-6">
+                            <div className="overflow-hidden rounded-xl border">
+                                <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                    <div className="flex items-center gap-2">
+                                        <ShieldCheck className="h-4 w-4 text-neutral-500" />
+                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                            Capacidades y Permisos
+                                            <span className="ml-2 font-normal text-neutral-400">— {assignedStandardPerms}/{totalStandardPerms}</span>
+                                        </h2>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                                        <span className="text-[10px] font-bold tracking-tighter text-neutral-400 uppercase">
-                                            Directo
-                                        </span>
+                                    <div className="flex gap-3">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="h-2 w-2 rounded-full border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"></div>
+                                            <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                                                Heredado
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                                            <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                                                Directo
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="divide-y divide-sidebar-border/70 p-6">
-                                {Object.keys(groupedPermissions).length > 0 ? (
-                                    <div className="grid gap-6 sm:grid-cols-2">
-                                        {Object.entries(groupedPermissions).map(
-                                            ([module, perms]) => (
-                                                <div
-                                                    key={module}
-                                                    className="space-y-2"
-                                                >
-                                                    <h3 className="text-[10px] font-black tracking-widest text-neutral-400 uppercase dark:text-neutral-500">
-                                                        {module}
-                                                    </h3>
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {perms.map((perm) => {
-                                                            const action =
-                                                                perm.split(
-                                                                    '.',
-                                                                )[1];
-                                                            const isDirect =
-                                                                directPermissions.includes(
-                                                                    perm,
-                                                                );
-                                                            const isInherited =
-                                                                rolePermissions.has(
-                                                                    perm,
-                                                                );
-                                                            return (
-                                                                <Badge
-                                                                    key={perm}
-                                                                    variant="outline"
-                                                                    className={`px-2 py-0.5 text-[10px] font-normal ${
-                                                                        isDirect
-                                                                            ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400'
-                                                                            : 'text-neutral-500 dark:text-neutral-400'
-                                                                    }`}
-                                                                >
-                                                                    {action}
-                                                                    {isDirect &&
-                                                                        isInherited && (
-                                                                            <span className="ml-1 text-[8px] opacity-60">
-                                                                                (ambos)
-                                                                            </span>
+                                <div className="p-6">
+                                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                                        {fullPermissionList.map(
+                                            ({ key: moduleKey, label, actions }) => {
+                                                const assignedCount = actions.filter((a) =>
+                                                    allUserPermissions.includes(`${moduleKey}.${a}`)
+                                                ).length;
+                                                const totalActions = actions.length;
+
+                                                return (
+                                                    <div
+                                                        key={moduleKey}
+                                                        className={`rounded-lg border-l-4 p-4 ${MODULE_CARD_BG} ${moduleBorderClass(assignedCount, totalActions)}`}
+                                                    >
+                                                        <h3 className="mb-3 text-xs font-bold tracking-wider uppercase">
+                                                            {label}
+                                                            <span className="ml-1.5 font-normal text-neutral-400">— {assignedCount}/{totalActions}</span>
+                                                        </h3>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {actions.map((action) => {
+                                                                const perm = `${moduleKey}.${action}`;
+                                                                const isAssigned = allUserPermissions.includes(perm);
+                                                                const isDirect = directPermissions.includes(perm);
+                                                                const isInherited = rolePermissions.has(perm);
+
+                                                                return (
+                                                                    <button
+                                                                        key={perm}
+                                                                        type="button"
+                                                                        onClick={() => setPermissionDetail(perm)}
+                                                                        className={`inline-flex cursor-pointer items-center rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+                                                                            isAssigned
+                                                                                ? 'border-neutral-200 bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300'
+                                                                                : 'border-dashed border-neutral-200 text-neutral-400 hover:border-neutral-300 dark:border-neutral-700 dark:text-neutral-500'
+                                                                        }`}
+                                                                    >
+                                                                        {isAssigned ? action : (
+                                                                            <span className="opacity-50">{action}</span>
                                                                         )}
-                                                                </Badge>
-                                                            );
-                                                        })}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ),
+                                                );
+                                            },
                                         )}
                                     </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-8 text-center text-neutral-400">
-                                        <ShieldCheck className="mb-2 h-10 w-10 opacity-20" />
-                                        <p className="text-sm italic">
-                                            Sin permisos asignados.
-                                        </p>
-                                    </div>
-                                )}
+                                </div>
                             </div>
-                        </div>
-                    </TabsContent>
+                        </TabsContent>
+                    )}
                 </Tabs>
             </div>
+            </SettingsLayout>
 
             <AssignRepresentativeModal
                 isOpen={isAssignModalOpen}
@@ -1556,6 +1514,94 @@ export default function Show({
                 existingRecord={editingExternalHour}
                 isEditing={!!editingExternalHour}
             />
+
+            {/* Dialog: Detalle de Permiso */}
+            <Dialog open={permissionDetail !== null} onOpenChange={(open) => { if (!open) setPermissionDetail(null); }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <ShieldCheck className="h-5 w-5 text-neutral-500" />
+                            Capacidad del Usuario
+                        </DialogTitle>
+                        <DialogDescription>
+                            Lo que este usuario puede hacer en el sistema.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {permissionDetail && (() => {
+                        const parts = permissionDetail.split('.');
+                        const moduleKey = parts[0] || '';
+                        const actionKey = parts[1] || '';
+                        const isDirect = directPermissions.includes(permissionDetail);
+                        const isInherited = rolePermissions.has(permissionDetail);
+                        const rolesForPerm = getRolesForPermission(permissionDetail);
+
+                        // Human-readable module names
+                        const moduleLabel = moduleNames[moduleKey] || moduleKey;
+
+                        // Human-readable action descriptions
+                        const actionDescriptions: Record<string, string> = {
+                            view: 'consultar y visualizar',
+                            create: 'crear nuevos registros de',
+                            edit: 'editar y modificar',
+                            delete: 'eliminar',
+                        };
+                        const actionDesc = actionDescriptions[actionKey] || actionKey;
+
+                        // Origin text for the user
+                        let originBadge: { label: string; className: string } | null = null;
+                        if (isDirect && isInherited) {
+                            originBadge = { label: 'Concedido directamente y por rol', className: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800' };
+                        } else if (isDirect) {
+                            originBadge = { label: 'Concedido directamente', className: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' };
+                        } else if (isInherited) {
+                            originBadge = { label: 'Heredado por su rol', className: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' };
+                        } else {
+                            originBadge = { label: 'No asignado', className: 'bg-neutral-100 text-neutral-500 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700' };
+                        }
+
+                        return (
+                            <div className="space-y-5">
+                                {/* What the user can do */}
+                                <div className="rounded-lg border bg-neutral-50 p-5 dark:bg-neutral-900/50">
+                                    <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+                                        {isDirect || isInherited ? (
+                                            <>Este usuario <strong className="text-neutral-900 dark:text-neutral-100">puede {actionDesc}</strong> <strong className="text-neutral-900 dark:text-neutral-100">{moduleLabel.toLowerCase()}</strong> en el sistema.</>
+                                        ) : (
+                                            <>Este usuario <span className="text-neutral-400">no tiene asignada</span> la capacidad de <strong className="text-neutral-400">{actionDesc}</strong> <strong className="text-neutral-400">{moduleLabel.toLowerCase()}</strong>.</>
+                                        )}
+                                    </p>
+                                </div>
+
+                                {/* How they got it */}
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                                        ¿Cómo obtuvo esta capacidad?
+                                    </h4>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className={`inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-medium ${originBadge.className}`}>
+                                            {originBadge.label}
+                                        </span>
+                                    </div>
+                                    {rolesForPerm.length > 0 && (
+                                        <p className="text-xs text-neutral-500">
+                                            A través del rol{rolesForPerm.length > 1 ? 'es' : ''}:{' '}
+                                            {rolesForPerm.map((r) => (
+                                                <Badge key={r} variant="secondary" className="ml-1 text-xs capitalize">
+                                                    {r}
+                                                </Badge>
+                                            ))}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="text-xs text-neutral-400 italic">
+                                    Presiona ESC o haz clic fuera para cerrar.
+                                </div>
+                            </div>
+                        );
+                    })()}
+                </DialogContent>
+            </Dialog>
 
             {/* AlertDialog: Desvincular representante */}
             <AlertDialog open={unlinkDialogOpen} onOpenChange={setUnlinkDialogOpen}>

@@ -312,18 +312,16 @@ Estas son las credenciales reales creadas por los seeders:
 |-----|-------|----------|
 | Admin | `admin@amantina.test` | `password` |
 | Profesor test | `user90000001@amantina.test` | `password` |
-| Profesor test | `user90000002@amantina.test` | `password` |
 | Representante test | `user90000010@amantina.test` | `password` |
 | Alumno test | `user90000020@amantina.test` | `password` |
-| Alumno test | `user90000021@amantina.test` | `password` |
 
 Rangos útiles:
 
 | Tipo | Rango |
 |------|-------|
 | Profesores test | `user90000001@amantina.test` a `user90000005@amantina.test` |
-| Representantes test | `user90000010@amantina.test` a `user90000018@amantina.test` |
-| Alumnos test | `user90000020@amantina.test` a `user90000104@amantina.test` |
+| Representantes test | `user90000010@amantina.test` a `user90000011@amantina.test` |
+| Alumnos test | `user90000020@amantina.test` a `user90000029@amantina.test` |
 
 También se generan 500 alumnos demo y 25 profesores demo con emails aleatorios de Faker. Para esos usuarios conviene consultarlos desde la base o desde la UI.
 

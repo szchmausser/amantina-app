@@ -24,6 +24,8 @@ class Section extends Model
         'academic_year_id',
         'grade_id',
         'name',
+        'section_definition_id',
+        'section_definition_name',
     ];
 
     public function academicYear(): BelongsTo
@@ -34,6 +36,11 @@ class Section extends Model
     public function grade(): BelongsTo
     {
         return $this->belongsTo(Grade::class);
+    }
+
+    public function sectionDefinition(): BelongsTo
+    {
+        return $this->belongsTo(SectionDefinition::class);
     }
 
     public function enrollments(): HasMany

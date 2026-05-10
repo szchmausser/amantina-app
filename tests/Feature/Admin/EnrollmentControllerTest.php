@@ -58,6 +58,10 @@ class EnrollmentControllerTest extends TestCase
             ->get(route('admin.enrollments.index'));
 
         $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('admin/enrollments/index')
+            ->has('activeYear')
+        );
     }
 
     #[Test]

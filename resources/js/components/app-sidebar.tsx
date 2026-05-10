@@ -1,14 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
-    BookOpen,
     CalendarCheck,
-    FolderGit2,
     LayoutDashboard,
     LayoutGrid,
-    Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -22,21 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as academicInfoIndex } from '@/routes/admin/academic-info';
-import { index as userIndex } from '@/routes/admin/users';
 import type { NavItem, SharedData } from '@/types';
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
 
 export function AppSidebar() {
     const { auth } = usePage<SharedData>().props;
@@ -63,14 +45,6 @@ export function AppSidebar() {
             title: 'Jornadas',
             href: '/admin/field-sessions',
             icon: CalendarCheck,
-        });
-    }
-
-    if (auth.permissions?.includes('users.view')) {
-        mainNavItems.push({
-            title: 'Gestión de Usuarios',
-            href: userIndex().url,
-            icon: Users,
         });
     }
 
@@ -102,7 +76,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

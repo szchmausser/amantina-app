@@ -26,6 +26,9 @@ class AcademicStructureOverviewTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.academic-info.index'));
 
         $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('admin/academic-info/index')
+        );
     }
 
     public function test_profesor_can_access_academic_info()
@@ -36,6 +39,9 @@ class AcademicStructureOverviewTest extends TestCase
         $response = $this->actingAs($teacher)->get(route('admin.academic-info.index'));
 
         $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('admin/academic-info/index')
+        );
     }
 
     public function test_unauthorized_user_cannot_access_academic_info()

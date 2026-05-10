@@ -1,8 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Edit, Heart, Plus, Save, Trash2, X } from 'lucide-react';
+import { Edit, Heart, Plus, Save, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import InputError from '@/components/input-error';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -126,13 +125,6 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
         setPendingDeleteId(null);
     };
 
-    const toggleActive = (condition: HealthCondition) => {
-        router.put(`/admin/health-conditions/${condition.id}`, {
-            name: condition.name,
-            is_active: !condition.is_active,
-        });
-    };
-
     const pagination: PaginationInfo | undefined =
         healthConditions.last_page > 1
             ? {
@@ -148,7 +140,6 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
             <DataTableHead>
                 <DataTableTH className="w-16">#</DataTableTH>
                 <DataTableTH>Nombre</DataTableTH>
-                <DataTableTH className="w-28">Estado</DataTableTH>
                 <DataTableTH className="w-48 text-right">Acciones</DataTableTH>
             </DataTableHead>
             <DataTableBody>
@@ -160,38 +151,16 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
                                 1}
                         </DataTableTD>
                         <DataTableTD>
-                            <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+                            <span className="font-medium text-neutral-900 dark:text-neutral-100">
                                 {condition.name}
                             </span>
-                        </DataTableTD>
-                        <DataTableTD>
-                            <Badge
-                                variant={
-                                    condition.is_active
-                                        ? 'default'
-                                        : 'secondary'
-                                }
-                                className="text-xs"
-                            >
-                                {condition.is_active ? 'Activa' : 'Inactiva'}
-                            </Badge>
                         </DataTableTD>
                         <DataTableTD className="text-right">
                             <div className="flex items-center justify-end gap-1">
                                 <Button
                                     variant="ghost"
-                                    size="sm"
-                                    className="h-7 text-xs"
-                                    onClick={() => toggleActive(condition)}
-                                >
-                                    {condition.is_active
-                                        ? 'Desactivar'
-                                        : 'Activar'}
-                                </Button>
-                                <Button
-                                    variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                    className="h-8 w-8 text-neutral-500"
                                     onClick={() => startEdit(condition)}
                                 >
                                     <Edit className="h-4 w-4" />
@@ -200,7 +169,7 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
                                     onClick={() => handleDelete(condition.id)}
                                 >
                                     <Trash2 className="h-4 w-4" />
@@ -279,10 +248,9 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
                                 <div className="flex items-center justify-end gap-2">
                                     <Button
                                         type="button"
-                                        variant="ghost"
+                                        variant="outline"
                                         onClick={cancelEdit}
                                     >
-                                        <X className="mr-1 h-4 w-4" />
                                         Cancelar
                                     </Button>
                                     <Button type="submit" disabled={processing}>

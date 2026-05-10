@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\AcademicYear;
 use App\Models\ExternalHour;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -38,11 +37,11 @@ class ExternalHourTest extends TestCase
     protected function validPayload(): array
     {
         return [
-            'user_id'          => $this->student->id,
-            'period'           => '2019-2023',
-            'hours'            => 75.50,
+            'user_id' => $this->student->id,
+            'period' => '2019-2023',
+            'hours' => 75.50,
             'institution_name' => 'U.E. Liceo Bolivariano Simón Rodríguez',
-            'description'      => 'Horas acreditadas por transferencia institucional.',
+            'description' => 'Horas acreditadas por transferencia institucional.',
         ];
     }
 
@@ -58,10 +57,10 @@ class ExternalHourTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('external_hours', [
-            'user_id'          => $this->student->id,
-            'period'           => '2019-2023',
+            'user_id' => $this->student->id,
+            'period' => '2019-2023',
             'institution_name' => 'U.E. Liceo Bolivariano Simón Rodríguez',
-            'admin_id'         => $this->admin->id,
+            'admin_id' => $this->admin->id,
         ]);
     }
 
@@ -71,7 +70,7 @@ class ExternalHourTest extends TestCase
             ->post(route('admin.external-hours.store', $this->student), $this->validPayload());
 
         $this->assertDatabaseHas('external_hours', [
-            'user_id'  => $this->student->id,
+            'user_id' => $this->student->id,
             'admin_id' => $this->admin->id,
         ]);
     }
@@ -92,6 +91,10 @@ class ExternalHourTest extends TestCase
             ->post(route('admin.external-hours.store', $this->student), $this->validPayload());
 
         $response->assertStatus(403);
+        $this->assertDatabaseMissing('external_hours', [
+            'user_id' => $this->student->id,
+            'period' => '2019-2023',
+        ]);
     }
 
     public function test_store_requires_all_mandatory_fields(): void
@@ -151,7 +154,7 @@ class ExternalHourTest extends TestCase
 
         $response->assertSessionHasNoErrors();
         $this->assertDatabaseHas('external_hours', [
-            'user_id'     => $this->student->id,
+            'user_id' => $this->student->id,
             'description' => null,
         ]);
     }
@@ -161,16 +164,16 @@ class ExternalHourTest extends TestCase
     public function test_admin_can_update_external_hours(): void
     {
         $externalHour = ExternalHour::factory()->create([
-            'user_id'  => $this->student->id,
+            'user_id' => $this->student->id,
             'admin_id' => $this->admin->id,
         ]);
 
         $payload = [
-            'user_id'          => $this->student->id,
-            'period'           => '2018-2022',
-            'hours'            => 120.00,
+            'user_id' => $this->student->id,
+            'period' => '2018-2022',
+            'hours' => 120.00,
             'institution_name' => 'U.E. Colegio La Salle',
-            'description'      => 'Actualizado',
+            'description' => 'Actualizado',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -181,18 +184,18 @@ class ExternalHourTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('external_hours', [
-            'id'               => $externalHour->id,
-            'period'           => '2018-2022',
-            'hours'            => 120.00,
+            'id' => $externalHour->id,
+            'period' => '2018-2022',
+            'hours' => 120.00,
             'institution_name' => 'U.E. Colegio La Salle',
-            'description'      => 'Actualizado',
+            'description' => 'Actualizado',
         ]);
     }
 
     public function test_non_admin_cannot_update_external_hours(): void
     {
         $externalHour = ExternalHour::factory()->create([
-            'user_id'  => $this->student->id,
+            'user_id' => $this->student->id,
             'admin_id' => $this->admin->id,
         ]);
 
@@ -203,6 +206,11 @@ class ExternalHourTest extends TestCase
             ->put(route('admin.external-hours.update', $externalHour), $this->validPayload());
 
         $response->assertStatus(403);
+        $this->assertDatabaseHas('external_hours', [
+            'id' => $externalHour->id,
+            'period' => $externalHour->period,
+            'hours' => $externalHour->hours,
+        ]);
     }
 
     // ── DESTROY ───────────────────────────────────────────────────────────────
@@ -210,7 +218,7 @@ class ExternalHourTest extends TestCase
     public function test_admin_can_soft_delete_external_hours(): void
     {
         $externalHour = ExternalHour::factory()->create([
-            'user_id'  => $this->student->id,
+            'user_id' => $this->student->id,
             'admin_id' => $this->admin->id,
         ]);
 
@@ -226,7 +234,7 @@ class ExternalHourTest extends TestCase
     public function test_non_admin_cannot_delete_external_hours(): void
     {
         $externalHour = ExternalHour::factory()->create([
-            'user_id'  => $this->student->id,
+            'user_id' => $this->student->id,
             'admin_id' => $this->admin->id,
         ]);
 
@@ -237,6 +245,10 @@ class ExternalHourTest extends TestCase
             ->delete(route('admin.external-hours.destroy', $externalHour));
 
         $response->assertStatus(403);
+        $this->assertDatabaseHas('external_hours', [
+            'id' => $externalHour->id,
+            'user_id' => $this->student->id,
+        ]);
     }
 
     // ── HOUR ACCUMULATOR INTEGRATION ──────────────────────────────────────────
@@ -248,15 +260,15 @@ class ExternalHourTest extends TestCase
     public function test_external_hours_sum_to_overall_total_via_controller(): void
     {
         ExternalHour::factory()->create([
-            'user_id'  => $this->student->id,
+            'user_id' => $this->student->id,
             'admin_id' => $this->admin->id,
-            'hours'    => 50,
+            'hours' => 50,
         ]);
 
         ExternalHour::factory()->create([
-            'user_id'  => $this->student->id,
+            'user_id' => $this->student->id,
             'admin_id' => $this->admin->id,
-            'hours'    => 30,
+            'hours' => 30,
         ]);
 
         $total = (float) ExternalHour::where('user_id', $this->student->id)->sum('hours');
@@ -267,9 +279,9 @@ class ExternalHourTest extends TestCase
     public function test_soft_deleted_external_hours_are_excluded_from_totals(): void
     {
         $externalHour = ExternalHour::factory()->create([
-            'user_id'  => $this->student->id,
+            'user_id' => $this->student->id,
             'admin_id' => $this->admin->id,
-            'hours'    => 100,
+            'hours' => 100,
         ]);
 
         $externalHour->delete();
@@ -285,18 +297,18 @@ class ExternalHourTest extends TestCase
         $otherStudent->assignRole('alumno');
 
         ExternalHour::factory()->create([
-            'user_id'  => $this->student->id,
+            'user_id' => $this->student->id,
             'admin_id' => $this->admin->id,
-            'hours'    => 60,
+            'hours' => 60,
         ]);
 
         ExternalHour::factory()->create([
-            'user_id'  => $otherStudent->id,
+            'user_id' => $otherStudent->id,
             'admin_id' => $this->admin->id,
-            'hours'    => 40,
+            'hours' => 40,
         ]);
 
-        $studentTotal      = (float) ExternalHour::where('user_id', $this->student->id)->sum('hours');
+        $studentTotal = (float) ExternalHour::where('user_id', $this->student->id)->sum('hours');
         $otherStudentTotal = (float) ExternalHour::where('user_id', $otherStudent->id)->sum('hours');
 
         $this->assertEquals(60.0, $studentTotal);

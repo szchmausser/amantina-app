@@ -34,7 +34,7 @@ class SeedCompleteTestData extends Command
             $this->error('❌ Las tablas de la base de datos no existen.');
             $this->info('💡 Ejecuta primero: php artisan migrate');
             $this->newLine();
-            
+
             if ($this->confirm('¿Deseas ejecutar las migraciones ahora?', true)) {
                 $this->info('🔄 Ejecutando migraciones...');
                 Artisan::call('migrate', [], $this->getOutput());
@@ -43,12 +43,13 @@ class SeedCompleteTestData extends Command
                 return self::FAILURE;
             }
         }
-        
+
         if ($this->option('fresh')) {
             $this->warn('⚠️  Esta acción eliminará TODOS los datos de la base de datos.');
-            
+
             if (! $this->confirm('¿Estás seguro de que deseas continuar?', false)) {
                 $this->info('Operación cancelada.');
+
                 return self::SUCCESS;
             }
 
@@ -76,6 +77,7 @@ class SeedCompleteTestData extends Command
         } catch (\Exception $e) {
             $this->error('❌ Error al generar datos de prueba:');
             $this->error($e->getMessage());
+
             return self::FAILURE;
         }
     }
@@ -83,17 +85,17 @@ class SeedCompleteTestData extends Command
     private function showStatistics(): void
     {
         $this->info('📊 Estadísticas:');
-        
+
         $studentCount = DB::table('model_has_roles')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->where('roles.name', 'alumno')
             ->count();
-            
+
         $teacherCount = DB::table('model_has_roles')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->where('roles.name', 'profesor')
             ->count();
-        
+
         $this->table(
             ['Entidad', 'Cantidad'],
             [

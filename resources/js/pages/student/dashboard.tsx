@@ -83,6 +83,90 @@ export default function StudentDashboard({
                     )}
                 </div>
 
+                {/* Top Row: Closure Projection + Most Recent Session */}
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Target className="h-4 w-4" />
+                                Proyección de Cierre
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {closureProjection.isOnTrack ? (
+                                <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
+                                    <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                                    <div>
+                                        <p className="font-medium text-emerald-800 dark:text-emerald-200">
+                                            ¡Vas bien encaminado!
+                                        </p>
+                                        <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                                            Mantén tu ritmo actual para cumplir
+                                            con el cupo.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : closureProjection.daysRemaining !== null ? (
+                                <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+                                    <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                                    <div>
+                                        <p className="font-medium text-amber-800 dark:text-amber-200">
+                                            Proyección:{' '}
+                                            {closureProjection.projectedDate}
+                                        </p>
+                                        <p className="text-sm text-amber-700 dark:text-amber-300">
+                                            {closureProjection.daysRemaining}{' '}
+                                            días restantes para cumplir el cupo.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950/30">
+                                    <Clock className="h-8 w-8 text-neutral-600 dark:text-neutral-400" />
+                                    <div>
+                                        <p className="font-medium text-neutral-800 dark:text-neutral-200">
+                                            Sin datos suficientes
+                                        </p>
+                                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                                            Completa más sesiones para calcular
+                                            la proyección.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {mostRecentSession && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                    Última Sesión
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
+                                    <div>
+                                        <p className="font-medium">
+                                            {mostRecentSession.name}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {new Date(
+                                                mostRecentSession.date,
+                                            ).toLocaleDateString('es-ES')}{' '}
+                                            | {mostRecentSession.location}
+                                        </p>
+                                    </div>
+                                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                                        {mostRecentSession.hours.toFixed(1)}h
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+
                 {/* Main Progress */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <div className="lg:col-span-2">
@@ -117,95 +201,6 @@ export default function StudentDashboard({
                         />
                     </div>
                 </div>
-
-                {/* Closure Projection */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Target className="h-4 w-4" />
-                            Proyección de Cierre
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {closureProjection.isOnTrack ? (
-                            <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
-                                <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-                                <div>
-                                    <p className="font-medium text-emerald-800 dark:text-emerald-200">
-                                        ¡Vas bien encaminado!
-                                    </p>
-                                    <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                                        Mantén tu ritmo actual para cumplir con
-                                        el cupo.
-                                    </p>
-                                </div>
-                            </div>
-                        ) : closureProjection.daysRemaining !== null ? (
-                            <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
-                                <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
-                                <div>
-                                    <p className="font-medium text-amber-800 dark:text-amber-200">
-                                        Proyección:{' '}
-                                        {closureProjection.projectedDate}
-                                    </p>
-                                    <p className="text-sm text-amber-700 dark:text-amber-300">
-                                        {closureProjection.daysRemaining} días
-                                        restantes para cumplir el cupo.
-                                    </p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950/30">
-                                <Clock className="h-8 w-8 text-neutral-600 dark:text-neutral-400" />
-                                <div>
-                                    <p className="font-medium text-neutral-800 dark:text-neutral-200">
-                                        Sin datos suficientes
-                                    </p>
-                                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                                        Completa más sesiones para calcular la
-                                        proyección.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Breakdown by Year */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            Histórico por Año
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                            {breakdownByYear.length === 0 ? (
-                                <p className="col-span-full py-4 text-center text-sm text-muted-foreground">
-                                    Sin datos disponibles
-                                </p>
-                            ) : (
-                                breakdownByYear.map((year) => (
-                                    <div
-                                        key={year.yearName}
-                                        className="rounded-lg border p-3"
-                                    >
-                                        <p className="text-sm font-medium">
-                                            {year.yearName}
-                                        </p>
-                                        <p className="text-2xl font-bold">
-                                            {year.totalHours.toFixed(0)}h
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            / {year.quota}h requeridas
-                                        </p>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
 
                 {/* Breakdown by Term & Categories */}
                 <div className="grid gap-4 lg:grid-cols-2">
@@ -349,35 +344,41 @@ export default function StudentDashboard({
                     </CardContent>
                 </Card>
 
-                {/* Most Recent Session */}
-                {mostRecentSession && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                Última Sesión
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
-                                <div>
-                                    <p className="font-medium">
-                                        {mostRecentSession.name}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {new Date(
-                                            mostRecentSession.date,
-                                        ).toLocaleDateString('es-ES')}{' '}
-                                        | {mostRecentSession.location}
-                                    </p>
-                                </div>
-                                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                                    {mostRecentSession.hours.toFixed(1)}h
+                {/* Breakdown by Year */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            Histórico por Año
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            {breakdownByYear.length === 0 ? (
+                                <p className="col-span-full py-4 text-center text-sm text-muted-foreground">
+                                    Sin datos disponibles
                                 </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
+                            ) : (
+                                breakdownByYear.map((year) => (
+                                    <div
+                                        key={year.yearName}
+                                        className="rounded-lg border p-3"
+                                    >
+                                        <p className="text-sm font-medium">
+                                            {year.yearName}
+                                        </p>
+                                        <p className="text-2xl font-bold">
+                                            {year.totalHours.toFixed(0)}h
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            / {year.quota}h requeridas
+                                        </p>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </AppLayout>
     );

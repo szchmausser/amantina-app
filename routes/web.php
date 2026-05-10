@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Controllers\Admin\ExternalHourController;
 use App\Http\Controllers\Admin\FieldSessionController;
 use App\Http\Controllers\Admin\GradeController;
+use App\Http\Controllers\Admin\GradeDefinitionController;
 use App\Http\Controllers\Admin\HealthConditionController;
 use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\PermissionController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Admin\RepresentativeController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SchoolTermController;
 use App\Http\Controllers\Admin\SectionController;
+use App\Http\Controllers\Admin\SectionDefinitionController;
 use App\Http\Controllers\Admin\StudentHealthRecordController;
 use App\Http\Controllers\Admin\StudentPdfController;
 use App\Http\Controllers\Admin\TeacherAssignmentController;
@@ -38,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('users/{user}/pdf', StudentPdfController::class)->name('users.pdf');
         Route::resource('roles', RoleController::class)->only(['index', 'show', 'edit', 'update']);
         Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
+        Route::get('permissions/{permission}', [PermissionController::class, 'show'])->name('permissions.show');
+        Route::get('permissions/{permission}/users', [PermissionController::class, 'users'])->name('permissions.users');
+        Route::get('roles/{role}/users', [RoleController::class, 'users'])->name('roles.users');
 
         // Academic Structure (show redirects to index/academic year)
         Route::resource('academic-years', AcademicYearController::class);
@@ -45,6 +50,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('sections', SectionController::class);
         Route::resource('school-terms', SchoolTermController::class)->except(['show']);
         Route::resource('term-types', TermTypeController::class)->except(['create', 'edit', 'show']);
+        Route::resource('grade-definitions', GradeDefinitionController::class)->except(['create', 'edit', 'show']);
+        Route::resource('section-definitions', SectionDefinitionController::class)->except(['create', 'edit', 'show']);
         Route::resource('health-conditions', HealthConditionController::class)->except(['create', 'edit', 'show']);
         Route::resource('activity-categories', ActivityCategoryController::class)->except(['create', 'edit', 'show']);
         Route::resource('locations', LocationController::class)->except(['create', 'edit', 'show']);

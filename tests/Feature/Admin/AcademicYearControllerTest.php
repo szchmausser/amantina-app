@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\AcademicYear;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -27,9 +28,16 @@ class AcademicYearControllerTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('admin');
 
+        AcademicYear::factory()->create(['name' => '2025-2026', 'is_active' => true]);
+        AcademicYear::factory()->create(['name' => '2024-2025', 'is_active' => false]);
+
         $response = $this->actingAs($admin)->get(route('admin.academic-years.index'));
 
         $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('admin/academic-years/index')
+            ->has('academicYears')
+        );
     }
 
     public function test_admin_can_create_academic_year(): void

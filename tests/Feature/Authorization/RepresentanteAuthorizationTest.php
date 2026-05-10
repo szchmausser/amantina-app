@@ -4,6 +4,7 @@ namespace Tests\Feature\Authorization;
 
 use App\Models\AcademicYear;
 use App\Models\Enrollment;
+use App\Models\FieldSession;
 use App\Models\Grade;
 use App\Models\RelationshipType;
 use App\Models\Section;
@@ -11,6 +12,7 @@ use App\Models\StudentRepresentative;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class RepresentanteAuthorizationTest extends TestCase
@@ -18,8 +20,11 @@ class RepresentanteAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     protected User $representante;
+
     protected User $representado;
+
     protected User $otherStudent;
+
     protected AcademicYear $academicYear;
 
     protected function setUp(): void
@@ -130,6 +135,9 @@ class RepresentanteAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->representante)->get(route('dashboard'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('representative/dashboard'),
+        );
     }
 
     /**
@@ -139,6 +147,9 @@ class RepresentanteAuthorizationTest extends TestCase
     {
         $response = $this->actingAs($this->representante)->get(route('profile.edit'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('settings/profile'),
+        );
     }
 
     /**
@@ -267,7 +278,7 @@ class RepresentanteAuthorizationTest extends TestCase
         $profesor = User::factory()->create();
         $profesor->assignRole('profesor');
 
-        $fieldSession = \App\Models\FieldSession::factory()
+        $fieldSession = FieldSession::factory()
             ->for($this->academicYear)
             ->for($profesor, 'teacher')
             ->create();
@@ -295,6 +306,9 @@ class RepresentanteAuthorizationTest extends TestCase
         ]);
 
         $response->assertForbidden();
+
+        // Verify account was NOT deleted
+        $this->assertDatabaseHas('users', ['id' => $this->representante->id]);
     }
 
     /**

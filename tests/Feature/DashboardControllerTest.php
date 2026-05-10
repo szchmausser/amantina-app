@@ -103,15 +103,18 @@ class DashboardControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('admin/dashboard')
-            ->has('globalCompliance')
-            ->has('sectionRanking')
-            ->has('termComparison')
-            ->has('sessionStats')
+            ->has('totalStudents')
+            ->has('requiredHours')
+            ->has('averageHours')
+            ->has('distribution')
+            ->has('onTrackStudents')
+            ->has('inProgressStudents')
+            ->has('atRiskStudents')
+            ->has('outstandingStudents')
+            ->has('studentsWithNoHours')
+            ->has('topSections')
+            ->has('concerningSections')
             ->has('alerts')
-            ->has('activityCategoryDistribution')
-            ->has('locationDistribution')
-            ->has('teacherWorkload')
-            ->has('yearOverYear')
         );
     }
 

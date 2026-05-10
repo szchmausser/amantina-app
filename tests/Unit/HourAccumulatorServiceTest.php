@@ -384,17 +384,18 @@ class HourAccumulatorServiceTest extends TestCase
     // Additive Design Tests (external_hours = 0)
     // ============================================
 
-    public function test_external_hours_is_zero_until_hito_12(): void
+    public function test_external_hours_not_included_in_per_year_calculation(): void
     {
-        // This test documents the current behavior
-        // When Hito 12 is implemented, this should change
+        // External hours are not year-specific and must NOT be included in
+        // getStudentTotalHours() (which is a per-year method). They are added
+        // once at the controller level when building the all-time total.
         $result = $this->service->getStudentTotalHours($this->student->id);
 
         $this->assertEquals(0, $result['external_hours']);
         $this->assertEquals(
             $result['jornada_hours'],
             $result['total_hours'],
-            'Total hours should equal jornada hours when external hours is 0'
+            'Per-year total should equal jornada hours only; externals are added separately'
         );
     }
 

@@ -79,6 +79,10 @@ test('estudiante puede iniciar sesión y ver su dashboard', function () {
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('Diego Fernández')
+        ->assertSee('Sin datos suficientes')
+        ->assertSee('Sin datos disponibles')
+        ->assertSee('No has registrado asistencia aún')
         ->assertNoJavaScriptErrors();
 });
 
@@ -92,6 +96,9 @@ test('estudiante ve dashboard cuando no tiene horas registradas', function () {
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('Sin datos suficientes')
+        ->assertSee('Sin datos disponibles')
+        ->assertSee('No has registrado asistencia aún')
         ->assertNoJavaScriptErrors();
 });
 
@@ -136,13 +143,9 @@ test('estudiante ve su dashboard con horas acumuladas', function () {
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('3.0')
+        ->assertSee('Agricultura')
         ->assertNoJavaScriptErrors();
-
-    // Verify the hours exist in the database
-    $this->assertDatabaseHas('attendance_activities', [
-        'attendance_id' => $attendance->id,
-        'hours' => 3.0,
-    ]);
 });
 
 // ============================================================================
@@ -152,9 +155,12 @@ test('estudiante ve su dashboard con horas acumuladas', function () {
 test('estudiante puede ver su perfil', function () {
     $this->actingAs($this->student);
 
-    $page = visit('/profile');
+    $page = visit('/settings/profile');
 
-    $page->assertPathIs('/profile')
+    $page->assertPathIs('/settings/profile')
+        ->assertSee('Diego Fernández')
+        ->assertSee('Mis Representantes')
+        ->assertSee('Mis Horas')
         ->assertNoJavaScriptErrors();
 });
 
@@ -232,24 +238,12 @@ test('estudiante acumula horas de múltiples jornadas correctamente', function (
         'academic_year_id' => $this->academicYear->id,
     ]);
 
-    // Verify: student has exactly 2 attendance records with attended=true
-    $attendedCount = Attendance::where('user_id', $this->student->id)
-        ->where('attended', true)
-        ->count();
-    expect($attendedCount)->toBe(2);
-
-    // Verify: total hours = 3 + 4 = 7
-    $totalHours = AttendanceActivity::whereHas('attendance', function ($q) {
-        $q->where('user_id', $this->student->id)
-            ->where('attended', true);
-    })->sum('hours');
-
-    expect((float) $totalHours)->toBe(7.0);
-
-    // Student views dashboard
+    // Student views dashboard — should show accumulated hours from multiple sessions
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('7.0')
+        ->assertSee('Comunidad')
         ->assertNoJavaScriptErrors();
 });
 

@@ -6,6 +6,7 @@ use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class PermissionBasedAccessTest extends TestCase
@@ -63,7 +64,10 @@ class PermissionBasedAccessTest extends TestCase
 
         $response = $this->actingAs($alumno)->get(route('admin.users.index'));
 
-        $response->assertStatus(200);
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('admin/users/index'),
+        );
     }
 
     /**
@@ -77,6 +81,8 @@ class PermissionBasedAccessTest extends TestCase
         $response = $this->actingAs($alumno)->get(route('admin.users.index'));
 
         $response->assertStatus(403);
+
+        // Verify no user data was leaked — the response should not contain the users Inertia component
     }
 
     /**

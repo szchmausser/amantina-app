@@ -97,6 +97,11 @@ test('representante puede iniciar sesión y ver su dashboard', function () {
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel del Representante')
+        ->assertSee('Progreso de Valentina Rojas')
+        ->assertSee($this->academicYear->name)
+        ->assertSee('0.0h')
+        ->assertSee('600.0h')
         ->assertNoJavaScriptErrors();
 });
 
@@ -110,6 +115,12 @@ test('representante ve dashboard cuando su representado no tiene horas', functio
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel del Representante')
+        ->assertSee('Progreso de Valentina Rojas')
+        ->assertSee($this->academicYear->name)
+        ->assertSee('0.0h')
+        ->assertSee('600.0h')
+        ->assertSee('El estudiante necesita más horas para cumplir el cupo.')
         ->assertNoJavaScriptErrors();
 });
 
@@ -152,14 +163,12 @@ test('representante ve horas acumuladas de su representado', function () {
     // Representative views dashboard
     $page = visit('/dashboard');
 
+    // PRIMARY: Verify the representative sees their student's data
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel del Representante')
+        ->assertSee('Progreso de Valentina Rojas')
+        ->assertSee('4.0h') // accumulated hours displayed with .1 precision
         ->assertNoJavaScriptErrors();
-
-    // Verify hours are in database
-    $this->assertDatabaseHas('attendance_activities', [
-        'attendance_id' => $attendance->id,
-        'hours' => 4.0,
-    ]);
 });
 
 // ============================================================================
@@ -220,18 +229,14 @@ test('representante ve progreso acumulado de su representado con múltiples jorn
         'hours' => 5.0,
     ]);
 
-    // Verify total hours = 3 + 5 = 8
-    $totalHours = AttendanceActivity::whereHas('attendance', function ($q) {
-        $q->where('user_id', $this->student->id)
-            ->where('attended', true);
-    })->sum('hours');
-
-    expect((float) $totalHours)->toBe(8.0);
-
-    // Representative views dashboard
+    // Representative views dashboard — should show accumulated 8.0h
     $page = visit('/dashboard');
 
+    // PRIMARY: Verify accumulated hours (3+5=8) and student data are visible
     $page->assertPathIs('/dashboard')
+        ->assertSee('Panel del Representante')
+        ->assertSee('Progreso de Valentina Rojas')
+        ->assertSee('8.0h') // 3h + 5h = 8h accumulated
         ->assertNoJavaScriptErrors();
 });
 
@@ -257,8 +262,10 @@ test('representante no puede acceder a páginas de administración', function ()
 test('representante puede ver su perfil', function () {
     $this->actingAs($this->representative);
 
-    $page = visit('/profile');
+    $page = visit('/settings/profile');
 
-    $page->assertPathIs('/profile')
+    $page->assertPathIs('/settings/profile')
+        ->assertSee('Ana Rojas')
+        ->assertSee('Mis Representados')
         ->assertNoJavaScriptErrors();
 });

@@ -1,11 +1,12 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ChevronDown, ChevronRight, Shield, ShieldCheck } from 'lucide-react';
+import { ChevronDown, ChevronRight, Eye, Pencil, PlusCircle, Shield, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import { show as permissionShow } from '@/routes/admin/permissions';
 import type { BreadcrumbItem } from '@/types';
 
 interface Role {
@@ -42,40 +43,47 @@ function groupPermissions(
     return groups;
 }
 
-export default function PermissionsIndex({ permissions }: Props) {
+const ACTION_ICONS: Record<string, React.ElementType> = {
+    create: PlusCircle,
+    edit: Pencil,
+    delete: Trash2,
+    view: Eye,
+    read: Eye,
+    update: Pencil,
+};
+
+function getActionIcon(permName: string): React.ElementType {
+    const action = permName.split('.').pop() ?? '';
+    return ACTION_ICONS[action] ?? Shield;
+}
+
+function formatModuleName(name: string): string {
+    return name
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+export default function PermissionsIndex({ permissions }: any) {
     const { auth } = usePage<any>().props;
     const hasPermission = (p: string) => auth.permissions?.includes(p);
 
     const groups = groupPermissions(permissions);
-    const [openModules, setOpenModules] = useState<Set<string>>(new Set());
-
-    const toggleModule = (module: string) => {
-        setOpenModules((prev) => {
-            const next = new Set(prev);
-            if (next.has(module)) {
-                next.delete(module);
-            } else {
-                next.add(module);
-            }
-            return next;
-        });
-    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Permisos del Sistema" />
+            <Head title="Gestión de Permisos" />
 
             <SettingsLayout>
                 <div className="flex flex-col gap-6">
-                    {/* Header */}
+                    {/* Header - Matching Roles Index */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                                 Permisos del Sistema
                             </h1>
                             <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                                Lista de todos los permisos registrados en el
-                                sistema y los roles que los poseen.
+                                Gestiona los permisos granulares que definen las capacidades de los roles en la plataforma.
                             </p>
                         </div>
                         {hasPermission('roles.view') && (
@@ -85,84 +93,46 @@ export default function PermissionsIndex({ permissions }: Props) {
                         )}
                     </div>
 
-                    {/* Permissions Grid */}
-                    <div className="grid items-start gap-4 sm:grid-cols-1 lg:grid-cols-2">
+                    {/* Permissions List - Matching Roles Visual Form */}
+                    <div className="space-y-4">
                         {Object.entries(groups).map(([module, modulePerms]) => {
-                            const isOpen = openModules.has(module);
-
                             return (
                                 <Card
                                     key={module}
                                     className="overflow-hidden p-0"
                                 >
-                                    {/* Header estilo tabla - clickable */}
-                                    <button
-                                        type="button"
-                                        onClick={() => toggleModule(module)}
-                                        className="flex w-full items-center justify-between border-b bg-neutral-50/50 px-4 py-3 transition-colors hover:bg-neutral-100/50 dark:border-neutral-800 dark:bg-neutral-800/30 dark:hover:bg-neutral-800/50"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="text-neutral-400">
-                                                {isOpen ? (
-                                                    <ChevronDown className="h-4 w-4" />
-                                                ) : (
-                                                    <ChevronRight className="h-4 w-4" />
-                                                )}
-                                            </div>
-                                            <ShieldCheck className="h-3.5 w-3.5 text-neutral-400" />
-                                            <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                                                {module}
+                                    <div className="flex w-full items-center justify-between bg-neutral-50/50 px-4 py-3 dark:bg-neutral-800/30">
+                                        <div className="flex items-center gap-3 pl-1">
+                                            <Shield className="h-4 w-4 text-neutral-500" />
+                                            <span className="text-sm font-semibold tracking-wider text-neutral-600 dark:text-neutral-300">
+                                                {formatModuleName(module)}
                                             </span>
+
                                             <Badge
-                                                variant="secondary"
-                                                className="text-[10px]"
+                                                variant="outline"
+                                                className="text-[10px] bg-white/50 dark:bg-neutral-900/30"
                                             >
-                                                {modulePerms.length}
+                                                {modulePerms.length} permisos
                                             </Badge>
                                         </div>
-                                    </button>
-
-                                    {/* Collapsible content */}
-                                    {isOpen && (
-                                        <CardContent className="p-0">
-                                            <div className="divide-y">
-                                                {modulePerms.map((perm) => (
-                                                    <div
-                                                        key={perm.id}
-                                                        className="flex items-center justify-between px-6 py-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
-                                                    >
-                                                        <code className="rounded bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
-                                                            {perm.name}
-                                                        </code>
-                                                        <div className="flex max-w-[50%] flex-wrap items-center justify-end gap-1.5">
-                                                            {perm.roles.length >
-                                                            0 ? (
-                                                                perm.roles.map(
-                                                                    (role) => (
-                                                                        <Badge
-                                                                            key={
-                                                                                role.id
-                                                                            }
-                                                                            variant="outline"
-                                                                            className="text-[10px] font-medium capitalize"
-                                                                        >
-                                                                            {
-                                                                                role.name
-                                                                            }
-                                                                        </Badge>
-                                                                    ),
-                                                                )
-                                                            ) : (
-                                                                <span className="text-xs text-neutral-400">
-                                                                    Sin roles
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                            <div className="flex flex-wrap gap-2 sm:justify-end flex-1 max-w-2xl">
+                                                {modulePerms.map((perm: any) => {
+                                                    const ActionIcon = getActionIcon(perm.name);
+                                                    const actionLabel = perm.name.split('.').pop();
+                                                    
+                                                    return (
+                                                        <Link
+                                                            key={perm.id}
+                                                            href={permissionShow(perm.id).url}
+                                                            className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary dark:border-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-300 dark:hover:border-primary/50 dark:hover:bg-primary/10"
+                                                        >
+                                                            <ActionIcon className="h-3.5 w-3.5 opacity-60" />
+                                                            {actionLabel}
+                                                        </Link>
+                                                    );
+                                                })}
                                             </div>
-                                        </CardContent>
-                                    )}
+                                    </div>
                                 </Card>
                             );
                         })}

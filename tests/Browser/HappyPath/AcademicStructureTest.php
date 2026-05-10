@@ -6,10 +6,14 @@ use App\Models\SchoolTerm;
 use App\Models\Section;
 use App\Models\TermType;
 use App\Models\User;
+use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Database\Seeders\SectionDefinitionSeeder;
 
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(GradeDefinitionSeeder::class);
+    $this->seed(SectionDefinitionSeeder::class);
 
     $this->admin = User::factory()->create([
         'email' => 'admin@test.com',
@@ -28,12 +32,16 @@ beforeEach(function () {
 // ─── GRADOS ───────────────────────────────────────────────────────────────────
 
 test('admin puede ver el listado de grados', function () {
-    Grade::factory()->for($this->academicYear)->count(3)->create();
+    $grades = Grade::factory()->for($this->academicYear)->count(3)->create();
 
     $this->visit('/admin/grades')
         ->wait(2)
         ->assertPathIs('/admin/grades')
         ->assertSee('Grados Académicos')
+        ->assertSee('2024-2025')
+        ->assertSee($grades[0]->name)
+        ->assertSee($grades[1]->name)
+        ->assertSee($grades[2]->name)
         ->assertNoJavaScriptErrors();
 });
 
@@ -50,12 +58,15 @@ test('admin puede ver grados del año activo', function () {
 
 test('admin puede ver el listado de secciones', function () {
     $grade = Grade::factory()->for($this->academicYear)->create();
-    Section::factory()->for($this->academicYear)->for($grade)->count(2)->create();
+    $sections = Section::factory()->for($this->academicYear)->for($grade)->count(2)->create();
 
     $this->visit('/admin/sections')
         ->wait(2)
         ->assertPathIs('/admin/sections')
         ->assertSee('Secciones')
+        ->assertSee('2024-2025')
+        ->assertSee($sections[0]->name)
+        ->assertSee($sections[1]->name)
         ->assertNoJavaScriptErrors();
 });
 
@@ -73,10 +84,23 @@ test('admin puede ver el detalle de una sección', function () {
 // ─── LAPSOS ESCOLARES ─────────────────────────────────────────────────────────
 
 test('admin puede ver el listado de lapsos escolares', function () {
+    $termType = TermType::firstOrCreate(['name' => 'Lapso 1'], ['order' => 1]);
+
+    $schoolTerm = SchoolTerm::factory()->create([
+        'academic_year_id' => $this->academicYear->id,
+        'term_type_id' => $termType->id,
+        'start_date' => '2024-09-01',
+        'end_date' => '2024-11-30',
+    ]);
+
     $this->visit('/admin/school-terms')
         ->wait(2)
         ->assertPathIs('/admin/school-terms')
         ->assertSee('Lapsos Académicos')
+        ->assertSee('2024-2025')
+        ->assertSee('Lapso 1')
+        ->assertSee('01/09/2024')
+        ->assertSee('30/11/2024')
         ->assertNoJavaScriptErrors();
 });
 
@@ -93,13 +117,8 @@ test('admin puede ver lapsos del año activo', function () {
     $this->visit('/admin/school-terms')
         ->wait(2)
         ->assertPathIs('/admin/school-terms')
+        ->assertSee('Lapso 1')
         ->assertNoJavaScriptErrors();
-
-    // Verificar en base de datos que el lapso existe
-    $this->assertDatabaseHas('school_terms', [
-        'academic_year_id' => $this->academicYear->id,
-        'term_type_id' => $termType->id,
-    ]);
 });
 
 // ─── INFORMACIÓN ACADÉMICA ────────────────────────────────────────────────────
@@ -108,6 +127,12 @@ test('admin puede ver la vista general de información académica', function () 
     $this->visit('/admin/academic-info')
         ->wait(2)
         ->assertPathIs('/admin/academic-info')
+        ->assertSee('2024-2025')
+        ->assertSee('Fuera de Período')
+        ->assertSee('0 Alumnos')
+        ->assertSee('0 Grados')
+        ->assertSee('0 Secciones')
+        ->assertSee('No se han definido grados para este año escolar.')
         ->assertNoJavaScriptErrors();
 });
 

@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, Eye, Layers, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Eye, Layers, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -151,11 +151,11 @@ export default function SectionsIndex({
                             {(sections.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
                         <DataTableTD>
-                            <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
                                 <span className="font-semibold text-neutral-900 dark:text-neutral-100">
                                     Sección {section.name}
                                 </span>
-                                <span className="flex flex-wrap items-center gap-1 text-sm text-neutral-500">
+                                <span className="flex flex-wrap items-center gap-1">
                                     <Link href={`/admin/sections?grade_id=${section.grade?.id}`}>
                                         <Badge variant="secondary" className="cursor-pointer text-xs bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800 dark:hover:bg-sky-900">
                                             {section.grade?.name || 'N/A'}
@@ -239,14 +239,30 @@ export default function SectionsIndex({
                                 y periodo.
                             </p>
                         </div>
-                        <Button asChild>
-                            <Link
-                                href={`/admin/sections/create?academic_year_id=${selectedYearId}${selectedGradeId ? `&grade_id=${selectedGradeId}` : ''}`}
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                className="text-neutral-600 dark:text-neutral-400"
+                                onClick={() => window.history.back()}
                             >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nueva Sección
-                            </Link>
-                        </Button>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <Link href="/admin/section-definitions">
+                                    <Settings2 className="mr-2 h-4 w-4" />
+                                    Definiciones de secciones
+                                </Link>
+                            </Button>
+                            <Button asChild>
+                                <Link
+                                    href={`/admin/sections/create?academic_year_id=${selectedYearId}${selectedGradeId ? `&grade_id=${selectedGradeId}` : ''}`}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nueva Sección
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Filtros */}
