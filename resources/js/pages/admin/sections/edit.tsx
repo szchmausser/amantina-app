@@ -1,5 +1,5 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Layers, Save } from 'lucide-react';
+import { Layers, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -98,13 +98,17 @@ export default function SectionEdit({ section, grades, academicYears, sectionDef
             <SettingsLayout>
                 <div className="px-4 py-4">
                     {/* Header */}
-                    <div className="mb-6">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                            className="mb-2 -ml-2 h-8"
-                        >
+                    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                                {isEditing ? 'Editar Sección' : 'Nueva Sección'}
+                            </h1>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                Asigna un identificador (ej: A) a un grado
+                                específico.
+                            </p>
+                        </div>
+                        <Button variant="outline" asChild>
                             <Link
                                 href={
                                     sectionsIndex({
@@ -116,17 +120,9 @@ export default function SectionEdit({ section, grades, academicYears, sectionDef
                                     }).url
                                 }
                             >
-                                <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver al listado
                             </Link>
                         </Button>
-                        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            {isEditing ? 'Editar Sección' : 'Nueva Sección'}
-                        </h1>
-                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                            Asigna un identificador (ej: A) a un grado
-                            específico.
-                        </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">

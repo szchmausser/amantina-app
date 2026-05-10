@@ -210,22 +210,27 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
                     {(isCreating || editingId) && (
                         <div className="rounded-xl border p-6">
                             <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Nombre</Label>
-                                        <Input
-                                            id="name"
-                                            value={data.name}
-                                            onChange={(e) =>
-                                                setData('name', e.target.value)
-                                            }
-                                            placeholder="Ej: Asma, Diabetes..."
-                                            required
-                                        />
-                                        <InputError message={errors.name} />
-                                    </div>
-                                    <div className="flex items-end">
-                                        <div className="flex items-center space-x-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Nombre</Label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex-1">
+                                            <Input
+                                                id="name"
+                                                value={data.name}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="Ej: Asma, Diabetes..."
+                                                required
+                                            />
+                                            <InputError
+                                                message={errors.name}
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-2 pt-0.5">
                                             <Checkbox
                                                 id="is_active"
                                                 checked={data.is_active}
