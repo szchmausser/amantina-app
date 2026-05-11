@@ -13,10 +13,9 @@ import {
     Users,
 } from 'lucide-react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
-import DeleteUser from '@/components/delete-user';
+// import DeleteUser from '@/components/delete-user'; // Comentado: bloqueamos eliminación de cuentas por ahora
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -133,7 +132,7 @@ export default function Profile({
     // Determine which tabs to show
     const tabs = [
         { value: 'profile', label: 'Mi Información' },
-        ...(showRolesAndPermissions
+        ...(showRolesAndPermissions && !isAlumno && !isRepresentante
             ? [{ value: 'info', label: 'Mis Roles y Permisos' }]
             : []),
         ...(isAlumno
@@ -187,39 +186,15 @@ export default function Profile({
 
                     {/* Tab: Mi Información */}
                     <TabsContent value="profile" className="space-y-6">
-                        {/* Avatar */}
-                        <Card>
-                            <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                <div className="flex items-center gap-2">
-                                    <UserIcon className="h-4 w-4 text-neutral-500" />
-                                    <CardTitle className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                                        Foto de Perfil
-                                    </CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-6">
-                                <div className="flex justify-center">
-                                    <UserAvatar
-                                        name={auth.user.name}
-                                        avatarUrl={avatar_url ?? undefined}
-                                        avatarUpdateUrl="/settings/profile/avatar"
-                                        avatarRemoveUrl="/settings/profile/avatar"
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Personal Info Form */}
-                        <Card>
-                            <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                <div className="flex items-center gap-2">
-                                    <UserIcon className="h-4 w-4 text-neutral-500" />
-                                    <CardTitle className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                                        Datos Personales
-                                    </CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-6">
+                        {/* Personal Info Form + Additional Data merged */}
+                        <div className="overflow-hidden rounded-xl border">
+                            <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
+                                <UserIcon className="h-4 w-4 text-neutral-500" />
+                                <h2 className="text-sm font-semibold">
+                                    Datos Personales
+                                </h2>
+                            </div>
+                            <div className="p-6">
                                 <Form
                                     {...ProfileController.update.form()}
                                     options={{ preserveScroll: true }}
@@ -231,7 +206,14 @@ export default function Profile({
                                         errors,
                                     }) => (
                                         <>
-                                            <div className="grid gap-4 sm:grid-cols-2">
+                                            <div className="grid gap-6 sm:grid-cols-2">
+                                                <div className="space-y-2">
+                                                    <Label>Cédula</Label>
+                                                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                                        {userData.cedula || '—'}
+                                                    </p>
+                                                </div>
+
                                                 <div className="space-y-2">
                                                     <Label htmlFor="name">
                                                         Nombre Completo
@@ -244,7 +226,7 @@ export default function Profile({
                                                         name="name"
                                                         required
                                                         autoComplete="name"
-                                                        placeholder="Full name"
+                                                        placeholder="Nombre completo"
                                                     />
                                                     <InputError
                                                         className="mt-2"
@@ -265,13 +247,72 @@ export default function Profile({
                                                         name="email"
                                                         required
                                                         autoComplete="username"
-                                                        placeholder="Email address"
+                                                        placeholder="correo@ejemplo.com"
                                                     />
                                                     <InputError
                                                         className="mt-2"
                                                         message={errors.email}
                                                     />
                                                 </div>
+
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="phone">
+                                                        Teléfono
+                                                    </Label>
+                                                    <Input
+                                                        id="phone"
+                                                        defaultValue={userData.phone ?? ''}
+                                                        name="phone"
+                                                        placeholder="0412-0000000"
+                                                    />
+                                                    <InputError
+                                                        className="mt-2"
+                                                        message={errors.phone}
+                                                    />
+                                                </div>
+
+                                                <div className="sm:col-span-2 space-y-2">
+                                                    <Label htmlFor="address">
+                                                        Dirección
+                                                    </Label>
+                                                    <Input
+                                                        id="address"
+                                                        defaultValue={userData.address ?? ''}
+                                                        name="address"
+                                                        placeholder="Dirección completa"
+                                                    />
+                                                    <InputError
+                                                        className="mt-2"
+                                                        message={errors.address}
+                                                    />
+                                                </div>
+
+                                                {isAlumno && (
+                                                    <>
+                                                        <div className="space-y-2">
+                                                            <Label>Tipo de Ingreso</Label>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="font-medium"
+                                                            >
+                                                                {userData.is_transfer
+                                                                    ? 'Transferido'
+                                                                    : 'Regular'}
+                                                            </Badge>
+                                                        </div>
+                                                        {userData.is_transfer && (
+                                                            <div className="space-y-2">
+                                                                <Label>
+                                                                    Institución de Procedencia
+                                                                </Label>
+                                                                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                                                    {userData.institution_origin ||
+                                                                        'No especificada'}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
                                             </div>
 
                                             {mustVerifyEmail &&
@@ -329,83 +370,32 @@ export default function Profile({
                                         </>
                                     )}
                                 </Form>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
 
-                        {/* Read-only info */}
-                        <Card>
-                            <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                <div className="flex items-center gap-2">
-                                    <UserIcon className="h-4 w-4 text-neutral-500" />
-                                    <CardTitle className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                                        Información Adicional
-                                    </CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-6">
-                                <div className="grid gap-6 sm:grid-cols-2">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                            Cédula
-                                        </p>
-                                        <p className="text-sm font-medium">
-                                            {userData.cedula || '—'}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                            Teléfono
-                                        </p>
-                                        <p className="text-sm font-medium">
-                                            {userData.phone || '—'}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-1 sm:col-span-2">
-                                        <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                            Dirección
-                                        </p>
-                                        <p className="text-sm font-medium">
-                                            {userData.address || '—'}
-                                        </p>
-                                    </div>
-                                    {isAlumno && (
-                                        <>
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                                    Tipo de Ingreso
-                                                </p>
-                                                <Badge
-                                                    variant="outline"
-                                                    className="font-medium"
-                                                >
-                                                    {userData.is_transfer
-                                                        ? 'Transferido'
-                                                        : 'Regular'}
-                                                </Badge>
-                                            </div>
-                                            {userData.is_transfer && (
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-                                                        Institución de
-                                                        Procedencia
-                                                    </p>
-                                                    <p className="text-sm font-medium">
-                                                        {userData.institution_origin ||
-                                                            'No especificada'}
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
+                        {/* Avatar — moved to end */}
+                        <div className="overflow-hidden rounded-xl border">
+                            <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
+                                <UserIcon className="h-4 w-4 text-neutral-500" />
+                                <h2 className="text-sm font-semibold">
+                                    Foto de Perfil
+                                </h2>
+                            </div>
+                            <div className="flex justify-center p-6">
+                                <UserAvatar
+                                    name={auth.user.name}
+                                    avatarUrl={avatar_url ?? undefined}
+                                    avatarUpdateUrl="/settings/profile/avatar"
+                                    avatarRemoveUrl="/settings/profile/avatar"
+                                />
+                            </div>
+                        </div>
 
-                        {canDeleteAccount && <DeleteUser />}
+                        {/* {canDeleteAccount && <DeleteUser />} — Comentado: bloqueamos eliminación de cuentas por ahora */}
                     </TabsContent>
 
                     {/* Tab: Mis Roles y Permisos */}
-                    {showRolesAndPermissions && (
+                    {showRolesAndPermissions && !isAlumno && !isRepresentante && (
                         <TabsContent value="info" className="space-y-6">
                             {/* Roles */}
                             <Card>

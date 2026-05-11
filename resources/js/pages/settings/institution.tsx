@@ -8,12 +8,14 @@ import {
     MapPin,
     Phone,
     Save,
+    Upload,
 } from 'lucide-react';
 import InstitutionController from '@/actions/App/Http/Controllers/Settings/InstitutionController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { InstitutionLogoUpload } from '@/components/institution-logo-upload';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
@@ -34,6 +36,8 @@ interface InstitutionProps {
         email: string | null;
         phone: string | null;
         code: string | null;
+        logo_url: string | null;
+        favicon_url: string | null;
     } | null;
 }
 
@@ -211,6 +215,22 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
                                     </>
                                 )}
                             </Form>
+                        </CardContent>
+                    </Card>
+
+                    {/* Logo Upload Section */}
+                    <Card className="overflow-hidden p-0">
+                        <div className="flex items-center gap-2 rounded-t-xl border-b bg-neutral-50/50 px-6 py-3 dark:bg-neutral-800/30">
+                            <Upload className="h-4 w-4 text-neutral-500" />
+                            <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
+                                Logo de la Institución
+                            </span>
+                        </div>
+                        <CardContent className="flex justify-center p-6">
+                            <InstitutionLogoUpload
+                                logoUrl={institution?.logo_url ?? null}
+                                institutionName={institution?.name ?? ''}
+                            />
                         </CardContent>
                     </Card>
                 </div>

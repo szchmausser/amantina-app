@@ -5,6 +5,7 @@ namespace Tests\Browser\HappyPath;
 use App\Models\AcademicYear;
 use App\Models\ActivityCategory;
 use App\Models\Attendance;
+use App\Models\AttendanceActivity;
 use App\Models\Enrollment;
 use App\Models\FieldSession;
 use App\Models\FieldSessionStatus;
@@ -216,7 +217,7 @@ test('profesor puede ver el detalle de una jornada con asistencia y horas asigna
         'attended' => true,
     ]);
 
-    \App\Models\AttendanceActivity::factory()->create([
+    AttendanceActivity::factory()->create([
         'attendance_id' => $attendance1->id,
         'activity_category_id' => $this->activityCategory->id,
         'hours' => 3.0,

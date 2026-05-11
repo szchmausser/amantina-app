@@ -5,7 +5,6 @@ namespace Tests\Feature\HappyPath;
 use App\Models\AcademicYear;
 use App\Models\ActivityCategory;
 use App\Models\Attendance;
-use App\Models\AttendanceActivity;
 use App\Models\Enrollment;
 use App\Models\FieldSession;
 use App\Models\FieldSessionStatus;

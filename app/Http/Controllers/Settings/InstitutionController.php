@@ -40,4 +40,47 @@ class InstitutionController extends Controller
 
         return back();
     }
+
+    /**
+     * Update the institution logo.
+     */
+    public function updateLogo(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'logo' => ['required', 'image', 'mimes:jpeg,png,gif,webp', 'max:2048'],
+        ]);
+
+        $institution = Institution::first();
+
+        if (! $institution) {
+            return back()->with('error', 'La institución no está configurada.');
+        }
+
+        if ($institution->getFirstMedia('logo')) {
+            $institution->getFirstMedia('logo')->delete();
+        }
+
+        $institution->addMediaFromRequest('logo')
+            ->toMediaCollection('logo');
+
+        return back()->with('success', 'Logo actualizado correctamente.');
+    }
+
+    /**
+     * Remove the institution logo.
+     */
+    public function removeLogo(): RedirectResponse
+    {
+        $institution = Institution::first();
+
+        if (! $institution) {
+            return back()->with('error', 'La institución no está configurada.');
+        }
+
+        if ($institution->getFirstMedia('logo')) {
+            $institution->getFirstMedia('logo')->delete();
+        }
+
+        return back()->with('success', 'Logo eliminado correctamente.');
+    }
 }

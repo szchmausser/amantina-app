@@ -28,4 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('settings/institution', [InstitutionController::class, 'edit'])->name('institution.edit');
     Route::patch('settings/institution', [InstitutionController::class, 'update'])->name('institution.update');
+
+    Route::post('settings/institution/logo', [InstitutionController::class, 'updateLogo'])->name('institution.logo.update');
+    Route::delete('settings/institution/logo', [InstitutionController::class, 'removeLogo'])->name('institution.logo.remove');
 });
