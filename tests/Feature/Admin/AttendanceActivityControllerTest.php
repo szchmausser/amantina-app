@@ -12,6 +12,8 @@ use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -348,5 +350,109 @@ class AttendanceActivityControllerTest extends TestCase
         $totalHours = $attendance->attendanceActivities()->sum('hours');
         $this->assertEquals(3.5, $totalHours);
         $this->assertEquals(2, $attendance->attendanceActivities()->count());
+    }
+
+    public function test_can_store_activity_with_photos(): void
+    {
+        $attendance = $this->createAttendanceForUser($this->profesor);
+
+        $response = $this->actingAs($this->admin)->post(
+            route('admin.attendance-activities.store'),
+            [
+                'attendance_id' => $attendance->id,
+                'activity_category_id' => $this->category->id,
+                'hours' => 2.5,
+                'notes' => 'Siembra de hortalizas',
+                'photos' => [
+                    UploadedFile::fake()->image('evidence1.jpg'),
+                    UploadedFile::fake()->image('evidence2.png'),
+                ],
+            ]
+        );
+
+        $response->assertSessionHasNoErrors();
+
+        $activity = $attendance->attendanceActivities()->first();
+        $this->assertNotNull($activity);
+        $this->assertCount(2, $activity->getMedia('evidence_photos'));
+    }
+
+    public function test_can_update_activity_with_photos(): void
+    {
+        $attendance = $this->createAttendanceForUser($this->profesor);
+
+        $activity = AttendanceActivity::create([
+            'attendance_id' => $attendance->id,
+            'activity_category_id' => $this->category->id,
+            'hours' => 1,
+        ]);
+
+        $activity->addMedia(UploadedFile::fake()->image('old.jpg'))
+            ->toMediaCollection('evidence_photos');
+
+        $oldMedia = $activity->getMedia('evidence_photos')->first();
+        $this->assertNotNull($oldMedia);
+
+        $response = $this->actingAs($this->admin)->put(
+            route('admin.attendance-activities.update', $activity),
+            [
+                'activity_category_id' => $this->category->id,
+                'hours' => 3,
+                'notes' => 'Actualizado',
+                'photos' => [
+                    UploadedFile::fake()->image('new.jpg'),
+                ],
+                'delete_photo_ids' => [$oldMedia->id],
+            ]
+        );
+
+        $response->assertSessionHasNoErrors();
+
+        $activity->refresh();
+        $this->assertCount(1, $activity->getMedia('evidence_photos'));
+        $this->assertEquals('new', $activity->getMedia('evidence_photos')->first()->name);
+    }
+
+    public function test_destroy_activity_cleans_media_files(): void
+    {
+        Storage::fake('public');
+        $attendance = $this->createAttendanceForUser($this->profesor);
+
+        $activity = AttendanceActivity::create([
+            'attendance_id' => $attendance->id,
+            'activity_category_id' => $this->category->id,
+            'hours' => 1,
+        ]);
+
+        $file = UploadedFile::fake()->image('evidence.jpg');
+        $activity->addMedia($file)->toMediaCollection('evidence_photos');
+        $media = $activity->getMedia('evidence_photos')->first();
+        $this->assertNotNull($media);
+
+        $response = $this->actingAs($this->admin)->delete(
+            route('admin.attendance-activities.destroy', $activity),
+        );
+
+        $response->assertSessionHas('success');
+        $this->assertSoftDeleted('attendance_activities', ['id' => $activity->id]);
+        $this->assertDatabaseMissing('media', ['id' => $media->id]);
+    }
+
+    public function test_destroy_activity_without_photos_works(): void
+    {
+        $attendance = $this->createAttendanceForUser($this->profesor);
+
+        $activity = AttendanceActivity::create([
+            'attendance_id' => $attendance->id,
+            'activity_category_id' => $this->category->id,
+            'hours' => 1,
+        ]);
+
+        $response = $this->actingAs($this->admin)->delete(
+            route('admin.attendance-activities.destroy', $activity),
+        );
+
+        $response->assertSessionHas('success');
+        $this->assertSoftDeleted('attendance_activities', ['id' => $activity->id]);
     }
 }

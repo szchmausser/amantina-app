@@ -23,6 +23,13 @@ class AttendanceActivityController extends Controller
 
         $activity = AttendanceActivity::create($validated);
 
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $file) {
+                $activity->addMedia($file)
+                    ->toMediaCollection('evidence_photos');
+            }
+        }
+
         $totalHours = $attendance->attendanceActivities()->sum('hours');
         $baseHours = $attendance->fieldSession->base_hours;
 
@@ -42,6 +49,22 @@ class AttendanceActivityController extends Controller
 
         $attendanceActivity->update($request->validated());
 
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $file) {
+                $attendanceActivity->addMedia($file)
+                    ->toMediaCollection('evidence_photos');
+            }
+        }
+
+        if ($request->filled('delete_photo_ids')) {
+            foreach ($request->input('delete_photo_ids') as $mediaId) {
+                $media = $attendanceActivity->getMedia('evidence_photos')->firstWhere('id', $mediaId);
+                if ($media) {
+                    $media->delete();
+                }
+            }
+        }
+
         $attendance = $attendanceActivity->attendance;
         $totalHours = $attendance->attendanceActivities()->sum('hours');
         $baseHours = $attendance->fieldSession->base_hours;
@@ -60,6 +83,7 @@ class AttendanceActivityController extends Controller
     {
         $this->authorizeSessionAccess($attendanceActivity->attendance);
 
+        $attendanceActivity->clearMediaCollection('evidence_photos');
         $attendanceActivity->delete();
 
         return back()->with('success', 'Subactividad eliminada correctamente.');

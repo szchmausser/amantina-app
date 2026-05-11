@@ -14,6 +14,8 @@ use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -543,70 +545,6 @@ class AttendanceControllerTest extends TestCase
         $response->assertSessionHas('warning');
     }
 
-    public function test_can_quick_assign_hours(): void
-    {
-        $category = ActivityCategory::factory()->create();
-
-        $session = FieldSession::factory()->create([
-            'academic_year_id' => $this->academicYear->id,
-            'user_id' => $this->profesor->id,
-            'status_id' => $this->plannedStatus->id,
-            'base_hours' => 4,
-        ]);
-
-        $student = User::factory()->create();
-        $student->assignRole('alumno');
-
-        $response = $this->actingAs($this->admin)->post(
-            route('admin.field-sessions.attendance.quick-assign-hours', $session),
-            [
-                'user_id' => $student->id,
-                'hours' => 3.0,
-                'activity_category_id' => $category->id,
-            ]
-        );
-
-        $response->assertRedirect();
-
-        $attendance = Attendance::where('field_session_id', $session->id)
-            ->where('user_id', $student->id)
-            ->first();
-
-        $this->assertNotNull($attendance);
-        $this->assertTrue($attendance->attended);
-        $this->assertDatabaseHas('attendance_activities', [
-            'attendance_id' => $attendance->id,
-            'activity_category_id' => $category->id,
-            'hours' => 3.0,
-        ]);
-    }
-
-    public function test_quick_assign_hours_shows_warning_when_exceeding_base_hours(): void
-    {
-        $category = ActivityCategory::factory()->create();
-
-        $session = FieldSession::factory()->create([
-            'academic_year_id' => $this->academicYear->id,
-            'user_id' => $this->profesor->id,
-            'status_id' => $this->plannedStatus->id,
-            'base_hours' => 2,
-        ]);
-
-        $student = User::factory()->create();
-        $student->assignRole('alumno');
-
-        $response = $this->actingAs($this->admin)->post(
-            route('admin.field-sessions.attendance.quick-assign-hours', $session),
-            [
-                'user_id' => $student->id,
-                'hours' => 5.0,
-                'activity_category_id' => $category->id,
-            ]
-        );
-
-        $response->assertSessionHas('warning');
-    }
-
     public function test_enrolled_students_appear_in_attendance_page(): void
     {
         $enrolledStudents = User::factory()->count(2)->create();
@@ -665,5 +603,138 @@ class AttendanceControllerTest extends TestCase
             ->sum('hours');
 
         $this->assertEquals(0, $totalHours);
+    }
+
+    public function test_can_bulk_assign_hours_with_photos(): void
+    {
+        $category = ActivityCategory::factory()->create();
+
+        $session = FieldSession::factory()->create([
+            'academic_year_id' => $this->academicYear->id,
+            'user_id' => $this->profesor->id,
+            'status_id' => $this->plannedStatus->id,
+            'base_hours' => 4,
+        ]);
+
+        $student = User::factory()->create();
+        $student->assignRole('alumno');
+
+        $response = $this->actingAs($this->admin)->post(
+            route('admin.field-sessions.attendance.bulk-assign-hours', $session),
+            [
+                'data' => [
+                    [
+                        'user_id' => $student->id,
+                        'activity_category_id' => $category->id,
+                        'hours' => 2.5,
+                        'notes' => 'Actividad realizada',
+                        'photos' => [
+                            UploadedFile::fake()->image('evidence1.jpg'),
+                        ],
+                    ],
+                ],
+            ]
+        );
+
+        $response->assertRedirect();
+
+        $attendance = Attendance::where('field_session_id', $session->id)
+            ->where('user_id', $student->id)
+            ->first();
+
+        $this->assertNotNull($attendance);
+        $activity = $attendance->attendanceActivities()->first();
+        $this->assertNotNull($activity);
+        $this->assertCount(1, $activity->getMedia('evidence_photos'));
+    }
+
+    public function test_bulk_assign_hours_does_not_delete_existing_activities(): void
+    {
+        Storage::fake('public');
+        $category = ActivityCategory::factory()->create();
+
+        $session = FieldSession::factory()->create([
+            'academic_year_id' => $this->academicYear->id,
+            'user_id' => $this->profesor->id,
+            'status_id' => $this->plannedStatus->id,
+            'base_hours' => 4,
+        ]);
+
+        $student = User::factory()->create();
+        $student->assignRole('alumno');
+
+        $attendance = Attendance::create([
+            'field_session_id' => $session->id,
+            'user_id' => $student->id,
+            'academic_year_id' => $this->academicYear->id,
+            'attended' => true,
+        ]);
+
+        $existingActivity = $attendance->attendanceActivities()->create([
+            'activity_category_id' => $category->id,
+            'hours' => 1.5,
+        ]);
+
+        $file = UploadedFile::fake()->image('evidence.jpg');
+        $existingActivity->addMedia($file)->toMediaCollection('evidence_photos');
+        $media = $existingActivity->getMedia('evidence_photos')->first();
+        $this->assertNotNull($media);
+
+        $response = $this->actingAs($this->admin)->post(
+            route('admin.field-sessions.attendance.bulk-assign-hours', $session),
+            [
+                'data' => [
+                    [
+                        'user_id' => $student->id,
+                        'activity_category_id' => $category->id,
+                        'hours' => 2.0,
+                        'notes' => 'Nueva actividad',
+                    ],
+                ],
+            ]
+        );
+
+        $response->assertRedirect();
+
+        // Existing activity should still exist
+        $this->assertDatabaseHas('attendance_activities', [
+            'id' => $existingActivity->id,
+            'hours' => 1.5,
+        ]);
+
+        // Existing media should still exist
+        $this->assertDatabaseHas('media', ['id' => $media->id]);
+
+        // New activity should also exist
+        $this->assertDatabaseHas('attendance_activities', [
+            'attendance_id' => $attendance->id,
+            'hours' => 2.0,
+        ]);
+
+        // Should now have 2 activities
+        $this->assertEquals(2, $attendance->attendanceActivities()->count());
+    }
+
+    public function test_quick_assign_hours_route_returns_404(): void
+    {
+        $session = FieldSession::factory()->create([
+            'academic_year_id' => $this->academicYear->id,
+            'user_id' => $this->profesor->id,
+            'status_id' => $this->plannedStatus->id,
+        ]);
+
+        $student = User::factory()->create();
+        $student->assignRole('alumno');
+
+        $response = $this->actingAs($this->admin)->post(
+            "/admin/field-sessions/{$session->id}/attendance/quick-assign-hours",
+            [
+                'user_id' => $student->id,
+                'hours' => 3.0,
+                'activity_category_id' => ActivityCategory::factory()->create()->id,
+            ]
+        );
+
+        $response->assertStatus(404);
     }
 }

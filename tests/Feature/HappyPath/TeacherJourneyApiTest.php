@@ -231,10 +231,14 @@ test('profesor puede asignar horas de actividad a estudiantes presentes', functi
         'attended' => true,
     ]);
 
-    $response = $this->post("/admin/field-sessions/{$fieldSession->id}/attendance/quick-assign-hours", [
-        'user_id' => $this->student1->id,
-        'activity_category_id' => $this->activityCategory->id,
-        'hours' => 3.0,
+    $response = $this->post("/admin/field-sessions/{$fieldSession->id}/attendance/bulk-assign-hours", [
+        'data' => [
+            [
+                'user_id' => $this->student1->id,
+                'activity_category_id' => $this->activityCategory->id,
+                'hours' => 3.0,
+            ],
+        ],
     ]);
 
     expect($response->status())->toBeIn([200, 302]);
@@ -289,10 +293,14 @@ test('profesor completa el flujo de jornada via API: crear → asistir → asign
         ->where('user_id', $this->student1->id)
         ->first();
 
-    $this->post("/admin/field-sessions/{$fieldSession->id}/attendance/quick-assign-hours", [
-        'user_id' => $this->student1->id,
-        'activity_category_id' => $this->activityCategory->id,
-        'hours' => 3.0,
+    $this->post("/admin/field-sessions/{$fieldSession->id}/attendance/bulk-assign-hours", [
+        'data' => [
+            [
+                'user_id' => $this->student1->id,
+                'activity_category_id' => $this->activityCategory->id,
+                'hours' => 3.0,
+            ],
+        ],
     ]);
 
     // 4. Verify all data

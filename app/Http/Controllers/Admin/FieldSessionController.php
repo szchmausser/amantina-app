@@ -124,7 +124,7 @@ class FieldSessionController extends Controller
 
         // Get attendances with student and enrollment info for the table
         $query = Attendance::where('field_session_id', $fieldSession->id)
-            ->with(['student', 'attendanceActivities.activityCategory'])
+            ->with(['student', 'attendanceActivities.activityCategory', 'attendanceActivities.media'])
             ->orderBy('created_at', 'desc');
 
         // Apply search filter if provided
@@ -158,7 +158,7 @@ class FieldSessionController extends Controller
                     ->join('grades', 'sections.grade_id', '=', 'grades.id')
                     ->where('enrollments.user_id', $attendance->user_id)
                     ->where('enrollments.academic_year_id', $attendance->academic_year_id)
-                    ->select('sections.name as section_name', 'grades.name as grade_name', 'grades.id as grade_id')
+                    ->select('sections.name as section_name', 'sections.id as section_id', 'grades.name as grade_name', 'grades.id as grade_id')
                     ->first();
 
                 return [
@@ -168,13 +168,21 @@ class FieldSessionController extends Controller
                     'student_cedula' => $attendance->student->cedula,
                     'grade_name' => $enrollment?->grade_name ?? 'N/A',
                     'grade_id' => $enrollment?->grade_id ?? null,
+                    'section_id' => $enrollment?->section_id ?? null,
                     'section_name' => $enrollment?->section_name ?? 'N/A',
                     'attended' => $attendance->attended,
                     'total_hours' => $totalHours,
                     'activities' => $attendance->attendanceActivities->map(fn ($act) => [
                         'id' => $act->id,
+                        'activity_category_id' => $act->activityCategory?->id,
                         'activity_category' => $act->activityCategory?->name,
                         'hours' => (float) $act->hours,
+                        'notes' => $act->notes,
+                        'photos' => $act->getMedia('evidence_photos')->map(fn ($media) => [
+                            'id' => $media->id,
+                            'url' => $media->getUrl(),
+                            'name' => $media->name,
+                        ])->values(),
                     ])->values(),
                     'notes' => $attendance->notes,
                     'created_at' => $attendance->created_at->format('d/m/Y H:i'),

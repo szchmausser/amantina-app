@@ -47,4 +47,18 @@ class AttendanceActivity extends Model implements HasMedia
     {
         return $this->belongsTo(ActivityCategory::class);
     }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('evidence_photos')
+            ->acceptsMimeTypes([
+                'image/jpeg',
+                'image/png',
+                'image/webp',
+                'image/gif',
+                'video/mp4',
+                'video/webm',
+                'video/quicktime',
+            ]);
+    }
 }

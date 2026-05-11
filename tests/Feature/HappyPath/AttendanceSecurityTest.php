@@ -140,10 +140,14 @@ test('alumno NO puede asignarse horas mediante POST directo', function () {
     $activityCategory = ActivityCategory::factory()->create();
 
     // Intento de POST directo para asignarse horas
-    $response = $this->post("/admin/field-sessions/{$this->fieldSession->id}/attendance/quick-assign-hours", [
-        'user_id' => $this->student->id,
-        'hours' => 100, // Intentando asignarse 100 horas!
-        'activity_category_id' => $activityCategory->id,
+    $response = $this->post("/admin/field-sessions/{$this->fieldSession->id}/attendance/bulk-assign-hours", [
+        'data' => [
+            [
+                'user_id' => $this->student->id,
+                'hours' => 100, // Intentando asignarse 100 horas!
+                'activity_category_id' => $activityCategory->id,
+            ],
+        ],
     ]);
 
     $response->assertStatus(403);

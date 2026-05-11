@@ -14,7 +14,6 @@ use App\Models\Enrollment;
 use App\Models\FieldSession;
 use App\Models\Grade;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -191,8 +190,9 @@ class AttendanceController extends Controller
 
         $validated = $request->validated();
         $academicYear = AcademicYear::where('is_active', true)->firstOrFail();
+        $dataFiles = $request->file('data') ?? [];
 
-        foreach ($validated['data'] as $item) {
+        foreach ($validated['data'] as $index => $item) {
             $attendance = Attendance::firstOrCreate(
                 [
                     'field_session_id' => $fieldSession->id,
@@ -205,61 +205,23 @@ class AttendanceController extends Controller
                 ]
             );
 
-            $attendance->attendanceActivities()->create([
+            $activity = $attendance->attendanceActivities()->create([
                 'activity_category_id' => $item['activity_category_id'],
                 'hours' => $item['hours'],
                 'notes' => $item['notes'] ?? null,
             ]);
+
+            if (isset($dataFiles[$index]['photos'])) {
+                foreach ($dataFiles[$index]['photos'] as $file) {
+                    $activity->addMedia($file)
+                        ->toMediaCollection('evidence_photos');
+                }
+            }
         }
 
         $totalHours = collect($validated['data'])->sum('hours');
         if ($totalHours > $fieldSession->base_hours) {
             return back()->with('warning', "Atención: las horas asignadas ({$totalHours}h) exceden las horas base de la jornada ({$fieldSession->base_hours}h).");
-        }
-
-        return back()->with('success', 'Horas asignadas correctamente.');
-    }
-
-    /**
-     * Quick assign hours inline (general style).
-     */
-    public function quickAssignHours(Request $request, FieldSession $fieldSession): RedirectResponse
-    {
-        $this->authorizeSessionAccess($fieldSession);
-
-        $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
-            'hours' => ['required', 'numeric', 'min:0.01', 'max:24'],
-            'activity_category_id' => ['required', 'integer', 'exists:activity_categories,id'],
-        ]);
-
-        $userId = $request->input('user_id');
-        $hours = $request->input('hours');
-        $activityCategoryId = $request->input('activity_category_id');
-
-        $academicYear = AcademicYear::where('is_active', true)->firstOrFail();
-
-        $attendance = Attendance::firstOrCreate(
-            [
-                'field_session_id' => $fieldSession->id,
-                'user_id' => $userId,
-            ],
-            [
-                'academic_year_id' => $academicYear->id,
-                'attended' => true,
-                'notes' => null,
-            ]
-        );
-
-        $attendance->attendanceActivities()->delete();
-        $attendance->attendanceActivities()->create([
-            'activity_category_id' => $activityCategoryId,
-            'hours' => $hours,
-            'notes' => null,
-        ]);
-
-        if ($hours > $fieldSession->base_hours) {
-            return back()->with('warning', "Atención: las horas asignadas ({$hours}h) exceden las horas base de la jornada ({$fieldSession->base_hours}h).");
         }
 
         return back()->with('success', 'Horas asignadas correctamente.');

@@ -19,6 +19,8 @@ class BulkAssignHoursRequest extends FormRequest
             'data.*.activity_category_id' => ['required', 'integer', 'exists:activity_categories,id'],
             'data.*.hours' => ['required', 'numeric', 'min:0.01', 'max:24'],
             'data.*.notes' => ['nullable', 'string', 'max:1000'],
+            'data.*.photos' => ['nullable', 'array', 'max:10'],
+            'data.*.photos.*' => ['file', 'mimes:jpeg,png,webp,gif,mp4,webm,mov', 'max:51200'],
         ];
     }
 

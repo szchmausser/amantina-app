@@ -26,6 +26,10 @@ class UpdateAttendanceActivityRequest extends FormRequest
             'activity_category_id' => ['required', 'integer', 'exists:activity_categories,id'],
             'hours' => ['required', 'numeric', 'min:0.01', 'max:24'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'photos' => ['nullable', 'array', 'max:10'],
+            'photos.*' => ['file', 'mimes:jpeg,png,webp,gif,mp4,webm,mov', 'max:51200'],
+            'delete_photo_ids' => ['nullable', 'array'],
+            'delete_photo_ids.*' => ['integer', 'exists:media,id'],
         ];
     }
 
