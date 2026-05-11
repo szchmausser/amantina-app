@@ -1,17 +1,19 @@
-import { useState } from 'react';
-import { Head, router, usePage } from '@inertiajs/react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { AlertTriangle, ArrowRight } from 'lucide-react';
 import {
-    AlertTriangle,
-    ArrowLeft,
-    ArrowRight,
-    Clock,
-    UserCheck,
-    UserX,
-} from 'lucide-react';
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Select,
@@ -21,48 +23,61 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
-    ActivityDialog,
-    DeleteConfirmDialog,
-    QuickAssignDialog,
-} from './components/Dialogs';
-import {
-    AvailableStudentList,
-    RegisteredStudentCard,
-} from './components/StudentCards';
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { useDebounce } from '@/hooks/use-debounce';
+import {
+    DataTable,
+    DataTableHead,
+    DataTableTH,
+    DataTableBody,
+    DataTableTR,
+    DataTableTD,
+    type PaginationInfo,
+} from '@/components/ui/data-table';
+import { TableFilters } from '@/components/ui/table-filters';
+import { show as userShow } from '@/routes/admin/users';
 
-interface ActivityCategory {
-    id: number;
-    name: string;
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
 }
 
-interface Student {
+interface StudentRow {
     id: number;
     name: string;
     cedula: string;
-}
-
-interface GroupedStudents {
     grade_id: number;
     grade_name: string;
     section_id: number;
     section_name: string;
-    students: Student[];
+    is_registered: boolean;
+    has_activities: boolean;
 }
 
-interface Activity {
+interface PaginatedStudents {
+    data: StudentRow[];
+    links: PaginationLink[];
+    total: number;
+    current_page: number;
+    last_page: number;
+}
+
+interface GradeOption {
     id: number;
-    activity_category: ActivityCategory | null;
-    hours: number;
-    notes?: string;
+    name: string;
 }
 
-interface AttendanceStudent extends Student {
-    attendance_id?: number;
-    attended?: boolean;
-    total_hours?: number;
-    activities?: Activity[];
+interface SectionOption {
+    id: number;
+    name: string;
+    grade_id: number;
 }
 
 interface FieldSession {
@@ -78,18 +93,26 @@ interface FieldSession {
 
 interface Props {
     fieldSession: FieldSession;
-    groupedStudents: GroupedStudents[];
-    attendances: AttendanceStudent[];
-    activityCategories: ActivityCategory[];
+    students: PaginatedStudents;
+    filters: {
+        search?: string;
+        grade_id?: string;
+        section_id?: string;
+        status?: string;
+        per_page?: number;
+    };
+    availableGrades: GradeOption[];
+    availableSections: SectionOption[];
     baseHours: number;
     isAdmin: boolean;
 }
 
 export default function AttendanceIndex({
     fieldSession,
-    groupedStudents,
-    attendances,
-    activityCategories,
+    students,
+    filters,
+    availableGrades,
+    availableSections,
     baseHours,
     isAdmin,
 }: Props) {
@@ -97,85 +120,126 @@ export default function AttendanceIndex({
         flash?: { warning?: string; success?: string };
     };
 
-    const [registeredStudents, setRegisteredStudents] =
-        useState<AttendanceStudent[]>(attendances);
-
-    const [selectedGradeId, setSelectedGradeId] = useState<string>('all');
-    const [selectedSectionId, setSelectedSectionId] = useState<string>('all');
-
-    const [selectedAvailableIds, setSelectedAvailableIds] = useState<number[]>(
-        [],
-    );
-    const [selectedRegisteredIds, setSelectedRegisteredIds] = useState<
-        number[]
-    >([]);
+    const [search, setSearch] = useState(filters.search || '');
+    const [gradeId, setGradeId] = useState(filters.grade_id || 'all');
+    const [sectionId, setSectionId] = useState(filters.section_id || 'all');
+    const [status, setStatus] = useState(filters.status || 'all');
+    const [perPage, setPerPage] = useState(filters.per_page || 10);
+    const [isSearching, setIsSearching] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [studentToUnregister, setStudentToUnregister] = useState<StudentRow | null>(null);
 
-    const [expandedStudentId, setExpandedStudentId] = useState<number | null>(
-        null,
+    const isFirstRender = useRef(true);
+    const debouncedSearch = useDebounce(search, 300);
+
+    // Filtered sections based on selected grade
+    const filteredSections = useMemo(
+        () =>
+            gradeId === 'all'
+                ? availableSections
+                : availableSections.filter(
+                      (s) => s.grade_id === parseInt(gradeId),
+                  ),
+        [gradeId, availableSections],
     );
 
-    const [showActivityDialog, setShowActivityDialog] = useState(false);
-    const [editingActivity, setEditingActivity] = useState<Activity | null>(
-        null,
+    // Reset section when grade changes
+    useEffect(() => {
+        if (gradeId !== 'all' && sectionId !== 'all') {
+            const sectionStillValid = filteredSections.some(
+                (s) => s.id.toString() === sectionId,
+            );
+            if (!sectionStillValid) {
+                setSectionId('all');
+            }
+        }
+    }, [gradeId, filteredSections, sectionId]);
+
+    // Server-side search with debounce
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        fetchStudents();
+    }, [debouncedSearch, gradeId, sectionId, status, perPage]);
+
+    const fetchStudents = () => {
+        router.get(
+            `/admin/field-sessions/${fieldSession.id}/attendance`,
+            {
+                search: debouncedSearch || undefined,
+                grade_id: gradeId === 'all' ? undefined : gradeId,
+                section_id: sectionId === 'all' ? undefined : sectionId,
+                status: status === 'all' ? undefined : status,
+                per_page: perPage,
+            },
+            {
+                preserveState: true,
+                replace: true,
+                onFinish: () => {
+                    setIsSearching(false);
+                    setSelectedIds([]);
+                },
+            },
+        );
+        setIsSearching(true);
+    };
+
+    const handleGradeChange = (value: string) => {
+        setGradeId(value);
+        if (value === 'all') {
+            setSectionId('all');
+        }
+    };
+
+    const handleSectionChange = (value: string) => {
+        setSectionId(value);
+    };
+
+    const handleStatusChange = (value: string) => {
+        setStatus(value);
+    };
+
+    const handleClearFilters = () => {
+        setSearch('');
+        setGradeId('all');
+        setSectionId('all');
+        setStatus('all');
+        setPerPage(10);
+    };
+
+    const hasFilters = Boolean(
+        search || gradeId !== 'all' || sectionId !== 'all' || status !== 'all' || perPage !== 10,
     );
-    const [activityStudentId, setActivityStudentId] = useState<number | null>(
-        null,
-    );
-    const [activityCategoryId, setActivityCategoryId] = useState<string>('');
-    const [activityHours, setActivityHours] = useState<string>('');
-    const [activityNotes, setActivityNotes] = useState('');
 
-    const [showQuickAssign, setShowQuickAssign] = useState(false);
-    const [quickCategoryId, setQuickCategoryId] = useState<string>('');
-    const [quickHours, setQuickHours] = useState<string>('');
-    const [quickStudentIds, setQuickStudentIds] = useState<number[]>([]);
+    const handleToggleSelect = (id: number) => {
+        setSelectedIds((prev) =>
+            prev.includes(id)
+                ? prev.filter((i) => i !== id)
+                : [...prev, id],
+        );
+    };
 
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [deleteStudentId, setDeleteStudentId] = useState<number | null>(null);
-
-    const grades = [
-        ...new Map(
-            groupedStudents.map((s) => [
-                s.grade_id,
-                { id: s.grade_id, name: s.grade_name },
-            ]),
-        ).values(),
-    ];
-
-    const sections =
-        selectedGradeId === 'all'
-            ? [
-                  ...new Map(
-                      groupedStudents.map((s) => [
-                          s.section_id,
-                          { id: s.section_id, name: s.section_name },
-                      ]),
-                  ).values(),
-              ]
-            : groupedStudents
-                  .filter(
-                      (s) =>
-                          selectedGradeId === 'all' ||
-                          s.grade_id === parseInt(selectedGradeId),
-                  )
-                  .map((s) => ({ id: s.section_id, name: s.section_name }));
-
-    const filteredStudents = groupedStudents
-        .filter(
-            (s) =>
-                (selectedGradeId === 'all' ||
-                    s.grade_id === parseInt(selectedGradeId)) &&
-                (selectedSectionId === 'all' ||
-                    s.section_id === parseInt(selectedSectionId)),
-        )
-        .flatMap((s) => s.students)
-        .filter(
-            (student) => !registeredStudents.some((r) => r.id === student.id),
+    const handleToggleAll = () => {
+        const unregisteredIds = students.data
+            .filter((s) => !s.is_registered)
+            .map((s) => s.id);
+        const allSelected = unregisteredIds.every((id) =>
+            selectedIds.includes(id),
         );
 
-    const handleMoveToRegistered = async () => {
-        if (selectedAvailableIds.length === 0) return;
+        if (allSelected) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(unregisteredIds);
+        }
+    };
+
+    const handleBulkRegister = async () => {
+        if (selectedIds.length === 0) return;
 
         setIsProcessing(true);
         try {
@@ -183,24 +247,12 @@ export default function AttendanceIndex({
                 `/admin/field-sessions/${fieldSession.id}/attendance`,
                 {
                     field_session_id: fieldSession.id,
-                    student_ids: selectedAvailableIds,
+                    student_ids: selectedIds,
                     attended: true,
                 },
                 {
                     onSuccess: () => {
-                        const newRegistered = filteredStudents
-                            .filter((s) => selectedAvailableIds.includes(s.id))
-                            .map((s) => ({
-                                ...s,
-                                attended: true,
-                                total_hours: 0,
-                                activities: [],
-                            }));
-                        setRegisteredStudents([
-                            ...registeredStudents,
-                            ...newRegistered,
-                        ]);
-                        setSelectedAvailableIds([]);
+                        setSelectedIds([]);
                     },
                 },
             );
@@ -209,237 +261,18 @@ export default function AttendanceIndex({
         }
     };
 
-    const handleMoveToAvailable = async () => {
-        if (selectedRegisteredIds.length === 0) return;
-
-        setIsProcessing(true);
-        try {
-            await router.post(
-                `/admin/field-sessions/${fieldSession.id}/attendance/bulk-absent`,
-                { student_ids: selectedRegisteredIds },
-                {
-                    onSuccess: () => {
-                        setRegisteredStudents(
-                            registeredStudents.filter(
-                                (s) => !selectedRegisteredIds.includes(s.id),
-                            ),
-                        );
-                        setSelectedRegisteredIds([]);
-                    },
-                },
-            );
-        } finally {
-            setIsProcessing(false);
-        }
+    const handleUnregister = (student: StudentRow) => {
+        setStudentToUnregister(student);
     };
 
-    const handleDeleteAttendance = async () => {
-        if (deleteStudentId === null) return;
-        const student = registeredStudents.find(
-            (s) => s.id === deleteStudentId,
-        );
-        if (!student?.attendance_id) return;
+    const confirmUnregister = () => {
+        if (!studentToUnregister) return;
 
-        router.delete(`/admin/attendance/${student.attendance_id}`, {
-            onSuccess: () => {
-                setRegisteredStudents(
-                    registeredStudents.filter((s) => s.id !== deleteStudentId),
-                );
-                setShowDeleteConfirm(false);
-                setDeleteStudentId(null);
-            },
-        });
-    };
-
-    const openActivityDialog = (studentId: number, activity?: Activity) => {
-        setActivityStudentId(studentId);
-        if (activity) {
-            setEditingActivity(activity);
-            setActivityCategoryId(
-                activity.activity_category?.id.toString() ?? '',
-            );
-            setActivityHours(activity.hours.toString());
-            setActivityNotes(activity.notes ?? '');
-        } else {
-            setEditingActivity(null);
-            setActivityCategoryId('');
-            setActivityHours('');
-            setActivityNotes('');
-        }
-        setShowActivityDialog(true);
-    };
-
-    const handleSaveActivity = async () => {
-        if (!activityStudentId || !activityCategoryId || !activityHours) return;
-
-        const student = registeredStudents.find(
-            (s) => s.id === activityStudentId,
-        );
-        if (!student?.attendance_id) return;
-
-        const payload = {
-            activity_category_id: parseInt(activityCategoryId),
-            hours: parseFloat(activityHours),
-            notes: activityNotes || null,
-        };
-
-        if (editingActivity) {
-            router.put(
-                `/admin/attendance-activities/${editingActivity.id}`,
-                payload,
-                {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        setRegisteredStudents((prev) =>
-                            prev.map((s) => {
-                                if (s.id !== activityStudentId) return s;
-                                const updatedActivities =
-                                    s.activities?.map((a) =>
-                                        a.id === editingActivity.id
-                                            ? {
-                                                  ...a,
-                                                  activity_category:
-                                                      activityCategories.find(
-                                                          (c) =>
-                                                              c.id ===
-                                                              parseInt(
-                                                                  activityCategoryId,
-                                                              ),
-                                                      ) ?? a.activity_category,
-                                                  hours: parseFloat(
-                                                      activityHours,
-                                                  ),
-                                                  notes:
-                                                      activityNotes ||
-                                                      undefined,
-                                              }
-                                            : a,
-                                    ) ?? [];
-                                return {
-                                    ...s,
-                                    activities: updatedActivities,
-                                    total_hours: updatedActivities.reduce(
-                                        (sum, a) => sum + a.hours,
-                                        0,
-                                    ),
-                                };
-                            }),
-                        );
-                        setShowActivityDialog(false);
-                    },
-                },
-            );
-        } else {
-            router.post(
-                '/admin/attendance-activities',
-                { attendance_id: student.attendance_id, ...payload },
-                {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        setRegisteredStudents((prev) =>
-                            prev.map((s) => {
-                                if (s.id !== activityStudentId) return s;
-                                const newActivity: Activity = {
-                                    id: Date.now(),
-                                    activity_category:
-                                        activityCategories.find(
-                                            (c) =>
-                                                c.id ===
-                                                parseInt(activityCategoryId),
-                                        ) ?? null,
-                                    hours: parseFloat(activityHours),
-                                    notes: activityNotes || undefined,
-                                };
-                                const updatedActivities = [
-                                    ...(s.activities ?? []),
-                                    newActivity,
-                                ];
-                                return {
-                                    ...s,
-                                    activities: updatedActivities,
-                                    total_hours: updatedActivities.reduce(
-                                        (sum, a) => sum + a.hours,
-                                        0,
-                                    ),
-                                };
-                            }),
-                        );
-                        setShowActivityDialog(false);
-                    },
-                },
-            );
-        }
-    };
-
-    const handleDeleteActivity = async (
-        studentId: number,
-        activityId: number,
-    ) => {
-        router.delete(`/admin/attendance-activities/${activityId}`, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setRegisteredStudents((prev) =>
-                    prev.map((s) => {
-                        if (s.id !== studentId) return s;
-                        const updatedActivities =
-                            s.activities?.filter((a) => a.id !== activityId) ??
-                            [];
-                        return {
-                            ...s,
-                            activities: updatedActivities,
-                            total_hours: updatedActivities.reduce(
-                                (sum, a) => sum + a.hours,
-                                0,
-                            ),
-                        };
-                    }),
-                );
-            },
-        });
-    };
-
-    const handleQuickAssign = async () => {
-        if (quickStudentIds.length === 0 || !quickCategoryId || !quickHours)
-            return;
-
-        const data = quickStudentIds.map((userId) => ({
-            user_id: userId,
-            activity_category_id: parseInt(quickCategoryId),
-            hours: parseFloat(quickHours),
-        }));
-
-        router.post(
-            `/admin/field-sessions/${fieldSession.id}/attendance/bulk-assign-hours`,
-            { data },
+        router.delete(
+            `/admin/field-sessions/${fieldSession.id}/attendance/${studentToUnregister.id}`,
             {
-                preserveScroll: true,
                 onSuccess: () => {
-                    setRegisteredStudents((prev) =>
-                        prev.map((s) => {
-                            if (!quickStudentIds.includes(s.id)) return s;
-                            return {
-                                ...s,
-                                attended: true,
-                                activities: [
-                                    {
-                                        id: Date.now() + s.id,
-                                        activity_category:
-                                            activityCategories.find(
-                                                (c) =>
-                                                    c.id ===
-                                                    parseInt(quickCategoryId),
-                                            ) ?? null,
-                                        hours: parseFloat(quickHours),
-                                    },
-                                ],
-                                total_hours: parseFloat(quickHours),
-                            };
-                        }),
-                    );
-                    setQuickStudentIds([]);
-                    setQuickCategoryId('');
-                    setQuickHours('');
-                    setShowQuickAssign(false);
+                    setStudentToUnregister(null);
                 },
             },
         );
@@ -455,27 +288,252 @@ export default function AttendanceIndex({
         { title: 'Asistencia', href: '#' },
     ];
 
-    const registeredCount = registeredStudents.filter((s) => s.attended).length;
+    // Pagination info
+    const pagination: PaginationInfo | undefined =
+        students.last_page > 1
+            ? {
+                  links: students.links,
+                  total: students.total,
+                  current_page: students.current_page,
+                  last_page: students.last_page,
+              }
+            : undefined;
+
+    const unregisteredOnPage = students.data.filter(
+        (s) => !s.is_registered,
+    );
+    const allOnPageSelected =
+        unregisteredOnPage.length > 0 &&
+        unregisteredOnPage.every((s) => selectedIds.includes(s.id));
+
+    // Table columns
+    const tableColumns = (
+        <>
+            <DataTableHead>
+                <DataTableTH className="w-10">
+                    <Checkbox
+                        checked={allOnPageSelected}
+                        onCheckedChange={handleToggleAll}
+                        aria-label="Seleccionar todos"
+                        data-testid="select-all-checkbox"
+                    />
+                </DataTableTH>
+                <DataTableTH className="w-12">#</DataTableTH>
+                <DataTableTH>Estudiante</DataTableTH>
+                <DataTableTH className="w-32">Cedula</DataTableTH>
+                <DataTableTH className="w-28">Grado</DataTableTH>
+                <DataTableTH className="w-24">Seccion</DataTableTH>
+                <DataTableTH className="w-32">Estado</DataTableTH>
+                <DataTableTH className="w-28 text-right">Acciones</DataTableTH>
+            </DataTableHead>
+            <DataTableBody>
+                {students.data.map((student, index) => (
+                    <DataTableTR key={student.id}>
+                        <DataTableTD>
+                            {!student.is_registered && (
+                                <Checkbox
+                                    checked={selectedIds.includes(student.id)}
+                                    onCheckedChange={() =>
+                                        handleToggleSelect(student.id)
+                                    }
+                                    aria-label={`Seleccionar ${student.name}`}
+                                    data-testid={`student-checkbox-${student.id}`}
+                                />
+                            )}
+                        </DataTableTD>
+                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                            {(students.current_page - 1) * perPage + index + 1}
+                        </DataTableTD>
+                        <DataTableTD>
+                            <Link
+                                href={userShow(student.id).url}
+                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100"
+                                data-testid={`student-link-${student.id}`}
+                            >
+                                {student.name}
+                            </Link>
+                        </DataTableTD>
+                        <DataTableTD className="font-mono text-neutral-500">
+                            {student.cedula}
+                        </DataTableTD>
+                        <DataTableTD className="text-neutral-600 dark:text-neutral-400">
+                            {student.grade_name}
+                        </DataTableTD>
+                        <DataTableTD className="text-neutral-600 dark:text-neutral-400">
+                            {student.section_name}
+                        </DataTableTD>
+                        <DataTableTD>
+                            {student.is_registered ? (
+                                <Badge
+                                    variant="default"
+                                    className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                    data-testid={`status-registered-${student.id}`}
+                                >
+                                    Registrado
+                                </Badge>
+                            ) : (
+                                <Badge
+                                    variant="secondary"
+                                    data-testid={`status-unregistered-${student.id}`}
+                                >
+                                    Sin registrar
+                                </Badge>
+                            )}
+                        </DataTableTD>
+                        <DataTableTD className="text-right">
+                            {!student.is_registered && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                    onClick={() =>
+                                        router.post(
+                                            `/admin/field-sessions/${fieldSession.id}/attendance`,
+                                            {
+                                                field_session_id:
+                                                    fieldSession.id,
+                                                student_ids: [student.id],
+                                                attended: true,
+                                            },
+                                        )
+                                    }
+                                    data-testid={`register-button-${student.id}`}
+                                >
+                                    Registrar
+                                </Button>
+                            )}
+                            {student.is_registered && !student.has_activities && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-600"
+                                    onClick={() => handleUnregister(student)}
+                                    data-testid={`unregister-button-${student.id}`}
+                                >
+                                    Desregistrar
+                                </Button>
+                            )}
+                            {student.is_registered && student.has_activities && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="inline-block">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="text-red-400 border-red-200 pointer-events-none"
+                                                disabled
+                                                data-testid={`unregister-button-${student.id}`}
+                                            >
+                                                Desregistrar
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="left" className="max-w-[220px] text-xs">
+                                        <p>No se puede desregistrar: el alumno tiene actividades registradas. Elimínelas desde la jornada.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            )}
+                        </DataTableTD>
+                    </DataTableTR>
+                ))}
+            </DataTableBody>
+        </>
+    );
+
+    // Grade filter select
+    const gradeFilterSelect = (
+        <Select value={gradeId} onValueChange={handleGradeChange}>
+            <SelectTrigger
+                className="h-10 w-full sm:w-44"
+                data-testid="grade-filter"
+            >
+                <SelectValue placeholder="Todos los grados" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="all">Todos los grados</SelectItem>
+                {availableGrades.map((grade) => (
+                    <SelectItem
+                        key={grade.id}
+                        value={grade.id.toString()}
+                    >
+                        {grade.name}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    );
+
+    // Section filter select — disabled until a grade is selected
+    const sectionFilterSelect = (
+        <Select
+            value={sectionId}
+            onValueChange={handleSectionChange}
+            disabled={gradeId === 'all'}
+        >
+            <SelectTrigger
+                className="h-10 w-full sm:w-44"
+                data-testid="section-filter"
+            >
+                <SelectValue placeholder={
+                    gradeId === 'all'
+                        ? 'Selecciona un grado...'
+                        : 'Todas las secciones'
+                } />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="all">Todas las secciones</SelectItem>
+                {filteredSections.map((section) => (
+                    <SelectItem
+                        key={section.id}
+                        value={section.id.toString()}
+                    >
+                        {section.name}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    );
+
+    // Status filter select
+    const statusFilterSelect = (
+        <Select value={status} onValueChange={handleStatusChange}>
+            <SelectTrigger
+                className="h-10 w-full sm:w-44"
+                data-testid="status-filter"
+            >
+                <SelectValue placeholder="Todos" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="registered">Registrado</SelectItem>
+                <SelectItem value="unregistered">Sin registrar</SelectItem>
+            </SelectContent>
+        </Select>
+    );
+
+    // Bulk register button
+    const bulkButton =
+        selectedIds.length > 0 ? (
+            <Button
+                onClick={handleBulkRegister}
+                disabled={isProcessing}
+                className="sm:ml-auto"
+                data-testid="bulk-register-button"
+            >
+                <ArrowRight className="mr-2 h-4 w-4" />
+                Registrar seleccionados ({selectedIds.length})
+            </Button>
+        ) : undefined;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Asistencia - ${fieldSession.name}`} />
 
-            <div className="flex flex-col gap-6 p-4 lg:p-8">
+            <TooltipProvider delayDuration={200}>
+                <div className="flex flex-col gap-6 p-4 lg:p-8">
+                {/* Header */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            asChild
-                        >
-                            <a
-                                href={`/admin/field-sessions/${fieldSession.id}`}
-                            >
-                                <ArrowLeft className="h-4 w-4" />
-                            </a>
-                        </Button>
+                    <div className="flex items-center gap-3">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                                 Registro de Asistencia
@@ -484,13 +542,16 @@ export default function AttendanceIndex({
                                 {fieldSession.name} - {baseHours}h programadas
                             </p>
                         </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Badge variant="outline">
-                            {registeredCount}/{registeredStudents.length}{' '}
-                            registrados
-                        </Badge>
-                        <Badge variant="outline">
+                        <Badge
+                            variant="outline"
+                            className={
+                                fieldSession.status.name === 'planned'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : fieldSession.status.name === 'realized'
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-red-100 text-red-800'
+                            }
+                        >
                             {fieldSession.status.name === 'planned'
                                 ? 'Planificada'
                                 : fieldSession.status.name === 'realized'
@@ -498,8 +559,17 @@ export default function AttendanceIndex({
                                   : 'Cancelada'}
                         </Badge>
                     </div>
+                    <Button variant="outline" size="sm" asChild>
+                        <Link
+                            data-testid="back-button"
+                            href={`/admin/field-sessions/${fieldSession.id}`}
+                        >
+                            Volver
+                        </Link>
+                    </Button>
                 </div>
 
+                {/* Flash warnings */}
                 {flash?.warning && (
                     <Alert variant="destructive">
                         <AlertTriangle className="h-4 w-4" />
@@ -507,220 +577,78 @@ export default function AttendanceIndex({
                     </Alert>
                 )}
 
-                <div className="flex gap-4">
-                    <Select
-                        value={selectedGradeId}
-                        onValueChange={setSelectedGradeId}
-                    >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Todos los grados" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">
-                                Todos los grados
-                            </SelectItem>
-                            {grades.map((grade) => (
-                                <SelectItem
-                                    key={grade.id}
-                                    value={grade.id.toString()}
-                                >
-                                    {grade.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                {/* Filters */}
+                <TableFilters
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder="Buscar por nombre o cedula..."
+                    searchLoading={isSearching}
+                    filterSelect={
+                        <div className="flex gap-2">
+                            {gradeFilterSelect}
+                            {sectionFilterSelect}
+                            {statusFilterSelect}
+                        </div>
+                    }
+                    hasFilters={hasFilters}
+                    onClearFilters={handleClearFilters}
+                    createButton={bulkButton}
+                />
 
-                    <Select
-                        value={selectedSectionId}
-                        onValueChange={setSelectedSectionId}
-                    >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Todas las secciones" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">
-                                Todas las secciones
-                            </SelectItem>
-                            {sections.map((section) => (
-                                <SelectItem
-                                    key={section.id}
-                                    value={section.id.toString()}
-                                >
-                                    {section.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                {/* DataTable */}
+                <DataTable
+                    data={students.data}
+                    columns={tableColumns}
+                    pagination={pagination}
+                    onPageChange={(page, url) => {
+                        router.get(
+                            url,
+                            {
+                                search: search || undefined,
+                                grade_id:
+                                    gradeId === 'all' ? undefined : gradeId,
+                                section_id:
+                                    sectionId === 'all'
+                                        ? undefined
+                                        : sectionId,
+                                status: status === 'all' ? undefined : status,
+                                per_page: perPage,
+                            },
+                            {
+                                preserveState: true,
+                                replace: true,
+                            },
+                        );
+                    }}
+                    perPage={perPage}
+                    onPerPageChange={setPerPage}
+                    perPageOptions={[5, 10, 15, 25, 50, 100]}
+                    emptyMessage="No se encontraron estudiantes que coincidan con los criterios de busqueda."
+                />
 
-                    <Button
-                        variant="outline"
-                        onClick={() => setShowQuickAssign(true)}
-                        disabled={registeredStudents.length === 0}
-                        className="ml-auto"
-                    >
-                        <Clock className="mr-2 h-4 w-4" />
-                        Asignación Rápida
-                    </Button>
-                </div>
-
-                <div className="grid gap-6 md:grid-cols-2">
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <UserX className="h-4 w-4" />
-                                Estudiantes sin Registrar
-                                <Badge variant="secondary" className="ml-auto">
-                                    {filteredStudents.length}
-                                </Badge>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {filteredStudents.length === 0 ? (
-                                <div className="flex h-32 items-center justify-center text-sm text-neutral-500">
-                                    No hay estudiantes disponibles
-                                </div>
-                            ) : (
-                                <AvailableStudentList
-                                    students={filteredStudents}
-                                    selectedIds={selectedAvailableIds}
-                                    onToggle={(id) =>
-                                        setSelectedAvailableIds((prev) =>
-                                            prev.includes(id)
-                                                ? prev.filter((i) => i !== id)
-                                                : [...prev, id],
-                                        )
-                                    }
-                                    onBulkRegister={handleMoveToRegistered}
-                                    isProcessing={isProcessing}
-                                />
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <UserCheck className="h-4 w-4" />
-                                Asistencia Registrada
-                                <Badge variant="secondary" className="ml-auto">
-                                    {registeredStudents.length}
-                                </Badge>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {registeredStudents.length === 0 ? (
-                                <div className="flex h-32 items-center justify-center text-sm text-neutral-500">
-                                    No hay estudiantes registrados
-                                </div>
-                            ) : (
-                                <div className="space-y-2">
-                                    {registeredStudents.map((student) => (
-                                        <RegisteredStudentCard
-                                            key={student.id}
-                                            student={student}
-                                            isSelected={selectedRegisteredIds.includes(
-                                                student.id,
-                                            )}
-                                            isExpanded={
-                                                expandedStudentId === student.id
-                                            }
-                                            baseHours={baseHours}
-                                            isAdmin={isAdmin}
-                                            activityCategories={
-                                                activityCategories
-                                            }
-                                            onToggle={(id) =>
-                                                setSelectedRegisteredIds(
-                                                    (prev) =>
-                                                        prev.includes(id)
-                                                            ? prev.filter(
-                                                                  (i) =>
-                                                                      i !== id,
-                                                              )
-                                                            : [...prev, id],
-                                                )
-                                            }
-                                            onExpand={setExpandedStudentId}
-                                            onDeleteAttendance={(id) => {
-                                                setDeleteStudentId(id);
-                                                setShowDeleteConfirm(true);
-                                            }}
-                                            onAddActivity={(id) =>
-                                                openActivityDialog(id)
-                                            }
-                                            onEditActivity={(id, act) =>
-                                                openActivityDialog(id, act)
-                                            }
-                                            onDeleteActivity={
-                                                handleDeleteActivity
-                                            }
-                                        />
-                                    ))}
-                                </div>
-                            )}
-
-                            <div className="mt-4 flex justify-start">
-                                <Button
-                                    variant="outline"
-                                    onClick={handleMoveToAvailable}
-                                    disabled={
-                                        selectedRegisteredIds.length === 0 ||
-                                        isProcessing
-                                    }
-                                    className="gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
-                                >
-                                    <ArrowLeft className="h-4 w-4" />
-                                    Marcar Ausentes (
-                                    {selectedRegisteredIds.length})
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                {/* Unregister Confirmation Dialog */}
+                <AlertDialog open={studentToUnregister !== null} onOpenChange={(open) => !open && setStudentToUnregister(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>¿Quitar estudiante de la jornada?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                ¿Quitar a {studentToUnregister?.name} de la jornada? Su registro de asistencia será eliminado.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                                variant="destructive"
+                                onClick={confirmUnregister}
+                                data-testid="confirm-unregister-button"
+                            >
+                                Desregistrar
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
-
-            <ActivityDialog
-                open={showActivityDialog}
-                onOpenChange={setShowActivityDialog}
-                isEditing={editingActivity !== null}
-                activityCategoryId={activityCategoryId}
-                onCategoryChange={setActivityCategoryId}
-                activityHours={activityHours}
-                onHoursChange={setActivityHours}
-                activityNotes={activityNotes}
-                onNotesChange={setActivityNotes}
-                onSave={handleSaveActivity}
-                categories={activityCategories}
-            />
-
-            <QuickAssignDialog
-                open={showQuickAssign}
-                onOpenChange={setShowQuickAssign}
-                quickCategoryId={quickCategoryId}
-                onCategoryChange={setQuickCategoryId}
-                quickHours={quickHours}
-                onHoursChange={setQuickHours}
-                quickStudentIds={quickStudentIds}
-                onToggleStudent={(id) =>
-                    setQuickStudentIds((prev) =>
-                        prev.includes(id)
-                            ? prev.filter((i) => i !== id)
-                            : [...prev, id],
-                    )
-                }
-                onAssign={handleQuickAssign}
-                categories={activityCategories}
-                students={registeredStudents}
-            />
-
-            <DeleteConfirmDialog
-                open={showDeleteConfirm}
-                onOpenChange={(open) => {
-                    setShowDeleteConfirm(open);
-                    if (!open) setDeleteStudentId(null);
-                }}
-                onConfirm={handleDeleteAttendance}
-            />
+            </TooltipProvider>
         </AppLayout>
     );
 }

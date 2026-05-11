@@ -8,12 +8,13 @@ use App\Http\Requests\Admin\BulkAssignHoursRequest;
 use App\Http\Requests\Admin\StoreAttendanceRequest;
 use App\Http\Requests\Admin\UpdateAttendanceRequest;
 use App\Models\AcademicYear;
-use App\Models\ActivityCategory;
 use App\Models\Attendance;
 use App\Models\Enrollment;
 use App\Models\FieldSession;
 use App\Models\Grade;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,7 +24,7 @@ class AttendanceController extends Controller
     /**
      * Display the attendance page for a field session.
      */
-    public function index(FieldSession $fieldSession): Response
+    public function index(Request $request, FieldSession $fieldSession): Response
     {
         $this->authorizeSessionAccess($fieldSession);
 
@@ -31,63 +32,114 @@ class AttendanceController extends Controller
 
         $activeYear = AcademicYear::where('is_active', true)->firstOrFail();
 
-        $enrollments = Enrollment::where('academic_year_id', $activeYear->id)
-            ->with(['student', 'grade', 'section'])
-            ->get();
+        // Get IDs of students already registered for this session
+        $registeredUserIds = Attendance::where('field_session_id', $fieldSession->id)
+            ->pluck('user_id')
+            ->toArray();
 
-        $grades = Grade::with(['sections'])->orderBy('order')->get();
+        // Build query for enrolled students with grade/section info
+        $query = Enrollment::where('enrollments.academic_year_id', $activeYear->id)
+            ->join('users', 'enrollments.user_id', '=', 'users.id')
+            ->join('grades', 'enrollments.grade_id', '=', 'grades.id')
+            ->join('sections', 'enrollments.section_id', '=', 'sections.id')
+            ->select(
+                'users.id as user_id',
+                'users.name as student_name',
+                'users.cedula as student_cedula',
+                'grades.id as grade_id',
+                'grades.name as grade_name',
+                'sections.id as section_id',
+                'sections.name as section_name'
+            );
 
-        $groupedStudents = [];
-        foreach ($grades as $grade) {
-            foreach ($grade->sections as $section) {
-                $sectionEnrollments = $enrollments->where('section_id', $section->id);
-                if ($sectionEnrollments->isNotEmpty()) {
-                    $groupedStudents[] = [
-                        'grade_id' => $grade->id,
-                        'grade_name' => $grade->name,
-                        'section_id' => $section->id,
-                        'section_name' => $section->name,
-                        'students' => $sectionEnrollments->map(fn ($e) => [
-                            'id' => $e->student->id,
-                            'name' => $e->student->name,
-                            'cedula' => $e->student->cedula,
-                        ])->values(),
-                    ];
-                }
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->string('search')->lower()->toString();
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(users.name) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(users.cedula) LIKE ?', ["%{$search}%"]);
+            });
+        }
+
+        // Grade filter
+        if ($request->filled('grade_id') && $request->input('grade_id') !== 'all') {
+            $query->where('grades.id', (int) $request->input('grade_id'));
+        }
+
+        // Section filter
+        if ($request->filled('section_id') && $request->input('section_id') !== 'all') {
+            $query->where('sections.id', (int) $request->input('section_id'));
+        }
+
+        // Status filter
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            if ($request->input('status') === 'registered') {
+                $query->whereIn('users.id', $registeredUserIds);
+            } elseif ($request->input('status') === 'unregistered') {
+                $query->whereNotIn('users.id', $registeredUserIds);
             }
         }
 
-        $existingAttendances = Attendance::where('field_session_id', $fieldSession->id)
-            ->with(['student', 'attendanceActivities.activityCategory'])
-            ->get()
-            ->map(function ($attendance) {
-                $totalHours = $attendance->attendanceActivities->sum('hours');
+        $perPage = $request->integer('per_page', 10);
+        if (! in_array($perPage, [5, 10, 15, 25, 50, 100])) {
+            $perPage = 10;
+        }
 
-                return [
-                    'id' => $attendance->student->id,
-                    'name' => $attendance->student->name,
-                    'cedula' => $attendance->student->cedula,
-                    'attendance_id' => $attendance->id,
-                    'attended' => $attendance->attended,
-                    'total_hours' => $totalHours,
-                    'activities' => $attendance->attendanceActivities->map(fn ($act) => [
-                        'id' => $act->id,
-                        'activity_category' => $act->activityCategory,
-                        'hours' => (float) $act->hours,
-                        'notes' => $act->notes,
-                    ])->values(),
-                ];
-            })->values();
+        $paginated = $query
+            ->orderBy('grades.order')
+            ->orderBy('sections.name')
+            ->orderBy('users.name')
+            ->paginate($perPage)
+            ->withQueryString();
 
-        $activityCategories = ActivityCategory::orderBy('name')->get(['id', 'name']);
+        // Get activity counts for registered students
+        $activityCounts = Attendance::whereIn('user_id', $registeredUserIds)
+            ->where('field_session_id', $fieldSession->id)
+            ->withCount('attendanceActivities')
+            ->pluck('attendance_activities_count', 'user_id');
+
+        // Map the results to include attendance status and activity flag
+        $students = $paginated->getCollection()->map(function ($row) use ($registeredUserIds, $activityCounts) {
+            $isRegistered = in_array($row->user_id, $registeredUserIds);
+
+            return [
+                'id' => $row->user_id,
+                'name' => $row->student_name,
+                'cedula' => $row->student_cedula,
+                'grade_id' => $row->grade_id,
+                'grade_name' => $row->grade_name,
+                'section_id' => $row->section_id,
+                'section_name' => $row->section_name,
+                'is_registered' => $isRegistered,
+                'has_activities' => $isRegistered && ($activityCounts[$row->user_id] ?? 0) > 0,
+            ];
+        });
+
+        $paginated->setCollection($students);
+
+        // Get available grades and sections for filters
+        $grades = Grade::with(['sections'])->orderBy('order')->get();
+
+        $availableGrades = $grades->map(fn ($g) => [
+            'id' => $g->id,
+            'name' => $g->name,
+        ])->values();
+
+        $availableSections = $grades->flatMap(fn ($g) => $g->sections->map(fn ($s) => [
+            'id' => $s->id,
+            'name' => $s->name,
+            'grade_id' => $g->id,
+        ])
+        )->values();
 
         $isAdmin = auth()->user()->hasRole('admin');
 
         return Inertia::render('admin/attendances/index', [
             'fieldSession' => $fieldSession,
-            'groupedStudents' => $groupedStudents,
-            'attendances' => $existingAttendances,
-            'activityCategories' => $activityCategories,
+            'students' => $paginated,
+            'filters' => $request->only(['search', 'grade_id', 'section_id', 'status', 'per_page']),
+            'availableGrades' => $availableGrades,
+            'availableSections' => $availableSections,
             'baseHours' => $fieldSession->base_hours,
             'isAdmin' => $isAdmin,
         ]);
@@ -152,6 +204,27 @@ class AttendanceController extends Controller
         $attendance->delete();
 
         return back()->with('success', 'Asistencia eliminada correctamente.');
+    }
+
+    /**
+     * Unregister a student from a field session.
+     * Only allowed if the student has no registered activities.
+     */
+    public function unregister(FieldSession $fieldSession, User $user): RedirectResponse
+    {
+        $this->authorizeSessionAccess($fieldSession);
+
+        $attendance = Attendance::where('field_session_id', $fieldSession->id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        if ($attendance->attendanceActivities()->count() > 0) {
+            return back()->with('error', 'No se puede desregistrar: el estudiante tiene actividades registradas.');
+        }
+
+        $attendance->delete();
+
+        return back()->with('success', 'Estudiante desregistrado correctamente.');
     }
 
     /**

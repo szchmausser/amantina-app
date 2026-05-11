@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2459346a5d9bc0229ae85774e514bd72",
+    "content-hash": "e81cf7bcac140eba20d8dc298e64c17e",
     "packages": [
         {
             "name": "askedio/laravel-soft-cascade",
@@ -2979,16 +2979,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "3.11.4",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CarbonPHP/carbon.git",
-                "reference": "e890471a3494740f7d9326d72ce6a8c559ffee60"
+                "reference": "8ad4bbe93202e114cfbf07874dd42dcdae7233b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/e890471a3494740f7d9326d72ce6a8c559ffee60",
-                "reference": "e890471a3494740f7d9326d72ce6a8c559ffee60",
+                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/8ad4bbe93202e114cfbf07874dd42dcdae7233b9",
+                "reference": "8ad4bbe93202e114cfbf07874dd42dcdae7233b9",
                 "shasum": ""
             },
             "require": {
@@ -3014,6 +3014,7 @@
                 "phpunit/phpunit": "^10.5.53",
                 "squizlabs/php_codesniffer": "^3.13.4 || ^4.0.0"
             },
+            "default-branch": true,
             "bin": [
                 "bin/carbon"
             ],
@@ -3080,7 +3081,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-07T09:57:54+00:00"
+            "time": "2026-05-11T15:21:43+00:00"
         },
         {
             "name": "nette/schema",
@@ -13493,7 +13494,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "nesbot/carbon": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

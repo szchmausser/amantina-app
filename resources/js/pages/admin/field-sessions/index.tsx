@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Plus, Trash2 } from 'lucide-react';
+import { Edit, Eye, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -190,7 +190,7 @@ export default function FieldSessionsIndex({
                         <DataTableTD className="text-sm text-neutral-600 dark:text-neutral-400">
                             <Link
                                 href={`/admin/users/${session.teacher.id}`}
-                                className="font-medium text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100"
                             >
                                 {session.teacher.name}
                             </Link>
@@ -219,6 +219,19 @@ export default function FieldSessionsIndex({
                                     >
                                         <Eye className="h-4 w-4" />
                                         <span className="sr-only">Ver</span>
+                                    </Link>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    asChild
+                                >
+                                    <Link
+                                        href={`/admin/field-sessions/${session.id}/edit`}
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        <span className="sr-only">Editar</span>
                                     </Link>
                                 </Button>
                                 <Button
@@ -254,7 +267,7 @@ export default function FieldSessionsIndex({
                             realizadas por los estudiantes.
                         </p>
                     </div>
-                    <Button asChild>
+                    <Button size="sm" asChild>
                         <Link href="/admin/field-sessions/create">
                             <Plus className="mr-2 h-4 w-4" />
                             Nueva Jornada

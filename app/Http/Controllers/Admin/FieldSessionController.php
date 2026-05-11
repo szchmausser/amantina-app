@@ -130,8 +130,8 @@ class FieldSessionController extends Controller
         // Apply search filter if provided
         if ($search) {
             $query->whereHas('student', function ($q) use ($search) {
-                $q->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('cedula', 'ilike', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('cedula', 'like', "%{$search}%");
             });
         }
 

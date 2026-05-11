@@ -17,6 +17,7 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.9",
+        "nesbot/carbon": "3.x-dev",
         "spatie/laravel-medialibrary": "^11.21",
         "spatie/laravel-pdf": "*",
         "spatie/laravel-permission": "^7.2"

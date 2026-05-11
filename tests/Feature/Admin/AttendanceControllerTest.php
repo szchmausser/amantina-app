@@ -79,8 +79,9 @@ class AttendanceControllerTest extends TestCase
         $response->assertInertia(fn ($page) => $page
             ->component('admin/attendances/index')
             ->has('fieldSession')
-            ->has('groupedStudents')
-            ->has('activityCategories')
+            ->has('students')
+            ->has('availableGrades')
+            ->has('availableSections')
             ->where('isAdmin', true)
         );
     }
@@ -98,6 +99,7 @@ class AttendanceControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('admin/attendances/index')
+            ->has('students')
             ->where('isAdmin', false)
         );
     }
@@ -568,7 +570,7 @@ class AttendanceControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
-            ->has('groupedStudents', 1)
+            ->has('students.data', 2)
         );
     }
 

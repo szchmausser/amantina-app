@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Clock, Save, Tag } from 'lucide-react';
+import { Clock, Tag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -136,35 +136,49 @@ export default function FieldSessionEdit({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar: ${fieldSession.name}`} />
 
-            <div className="flex flex-col gap-6 p-4 lg:p-8">
+            <div className="flex flex-col gap-4 p-4 lg:p-6">
                 {/* Header */}
-                <div className="flex items-center gap-4">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() =>
-                            router.visit(
-                                `/admin/field-sessions/${fieldSession.id}`,
-                            )
-                        }
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
+                <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            Editar Jornada
+                            Editar: {fieldSession.name}
                         </h1>
                         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                            Modifica los datos de la jornada de campo.
+                            Modificar los datos de la jornada de campo
                         </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                                router.visit(`/admin/field-sessions/${fieldSession.id}`)
+                            }
+                        >
+                            Volver
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                                router.visit(
+                                    `/admin/field-sessions/${fieldSession.id}`,
+                                )
+                            }
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit" size="sm" disabled={processing} form="edit-field-session-form">
+                            Actualizar Jornada
+                        </Button>
                     </div>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form id="edit-field-session-form" onSubmit={handleSubmit} className="space-y-4">
                     {/* Basic Info */}
-                    <div className="space-y-4 rounded-xl border p-6">
+                    <div className="space-y-3 rounded-lg border p-4">
                         <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase">
                             Información Básica
                         </h3>
@@ -202,7 +216,7 @@ export default function FieldSessionEdit({
                     </div>
 
                     {/* Academic Context */}
-                    <div className="space-y-4 rounded-xl border p-6">
+                    <div className="space-y-3 rounded-lg border p-4">
                         <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase">
                             Contexto Académico
                         </h3>
@@ -275,7 +289,7 @@ export default function FieldSessionEdit({
                     </div>
 
                     {/* Schedule */}
-                    <div className="space-y-4 rounded-xl border p-6">
+                    <div className="space-y-3 rounded-lg border p-4">
                         <h3 className="flex items-center gap-2 text-sm font-semibold tracking-wider text-neutral-500 uppercase">
                             <Clock className="h-4 w-4" />
                             Horario
@@ -331,7 +345,7 @@ export default function FieldSessionEdit({
                     </div>
 
                     {/* Activity & Location */}
-                    <div className="space-y-4 rounded-xl border p-6">
+                    <div className="space-y-3 rounded-lg border p-4">
                         <h3 className="flex items-center gap-2 text-sm font-semibold tracking-wider text-neutral-500 uppercase">
                             <Tag className="h-4 w-4" />
                             Actividad y Ubicación
@@ -376,7 +390,7 @@ export default function FieldSessionEdit({
 
                     {/* Cancellation Reason */}
                     {data.status_id === cancelledStatusId && (
-                        <div className="space-y-4 rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-900/30 dark:bg-red-950/20">
+                        <div className="space-y-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900/30 dark:bg-red-950/20">
                             <h3 className="text-sm font-semibold tracking-wider text-red-600 uppercase">
                                 Motivo de Cancelación
                             </h3>
@@ -405,26 +419,9 @@ export default function FieldSessionEdit({
                         </div>
                     )}
 
-                    {/* Actions */}
-                    <div className="flex items-center justify-end gap-2">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() =>
-                                router.visit(
-                                    `/admin/field-sessions/${fieldSession.id}`,
-                                )
-                            }
-                        >
-                            Cancelar
-                        </Button>
-                        <Button type="submit" disabled={processing}>
-                            <Save className="mr-2 h-4 w-4" />
-                            Actualizar Jornada
-                        </Button>
-                    </div>
                 </form>
             </div>
         </AppLayout>
     );
 }
+

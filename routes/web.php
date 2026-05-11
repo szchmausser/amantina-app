@@ -67,6 +67,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('field-sessions/{field_session}/attendance', [AttendanceController::class, 'store'])->name('field-sessions.attendance.store');
         Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
         Route::delete('attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
+        Route::delete('field-sessions/{field_session}/attendance/{user}', [AttendanceController::class, 'unregister'])->name('field-sessions.attendance.unregister');
         Route::post('field-sessions/{field_session}/attendance/bulk-absent', [AttendanceController::class, 'bulkAbsent'])->name('field-sessions.attendance.bulk-absent');
         Route::post('field-sessions/{field_session}/attendance/bulk-assign-hours', [AttendanceController::class, 'bulkAssignHours'])->name('field-sessions.attendance.bulk-assign-hours');
 
