@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -125,7 +126,7 @@ class User extends Authenticatable implements HasMedia
                 $this->addMediaConversion('thumb')
                     ->width(150)
                     ->height(150)
-                    ->fit('cover', 150, 150);
+                    ->fit(Fit::Crop, 150, 150);
             });
     }
 

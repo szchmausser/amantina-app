@@ -47,11 +47,13 @@ class Institution extends Model implements HasMedia
                 $this->addMediaConversion('thumb')
                     ->width(150)
                     ->height(150)
-                    ->fit(Fit::Crop, 150, 150);
+                    ->fit(Fit::Crop, 150, 150)
+                    ->nonQueued();
                 $this->addMediaConversion('favicon')
                     ->width(32)
                     ->height(32)
-                    ->fit(Fit::Crop, 32, 32);
+                    ->fit(Fit::Crop, 32, 32)
+                    ->nonQueued();
             });
     }
 

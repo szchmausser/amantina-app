@@ -169,20 +169,30 @@ export default function Profile({
                     onValueChange={setActiveTab}
                     className="space-y-6"
                 >
-                    <TabsList className={`w-full ${gridCols} sm:w-auto`}>
-                        {tabs.map((tab) => (
-                            <TabsTrigger key={tab.value} value={tab.value}>
-                                {'icon' in tab && tab.icon ? (
-                                    <>
-                                        <tab.icon className="mr-1.5 h-3.5 w-3.5" />
-                                        {tab.label}
-                                    </>
-                                ) : (
-                                    tab.label
-                                )}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
+                    <div className="flex items-center justify-between gap-4">
+                        <TabsList className={`w-full ${gridCols} sm:w-auto`}>
+                            {tabs.map((tab) => (
+                                <TabsTrigger key={tab.value} value={tab.value}>
+                                    {'icon' in tab && tab.icon ? (
+                                        <>
+                                            <tab.icon className="mr-1.5 h-3.5 w-3.5" />
+                                            {tab.label}
+                                        </>
+                                    ) : (
+                                        tab.label
+                                    )}
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+
+                        <Button
+                            type="submit"
+                            form="profile-form"
+                            data-test="update-profile-button"
+                        >
+                            Guardar
+                        </Button>
+                    </div>
 
                     {/* Tab: Mi Información */}
                     <TabsContent value="profile" className="space-y-6">
@@ -196,6 +206,7 @@ export default function Profile({
                             </div>
                             <div className="p-6">
                                 <Form
+                                    id="profile-form"
                                     {...ProfileController.update.form()}
                                     options={{ preserveScroll: true }}
                                     className="space-y-6"
@@ -347,26 +358,17 @@ export default function Profile({
                                                     </div>
                                                 )}
 
-                                            <div className="flex items-center gap-4">
-                                                <Button
-                                                    disabled={processing}
-                                                    data-test="update-profile-button"
-                                                >
-                                                    Guardar
-                                                </Button>
-
-                                                <Transition
-                                                    show={recentlySuccessful}
-                                                    enter="transition ease-in-out"
-                                                    enterFrom="opacity-0"
-                                                    leave="transition ease-in-out"
-                                                    leaveTo="opacity-0"
-                                                >
-                                                    <p className="text-sm text-neutral-600">
-                                                        Guardado correctamente
-                                                    </p>
-                                                </Transition>
-                                            </div>
+                                            <Transition
+                                                show={recentlySuccessful}
+                                                enter="transition ease-in-out"
+                                                enterFrom="opacity-0"
+                                                leave="transition ease-in-out"
+                                                leaveTo="opacity-0"
+                                            >
+                                                <p className="text-sm text-neutral-600">
+                                                    Guardado correctamente
+                                                </p>
+                                            </Transition>
                                         </>
                                     )}
                                 </Form>
