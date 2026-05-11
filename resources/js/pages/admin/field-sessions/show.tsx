@@ -984,11 +984,15 @@ export default function FieldSessionShow({
                         </Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href="/admin/field-sessions">Volver</Link>
+                        <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Volver
                         </Button>
-                        <Button variant="outline" size="sm" className="text-blue-600 hover:bg-blue-50 hover:text-blue-700" asChild>
-                            <Link href={`${baseUrl}/edit`}>Editar</Link>
+                        <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" asChild>
+                            <Link href={`${baseUrl}/edit`}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Editar
+                            </Link>
                         </Button>
                         <Button
                             variant="outline"

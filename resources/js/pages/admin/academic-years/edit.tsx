@@ -1,5 +1,5 @@
-import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Save } from 'lucide-react';
+import { Head, useForm } from '@inertiajs/react';
+import { ArrowLeft, Calendar, Plus, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -85,22 +85,17 @@ export default function AcademicYearEdit({ academicYear }: Props) {
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                asChild
-                                className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30"
-                            >
-                                <Link href={academicYearsIndex().url}>
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Volver
-                                </Link>
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
                             </Button>
                             <Button
                                 type="submit"
+                                size="sm"
                                 form="academic-year-form"
                                 disabled={processing}
                             >
-                                <Save className="mr-2 h-4 w-4" />
+                                <Plus className="mr-2 h-4 w-4" />
                                 {isEditing ? 'Actualizar' : 'Crear Año'}
                             </Button>
                         </div>

@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, Eye, Trash2, Users, UserPlus } from 'lucide-react';
+import { ArrowLeft, Edit, Eye, Pencil, Trash2, Users, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -118,11 +118,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => window.history.back()}
-                                className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30"
-                            >
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>
@@ -138,18 +134,18 @@ export default function SectionShow({ section, academicYear }: Props) {
                                     Inscripción Alumnos
                                 </Link>
                             </Button>
-                            <Button variant="outline" size="sm" asChild className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950/30">
+                            <Button variant="outline" size="sm" asChild className="text-blue-600 border-blue-200 hover:bg-blue-50">
                                 <Link
                                     href={`/admin/sections/${section.id}/edit`}
                                 >
-                                    <Edit className="mr-2 h-4 w-4" />
+                                    <Pencil className="mr-2 h-4 w-4" />
                                     Editar
                                 </Link>
                             </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
                                 onClick={handleDelete}
                             >
                                 <Trash2 className="mr-2 h-4 w-4" />

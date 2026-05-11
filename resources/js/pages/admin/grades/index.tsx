@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, GraduationCap, Plus, Settings2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, GraduationCap, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import {
     AlertDialog,
@@ -240,7 +240,8 @@ export default function GradesIndex({
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => window.history.back()}>
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>
                             <Button variant="outline" asChild>

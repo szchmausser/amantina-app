@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, User, Lock } from 'lucide-react';
+import { ArrowLeft, Plus, User, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -72,28 +72,32 @@ export default function Create({ roles }: Props) {
             <SettingsLayout>
             <div>
                 {/* Header */}
-                <div className="mb-6">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                        className="mb-2 -ml-2 h-8"
-                    >
-                        <Link href={userIndex().url}>
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                            Nuevo Usuario
+                        </h1>
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                            Completa la información para crear una nueva cuenta en
+                            el sistema.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => window.history.back()}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
-                            Volver al listado
-                        </Link>
-                    </Button>
-                    <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                        Nuevo Usuario
-                    </h1>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                        Completa la información para crear una nueva cuenta en
-                        el sistema.
-                    </p>
+                            Volver
+                        </Button>
+                        <Button variant="outline" size="sm" asChild disabled={processing}>
+                            <Link href={userIndex().url}>Cancelar</Link>
+                        </Button>
+                        <Button type="submit" size="sm" disabled={processing} form="create-user-form" data-test="submit-button">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Crear Usuario
+                        </Button>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form id="create-user-form" onSubmit={handleSubmit} className="space-y-6">
                     {/* Roles Card */}
                     <div className="overflow-hidden rounded-xl border">
                         <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
@@ -332,22 +336,6 @@ export default function Create({ roles }: Props) {
                         </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center justify-end gap-3">
-                        <Button variant="outline" asChild disabled={processing}>
-                            <Link href={userIndex().url}>Cancelar</Link>
-                        </Button>
-                        <Button type="submit" disabled={processing} data-test="submit-button">
-                            {processing ? (
-                                'Guardando...'
-                            ) : (
-                                <>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    Crear Usuario
-                                </>
-                            )}
-                        </Button>
-                    </div>
                 </form>
             </div>
             </SettingsLayout>

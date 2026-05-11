@@ -1,8 +1,10 @@
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import { useMemo } from 'react';
 import {
+    ArrowLeft,
     Clock,
     Edit,
+    Pencil,
     ShieldCheck,
     User as UserIcon,
     BookOpen,
@@ -406,6 +408,7 @@ export default function Show({
                             size="sm"
                             onClick={() => window.history.back()}
                         >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
                             Volver
                         </Button>
                         {isAlumno && (
@@ -422,9 +425,9 @@ export default function Show({
                         )}
                         {(hasPermission('users.edit') ||
                             (auth.user && auth.user.id === user.id)) && (
-                            <Button variant="outline" size="sm" className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950/30" asChild>
+                            <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" asChild>
                                 <Link href={userEdit(user.id).url}>
-                                    <Edit className="mr-2 h-4 w-4" />
+                                    <Pencil className="mr-2 h-4 w-4" />
                                     Editar Perfil
                                 </Link>
                             </Button>

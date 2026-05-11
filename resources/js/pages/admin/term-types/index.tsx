@@ -116,14 +116,9 @@ export default function TermTypesIndex({ termTypes }: Props) {
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Button
-                                variant="outline"
-                                asChild
-                            >
-                                <Link href={schoolTermsIndex().url}>
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Volver
-                                </Link>
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
                             </Button>
                             <Button onClick={startCreate} disabled={isCreating}>
                                 <Plus className="mr-2 h-4 w-4" />

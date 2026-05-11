@@ -1,5 +1,5 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Layers, Save } from 'lucide-react';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeft, Layers, Plus, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -108,20 +108,9 @@ export default function SectionEdit({ section, grades, academicYears, sectionDef
                                 específico.
                             </p>
                         </div>
-                        <Button variant="outline" asChild>
-                            <Link
-                                href={
-                                    sectionsIndex({
-                                        query: {
-                                            academic_year_id:
-                                                data.academic_year_id,
-                                            grade_id: data.grade_id,
-                                        },
-                                    }).url
-                                }
-                            >
-                                Volver al listado
-                            </Link>
+                        <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Volver
                         </Button>
                     </div>
 
@@ -238,29 +227,18 @@ export default function SectionEdit({ section, grades, academicYears, sectionDef
                         <div className="flex items-center justify-end gap-3">
                             <Button
                                 variant="outline"
-                                asChild
+                                size="sm"
+                                onClick={() => window.history.back()}
                                 disabled={processing}
                             >
-                                <Link
-                                    href={
-                                        sectionsIndex({
-                                            query: {
-                                                academic_year_id:
-                                                    data.academic_year_id,
-                                                grade_id: data.grade_id,
-                                            },
-                                        }).url
-                                    }
-                                >
-                                    Cancelar
-                                </Link>
+                                Cancelar
                             </Button>
-                            <Button type="submit" disabled={processing} data-test="submit-button">
+                            <Button type="submit" size="sm" disabled={processing} data-test="submit-button">
                                 {processing ? (
                                     'Guardando...'
                                 ) : (
                                     <>
-                                        <Save className="mr-2 h-4 w-4" />
+                                        <Plus className="mr-2 h-4 w-4" />
                                         {isEditing
                                             ? 'Actualizar Sección'
                                             : 'Crear Sección'}

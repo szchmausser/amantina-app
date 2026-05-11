@@ -115,11 +115,9 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button variant="outline" asChild className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30">
-                                <Link href={sectionsIndex().url}>
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Volver
-                                </Link>
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
                             </Button>
                             {permissions.includes('section_definitions.create') && (
                                 <Button onClick={startCreate} disabled={isCreating} data-test="create-button">

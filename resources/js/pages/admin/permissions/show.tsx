@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
-import { ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -239,10 +239,9 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button variant="outline" asChild>
-                                <Link href={permissionsIndex().url}>
-                                    Volver
-                                </Link>
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
                             </Button>
                         </div>
                     </div>

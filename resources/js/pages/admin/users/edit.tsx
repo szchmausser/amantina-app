@@ -1,5 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
+    ArrowLeft,
+    Plus,
     Save,
     ShieldCheck,
     User as UserIcon,
@@ -106,13 +108,12 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button variant="outline" asChild>
-                                <Link href={userIndex().url}>
-                                    Volver
-                                </Link>
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
                             </Button>
-                            <Button type="submit" form="user-form" disabled={processing}>
-                                <Save className="mr-2 h-4 w-4" />
+                            <Button type="submit" size="sm" form="user-form" disabled={processing}>
+                                <Plus className="mr-2 h-4 w-4" />
                                 Actualizar Usuario
                             </Button>
                         </div>

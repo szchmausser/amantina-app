@@ -7,6 +7,7 @@ import {
     Edit,
     GraduationCap,
     Layers,
+    Pencil,
     Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -93,17 +94,15 @@ export default function AcademicYearShow({ academicYear }: Props) {
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => window.history.back()}
-                            >
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>
                             {hasPermission('academic_years.edit') && (
                                 <Button
                                     variant="outline"
-                                    className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950/30"
+                                    size="sm"
+                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
                                     asChild
                                 >
                                     <Link
@@ -112,7 +111,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                                 .url
                                         }
                                     >
-                                        <Edit className="mr-2 h-4 w-4" />
+                                        <Pencil className="mr-2 h-4 w-4" />
                                         Editar
                                     </Link>
                                 </Button>
@@ -120,7 +119,8 @@ export default function AcademicYearShow({ academicYear }: Props) {
                             {hasPermission('academic_years.delete') && (
                                 <Button
                                     variant="outline"
-                                    className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+                                    size="sm"
+                                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
                                     onClick={handleDelete}
                                 >
                                     <Trash2 className="mr-2 h-4 w-4" />

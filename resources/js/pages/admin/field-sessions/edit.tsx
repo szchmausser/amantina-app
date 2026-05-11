@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Clock, Tag } from 'lucide-react';
+import { ArrowLeft, Clock, Plus, Tag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -151,10 +151,9 @@ export default function FieldSessionEdit({
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                                router.visit(`/admin/field-sessions/${fieldSession.id}`)
-                            }
+                            onClick={() => window.history.back()}
                         >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
                             Volver
                         </Button>
                         <Button
@@ -170,6 +169,7 @@ export default function FieldSessionEdit({
                             Cancelar
                         </Button>
                         <Button type="submit" size="sm" disabled={processing} form="edit-field-session-form">
+                            <Plus className="mr-2 h-4 w-4" />
                             Actualizar Jornada
                         </Button>
                     </div>

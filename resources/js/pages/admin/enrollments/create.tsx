@@ -159,12 +159,7 @@ export default function EnrollmentsCreate({
             <SettingsLayout>
                 <div className="flex h-[calc(100vh-10rem)] flex-col gap-6 overflow-hidden">
                     {/* Header */}
-                    <div className="flex shrink-0 items-center gap-4">
-                        <Button variant="ghost" size="icon" asChild>
-                            <Link href="/admin/enrollments">
-                                <ArrowLeft className="h-5 w-5" />
-                            </Link>
-                        </Button>
+                    <div className="flex shrink-0 items-center justify-between gap-4">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                                 Nuevo Ingreso
@@ -173,6 +168,12 @@ export default function EnrollmentsCreate({
                                 Inscribir alumnos de nuevo ingreso al año
                                 escolar activo ({activeYear.name}).
                             </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
+                            </Button>
                         </div>
                     </div>
 

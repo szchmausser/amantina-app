@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { AlertCircle, ArrowLeft, Check, Edit, Eye, Info, Pencil, PlusCircle, Shield, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -168,10 +168,9 @@ export default function RolesEdit({
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button variant="outline" asChild>
-                                <Link href="/admin/roles">
-                                    Cancelar
-                                </Link>
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Cancelar
                             </Button>
                             <Button onClick={handleSubmit} disabled={processing}>
                                 <Check className="mr-2 h-4 w-4" />

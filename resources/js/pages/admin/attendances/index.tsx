@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { AlertTriangle, ArrowRight } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -559,13 +559,9 @@ export default function AttendanceIndex({
                                   : 'Cancelada'}
                         </Badge>
                     </div>
-                    <Button variant="outline" size="sm" asChild>
-                        <Link
-                            data-testid="back-button"
-                            href={`/admin/field-sessions/${fieldSession.id}`}
-                        >
-                            Volver
-                        </Link>
+                    <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Volver
                     </Button>
                 </div>
 

@@ -253,11 +253,7 @@ export default function TeacherAssignmentsCreate({
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => window.history.back()}
-                                className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30"
-                            >
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>

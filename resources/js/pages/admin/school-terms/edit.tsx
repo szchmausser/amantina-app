@@ -1,5 +1,5 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Clock, Save } from 'lucide-react';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeft, Clock, Plus, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -111,27 +111,12 @@ export default function SchoolTermEdit({
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                asChild
-                                className="border-neutral-300 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-700 dark:hover:bg-neutral-950/30"
-                            >
-                                <Link
-                                    href={
-                                        schoolTermsIndex({
-                                            query: {
-                                                academic_year_id:
-                                                    data.academic_year_id,
-                                            },
-                                        }).url
-                                    }
-                                >
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Volver
-                                </Link>
+                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Volver
                             </Button>
-                            <Button type="submit" form="school-term-form" disabled={processing} data-test="submit-button">
-                                <Save className="mr-2 h-4 w-4" />
+                            <Button type="submit" size="sm" form="school-term-form" disabled={processing} data-test="submit-button">
+                                <Plus className="mr-2 h-4 w-4" />
                                 {isEditing
                                     ? 'Actualizar Lapso'
                                     : 'Crear Lapso'}
