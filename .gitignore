@@ -13,6 +13,7 @@
 .DS_Store
 .env
 .env.testing
+.env.testing.local
 database/*.sqlite
 .phpactor.json
 .phpunit.result.cache
