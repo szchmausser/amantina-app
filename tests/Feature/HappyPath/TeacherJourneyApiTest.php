@@ -18,10 +18,12 @@ use Database\Seeders\FieldSessionStatusSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Database\Seeders\TermTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
     $this->seed(RoleAndPermissionSeeder::class);
     $this->seed(TermTypeSeeder::class);
     $this->seed(FieldSessionStatusSeeder::class);

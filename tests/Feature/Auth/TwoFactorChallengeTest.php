@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 use Tests\TestCase;
@@ -15,6 +16,7 @@ class TwoFactorChallengeTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(ValidateCsrfToken::class);
 
         $this->skipUnlessFortifyFeature(Features::twoFactorAuthentication());
     }

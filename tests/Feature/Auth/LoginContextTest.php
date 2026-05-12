@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Tests\TestCase;
 
 class LoginContextTest extends TestCase
@@ -14,6 +15,7 @@ class LoginContextTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(ValidateCsrfToken::class);
         $this->seed(RoleAndPermissionSeeder::class);
     }
 

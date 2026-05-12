@@ -1,17 +1,17 @@
 ---
 name: browser-testing
 description: >
-  Guía completa de browser tests con Pest + Playwright en proyectos Laravel + Inertia + React.
-  Cubre dos contextos: (1) escribir nuevos tests desde cero con criterio, estructura correcta
-  y cobertura estratégica; (2) reparar tests existentes rotos después de un rediseño o
-  refactor de UI. Los principios fundamentales aplican a ambos contextos.
+    Guía completa de browser tests con Pest + Playwright en proyectos Laravel + Inertia + React.
+    Cubre dos contextos: (1) escribir nuevos tests desde cero con criterio, estructura correcta
+    y cobertura estratégica; (2) reparar tests existentes rotos después de un rediseño o
+    refactor de UI. Los principios fundamentales aplican a ambos contextos.
 license: MIT
 compatibility: opencode
 metadata:
-  stack: laravel,inertia,react,tailwind,pest,playwright
-  trigger: >
-    escribir nuevos browser tests, o browser tests fallando después de un rediseño
-    de UI o refactor de componentes
+    stack: laravel,inertia,react,tailwind,pest,playwright
+    trigger: >
+        escribir nuevos browser tests, o browser tests fallando después de un rediseño
+        de UI o refactor de componentes
 ---
 
 # Skill: browser-testing
@@ -116,6 +116,26 @@ it('registra un producto con su categoría', function () {
 });
 ```
 
+4. **Consecuencia concreta para feature tests con Laravel:** los tests que realizan
+   peticiones POST, PUT, PATCH o DELETE deben deshabilitar explícitamente el middleware
+   CSRF en su `setUp()` / `beforeEach()` con:
+
+````php
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+// Test con clase (extiende TestCase):
+protected function setUp(): void
+{
+    parent::setUp();
+    $this->withoutMiddleware(ValidateCsrfToken::class);
+}
+// Test Pest con beforeEach:
+beforeEach(function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
+});
+CSRF es una protección del browser contra ataques cross-origin. En un feature test
+no hay browser — el request va directo al kernel de Laravel. El concepto no aplica.
+Sin esta línea, el test depende de que OTRO test se ejecute antes y deshabilite
+CSRF globalmente, violando el principio de autosuficiencia.
 ---
 
 ### Principio 3 — UI completa solo cuando el flujo es lo que se prueba
@@ -160,7 +180,7 @@ it('permite registrar un producto desde el panel', function () {
                 ->assertSee('Producto registrado');
     });
 });
-```
+````
 
 > **`actingAs()` no es un atajo incorrecto** — es la herramienta adecuada cuando el
 > estado de autenticación es una precondición, no la conducta bajo prueba. Usarlo
@@ -250,11 +270,11 @@ it('registra un nuevo producto', function () {
 
 ### Principio 6 — Seeders vs factories
 
-| Tipo de dato | Herramienta | Cuándo |
-|---|---|---|
-| Datos base del sistema (roles, permisos, configuraciones globales) | `Seeder` en `beforeEach` | Cuando la app no puede funcionar sin ellos |
-| Datos específicos del escenario de prueba | `Factory` en el test o `beforeEach` | La mayoría de los casos |
-| Datos masivos para pruebas de paginación o volumen | `Factory` con `->count()` | Cuando la cantidad importa para la conducta |
+| Tipo de dato                                                       | Herramienta                         | Cuándo                                      |
+| ------------------------------------------------------------------ | ----------------------------------- | ------------------------------------------- |
+| Datos base del sistema (roles, permisos, configuraciones globales) | `Seeder` en `beforeEach`            | Cuando la app no puede funcionar sin ellos  |
+| Datos específicos del escenario de prueba                          | `Factory` en el test o `beforeEach` | La mayoría de los casos                     |
+| Datos masivos para pruebas de paginación o volumen                 | `Factory` con `->count()`           | Cuando la cantidad importa para la conducta |
 
 > **Regla práctica:** si el dato existiría en producción desde el primer deploy
 > (roles, configuraciones, tipos), usa un seeder. Si es un registro creado por un
@@ -285,7 +305,7 @@ importe. Da una falsa sensación de cobertura y es activamente engañoso.
 
 **La pregunta que debe responderse antes de escribir cualquier aserción:**
 
-> *¿Si esta funcionalidad estuviera completamente rota, este test fallaría?*
+> _¿Si esta funcionalidad estuviera completamente rota, este test fallaría?_
 
 Si la respuesta es "no" o "tal vez", las aserciones no son suficientes.
 
@@ -368,15 +388,15 @@ it('registra un usuario y lo persiste en la base de datos', function () {
 
 #### El estándar mínimo por tipo de operación
 
-| Operación | Browser test debe verificar | Feature test debe verificar |
-|---|---|---|
-| **Crear registro** | Los datos del nuevo registro aparecen en la UI (tabla, detalle, confirmación) | `assertDatabaseHas` con los valores exactos ingresados |
-| **Editar registro** | Los datos actualizados son visibles en pantalla | `assertDatabaseHas` con los nuevos valores; `assertDatabaseMissing` con los anteriores si aplica |
-| **Eliminar registro** | El registro desaparece de la UI | `assertDatabaseMissing` con los datos del registro eliminado |
-| **Login** | El usuario llega a la pantalla post-login y ve contenido de su sesión | La sesión está autenticada (`assertAuthenticated`) |
-| **Logout** | El usuario es redirigido a la pantalla pública y no puede acceder a rutas protegidas | La sesión está vacía (`assertGuest`) |
-| **Validación** | El mensaje de error correcto aparece en pantalla junto al campo correspondiente | Los errores de validación existen en la respuesta (`assertSessionHasErrors`) |
-| **Permisos** | El usuario sin permiso no ve el recurso o es redirigido | La respuesta es 403 o redirect, y el dato no fue modificado en DB |
+| Operación             | Browser test debe verificar                                                          | Feature test debe verificar                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| **Crear registro**    | Los datos del nuevo registro aparecen en la UI (tabla, detalle, confirmación)        | `assertDatabaseHas` con los valores exactos ingresados                                           |
+| **Editar registro**   | Los datos actualizados son visibles en pantalla                                      | `assertDatabaseHas` con los nuevos valores; `assertDatabaseMissing` con los anteriores si aplica |
+| **Eliminar registro** | El registro desaparece de la UI                                                      | `assertDatabaseMissing` con los datos del registro eliminado                                     |
+| **Login**             | El usuario llega a la pantalla post-login y ve contenido de su sesión                | La sesión está autenticada (`assertAuthenticated`)                                               |
+| **Logout**            | El usuario es redirigido a la pantalla pública y no puede acceder a rutas protegidas | La sesión está vacía (`assertGuest`)                                                             |
+| **Validación**        | El mensaje de error correcto aparece en pantalla junto al campo correspondiente      | Los errores de validación existen en la respuesta (`assertSessionHasErrors`)                     |
+| **Permisos**          | El usuario sin permiso no ve el recurso o es redirigido                              | La respuesta es 403 o redirect, y el dato no fue modificado en DB                                |
 
 ---
 
@@ -668,11 +688,11 @@ it('registra un producto', function () {
 
 Los browser tests fallan después de un rediseño por una de estas cuatro razones:
 
-| Causa raíz | Síntoma |
-|---|---|
-| **Selector roto** | Elemento no encontrado: botón, input, link o texto cambió |
-| **Flujo modificado** | Un paso fue agregado, eliminado o reordenado |
-| **Problema de timing** | Inertia o un componente async ahora necesita espera explícita |
+| Causa raíz              | Síntoma                                                         |
+| ----------------------- | --------------------------------------------------------------- |
+| **Selector roto**       | Elemento no encontrado: botón, input, link o texto cambió       |
+| **Flujo modificado**    | Un paso fue agregado, eliminado o reordenado                    |
+| **Problema de timing**  | Inertia o un componente async ahora necesita espera explícita   |
 | **URL / ruta cambiada** | `visit()` apunta a una página que ya no existe o fue renombrada |
 
 Siempre diagnostica primero. Nunca reescribas selectores a ciegas.
@@ -709,6 +729,7 @@ find resources/js/pages -name '*.tsx' | sort
 ```
 
 Qué buscar en los diffs:
+
 - Texto de botón/link cambiado → actualizar `->clickLink()` / `->press()`
 - `id`/`name`/`placeholder` de input cambiado → actualizar selectores `->type()`
 - Ruta o `<Link href>` cambiada → actualizar `->visit(route('...'))`
@@ -923,6 +944,8 @@ $browser->screenshot('estado-antes-de-guardar');
 - [ ] Se usa `->waitFor()` / `->waitForText()` en lugar de `sleep()` para esperas
 - [ ] Los selectores usan `data-testid` o atributos semánticos, no clases CSS
 - [ ] Si no existen selectores estables, se agrega `data-testid` al componente
+- [ ] Si es un feature test que hace POST/PUT/DELETE, incluye
+      `$this->withoutMiddleware(ValidateCsrfToken::class)` en el `setUp`/`beforeEach`
 
 ### Al reparar un test existente
 
@@ -935,6 +958,8 @@ $browser->screenshot('estado-antes-de-guardar');
 - [ ] El test pasa ejecutado de forma aislada: `./vendor/bin/pest tests/Browser/ElTest.php`
 - [ ] Todos los browser tests pasan: `php artisan test --filter=Browser`
 - [ ] Todos los feature y unit tests siguen en verde: `php artisan test`
+- [ ] Si es un feature test que hace POST/PUT/DELETE, incluye
+      `$this->withoutMiddleware(ValidateCsrfToken::class)` en el `setUp`/`beforeEach`
 
 ### Prohibiciones que aplican siempre
 
@@ -948,20 +973,20 @@ $browser->screenshot('estado-antes-de-guardar');
 
 ## PARTE 6 — Referencia rápida de métodos
 
-| Qué se quiere hacer | Método |
-|---|---|
-| Navegar a una URL | `->visit(route('name'))` |
-| Hacer clic en un link por texto | `->clickLink('Texto')` |
-| Hacer clic en cualquier elemento | `->click('selector')` |
-| Escribir en un input | `->type('[name="campo"]', 'valor')` |
-| Seleccionar en un `<select>` nativo | `->select('[name="campo"]', 'valor')` |
-| Marcar un checkbox | `->check('[name="remember"]')` |
-| Esperar que aparezca un elemento | `->waitFor('[data-testid="x"]')` |
-| Esperar que aparezca un texto | `->waitForText('Texto esperado')` |
-| Esperar que desaparezca un elemento | `->waitUntilMissing('[role="dialog"]')` |
-| Verificar la ruta actual | `->assertPathIs('/dashboard')` |
-| Verificar que un texto es visible | `->assertSee('Texto')` |
-| Verificar que un texto NO es visible | `->assertDontSee('Error')` |
-| Verificar el valor de un input | `->assertInputValue('[name="email"]', 'x@y.com')` |
-| Volcar el HTML de la página | `->dump()` |
-| Tomar un screenshot | `->screenshot('nombre')` |
+| Qué se quiere hacer                  | Método                                            |
+| ------------------------------------ | ------------------------------------------------- |
+| Navegar a una URL                    | `->visit(route('name'))`                          |
+| Hacer clic en un link por texto      | `->clickLink('Texto')`                            |
+| Hacer clic en cualquier elemento     | `->click('selector')`                             |
+| Escribir en un input                 | `->type('[name="campo"]', 'valor')`               |
+| Seleccionar en un `<select>` nativo  | `->select('[name="campo"]', 'valor')`             |
+| Marcar un checkbox                   | `->check('[name="remember"]')`                    |
+| Esperar que aparezca un elemento     | `->waitFor('[data-testid="x"]')`                  |
+| Esperar que aparezca un texto        | `->waitForText('Texto esperado')`                 |
+| Esperar que desaparezca un elemento  | `->waitUntilMissing('[role="dialog"]')`           |
+| Verificar la ruta actual             | `->assertPathIs('/dashboard')`                    |
+| Verificar que un texto es visible    | `->assertSee('Texto')`                            |
+| Verificar que un texto NO es visible | `->assertDontSee('Error')`                        |
+| Verificar el valor de un input       | `->assertInputValue('[name="email"]', 'x@y.com')` |
+| Volcar el HTML de la página          | `->dump()`                                        |
+| Tomar un screenshot                  | `->screenshot('nombre')`                          |

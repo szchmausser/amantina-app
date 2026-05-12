@@ -6,6 +6,7 @@ use App\Models\User;
 use Database\Seeders\InstitutionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 use Tests\TestCase;
@@ -17,6 +18,7 @@ class RegistrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(ValidateCsrfToken::class);
 
         $this->skipUnlessFortifyFeature(Features::registration());
     }

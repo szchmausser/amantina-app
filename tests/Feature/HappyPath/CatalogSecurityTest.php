@@ -6,11 +6,13 @@ use App\Models\ActivityCategory;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
     $this->seed(RoleAndPermissionSeeder::class);
 
     $this->admin = User::factory()->create([

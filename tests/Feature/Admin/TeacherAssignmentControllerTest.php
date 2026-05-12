@@ -9,6 +9,7 @@ use App\Models\TeacherAssignment;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -31,6 +32,7 @@ class TeacherAssignmentControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(ValidateCsrfToken::class);
 
         $this->seed(RoleAndPermissionSeeder::class);
 

@@ -1,12 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, BookUser, Check, Plus, Search, Users, X } from 'lucide-react';
+import { Head, router, usePage } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    BookUser,
+    Check,
+    Plus,
+    Search,
+    Users,
+    X,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -17,6 +20,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import type { BreadcrumbItem } from '@/types';
@@ -83,8 +91,12 @@ export default function TeacherAssignmentsCreate({
     >(null);
 
     const filteredTeachers = useMemo(() => {
-        if (!searchQuery) return availableTeachers;
+        if (!searchQuery) {
+            return availableTeachers;
+        }
+
         const q = searchQuery.toLowerCase();
+
         return availableTeachers.filter(
             (t) =>
                 t.name.toLowerCase().includes(q) ||
@@ -92,26 +104,34 @@ export default function TeacherAssignmentsCreate({
         );
     }, [availableTeachers, searchQuery]);
 
-    useEffect(() => {
-        if (!selectedTeacherId) {
-            setSelectedSections([]);
-            return;
+    const getAssignedSectionIdsForTeacher = (
+        teacherId: number | null,
+    ): number[] => {
+        if (!teacherId) {
+            return [];
         }
 
         const currentIds: number[] = [];
+
         grades.forEach((g) => {
             g.sections.forEach((s) => {
                 if (
                     s.teacher_assignments?.some(
-                        (ta) => ta.teacher.id === selectedTeacherId,
+                        (ta) => ta.teacher.id === teacherId,
                     )
                 ) {
                     currentIds.push(s.id);
                 }
             });
         });
-        setSelectedSections(currentIds);
-    }, [selectedTeacherId, grades]);
+
+        return currentIds;
+    };
+
+    const handleSelectTeacher = (teacherId: number) => {
+        setSelectedTeacherId(teacherId);
+        setSelectedSections(getAssignedSectionIdsForTeacher(teacherId));
+    };
 
     const toggleSection = (sectionId: number) => {
         const isCurrentlySelected = selectedSections.includes(sectionId);
@@ -121,6 +141,7 @@ export default function TeacherAssignmentsCreate({
         if (isCurrentlySelected && wasOriginallyAssigned) {
             setPendingUnassignSectionId(sectionId);
             setUnassignConfirmOpen(true);
+
             return;
         }
 
@@ -137,22 +158,29 @@ export default function TeacherAssignmentsCreate({
     const confirmUnassign = () => {
         if (pendingUnassignSectionId !== null) {
             setSelectedSections(
-                selectedSections.filter((id) => id !== pendingUnassignSectionId),
+                selectedSections.filter(
+                    (id) => id !== pendingUnassignSectionId,
+                ),
             );
         }
+
         setUnassignConfirmOpen(false);
         setPendingUnassignSectionId(null);
     };
 
     const cancelUnassign = () => {
         setUnassignConfirmOpen(false);
+
         setPendingUnassignSectionId(null);
     };
 
     const isOriginallyAssigned = (sectionId: number): boolean => {
-        if (!selectedTeacherId) return false;
+        if (!selectedTeacherId) {
+            return false;
+        }
 
         let found = false;
+
         grades.forEach((g) => {
             g.sections.forEach((s) => {
                 if (
@@ -165,13 +193,17 @@ export default function TeacherAssignmentsCreate({
                 }
             });
         });
+
         return found;
     };
 
     const isDirty = useMemo(() => {
-        if (!selectedTeacherId) return false;
+        if (!selectedTeacherId) {
+            return false;
+        }
 
         const originalIds: number[] = [];
+
         grades.forEach((g) => {
             g.sections.forEach((s) => {
                 if (
@@ -184,7 +216,9 @@ export default function TeacherAssignmentsCreate({
             });
         });
 
-        if (originalIds.length !== selectedSections.length) return true;
+        if (originalIds.length !== selectedSections.length) {
+            return true;
+        }
 
         const sortedOriginal = [...originalIds].sort();
         const sortedSelected = [...selectedSections].sort();
@@ -193,12 +227,17 @@ export default function TeacherAssignmentsCreate({
     }, [selectedTeacherId, selectedSections, grades]);
 
     const saveAssignments = () => {
-        if (!selectedTeacherId) return;
+        if (!selectedTeacherId) {
+            return;
+        }
+
         setConfirmDialogOpen(true);
     };
 
     const confirmSaveAssignments = () => {
-        if (!selectedTeacherId) return;
+        if (!selectedTeacherId) {
+            return;
+        }
 
         router.post(
             '/admin/teacher-assignments',
@@ -228,8 +267,10 @@ export default function TeacherAssignmentsCreate({
         if (
             !section.teacher_assignments ||
             section.teacher_assignments.length === 0
-        )
+        ) {
             return 'Ninguno';
+        }
+
         return section.teacher_assignments
             .map((ta) => ta.teacher.name)
             .join(', ');
@@ -253,7 +294,11 @@ export default function TeacherAssignmentsCreate({
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.history.back()}
+                            >
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>
@@ -267,12 +312,18 @@ export default function TeacherAssignmentsCreate({
                             </Button>
                             <Button
                                 onClick={saveAssignments}
-                                disabled={!selectedTeacherId || !isDirty || isProcessing}
+                                disabled={
+                                    !selectedTeacherId ||
+                                    !isDirty ||
+                                    isProcessing
+                                }
                                 size="sm"
                                 data-test="save-assignments-button"
                             >
                                 <Plus className="mr-2 h-4 w-4" />
-                                {isProcessing ? 'Guardando...' : 'Guardar Cambios'}
+                                {isProcessing
+                                    ? 'Guardando...'
+                                    : 'Guardar Cambios'}
                             </Button>
                         </div>
                     </div>
@@ -286,11 +337,11 @@ export default function TeacherAssignmentsCreate({
                                 </CardTitle>
                             </CardHeader>
 
-                            <CardContent className="flex-1 overflow-auto px-2 pb-2 pt-0">
-                                <div className="relative mb-3 mt-0">
+                            <CardContent className="flex-1 overflow-auto px-2 pt-0 pb-2">
+                                <div className="relative mt-0 mb-3">
                                     <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                                     <Input
-                                        className="pl-9 focus-visible:ring-0 focus-visible:border-neutral-300"
+                                        className="pl-9 focus-visible:border-neutral-300 focus-visible:ring-0"
                                         placeholder="Buscar por cédula o nombre..."
                                         value={searchQuery}
                                         onChange={(e) =>
@@ -305,12 +356,13 @@ export default function TeacherAssignmentsCreate({
                                             filteredTeachers.map((t) => {
                                                 const isSelected =
                                                     selectedTeacherId === t.id;
+
                                                 return (
                                                     <button
                                                         key={t.id}
                                                         type="button"
                                                         onClick={() =>
-                                                            setSelectedTeacherId(
+                                                            handleSelectTeacher(
                                                                 t.id,
                                                             )
                                                         }
@@ -434,46 +486,50 @@ export default function TeacherAssignmentsCreate({
                                                                         }`}
                                                                     >
                                                                         <div className="mb-2 flex items-start justify-between">
-                                                                             <div className="flex flex-col gap-1">
-                                                                                  <div className="text-base font-semibold">
-                                                                                      Sección{' '}
-                                                                                      {
-                                                                                          section.name
-                                                                                      }
-                                                                                  </div>
-                                                                                 {wasAssigned &&
-                                                                                     isChecked && (
-                                                                                         <Badge
-                                                                                             variant="secondary"
-                                                                                             className="w-fit bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
-                                                                                         >
-                                                                                             Ya está asignado a esta sección.
-                                                                                         </Badge>
-                                                                                     )}
-                                                                             </div>
-                                                                             <div className="flex items-center gap-2">
-                                                                                 <div className="flex items-center gap-1 text-xs text-neutral-500">
-                                                                                     <Users className="h-3.5 w-3.5" />
-                                                                                     {section.enrollments_count ??
-                                                                                         0}
-                                                                                 </div>
-                                                                                 <Checkbox
-                                                                                     checked={
-                                                                                         isChecked
-                                                                                     }
-                                                                                     onCheckedChange={() =>
-                                                                                         toggleSection(
-                                                                                             section.id,
-                                                                                         )
-                                                                                     }
-                                                                                     className="pointer-events-none"
-                                                                                 />
-                                                                             </div>
-                                                                         </div>
+                                                                            <div className="flex flex-col gap-1">
+                                                                                <div className="text-base font-semibold">
+                                                                                    Sección{' '}
+                                                                                    {
+                                                                                        section.name
+                                                                                    }
+                                                                                </div>
+                                                                                {wasAssigned &&
+                                                                                    isChecked && (
+                                                                                        <Badge
+                                                                                            variant="secondary"
+                                                                                            className="w-fit bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                                                                                        >
+                                                                                            Ya
+                                                                                            está
+                                                                                            asignado
+                                                                                            a
+                                                                                            esta
+                                                                                            sección.
+                                                                                        </Badge>
+                                                                                    )}
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div className="flex items-center gap-1 text-xs text-neutral-500">
+                                                                                    <Users className="h-3.5 w-3.5" />
+                                                                                    {section.enrollments_count ??
+                                                                                        0}
+                                                                                </div>
+                                                                                <Checkbox
+                                                                                    checked={
+                                                                                        isChecked
+                                                                                    }
+                                                                                    onCheckedChange={() =>
+                                                                                        toggleSection(
+                                                                                            section.id,
+                                                                                        )
+                                                                                    }
+                                                                                    className="pointer-events-none"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
 
-                                                                         <div className="mt-auto">
-
-                                                                             <div className="mt-1.5 border-t border-neutral-100 pt-1.5 text-xs text-neutral-400 dark:border-neutral-800">
+                                                                        <div className="mt-auto">
+                                                                            <div className="mt-1.5 border-t border-neutral-100 pt-1.5 text-xs text-neutral-400 dark:border-neutral-800">
                                                                                 <span className="font-medium text-neutral-500 dark:text-neutral-400">
                                                                                     Profesores:{' '}
                                                                                 </span>

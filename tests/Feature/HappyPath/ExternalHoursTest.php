@@ -5,10 +5,12 @@ use App\Models\ExternalHour;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
     // Ejecutar seeder de roles y permisos
     $this->seed(RoleAndPermissionSeeder::class);
 

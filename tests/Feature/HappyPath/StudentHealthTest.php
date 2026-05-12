@@ -5,11 +5,13 @@ use App\Models\StudentHealthRecord;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
     $this->seed(RoleAndPermissionSeeder::class);
 
     // Crear usuarios con roles

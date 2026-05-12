@@ -4,10 +4,12 @@ use App\Models\HealthCondition;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->withoutMiddleware(ValidateCsrfToken::class);
     $this->seed(RoleAndPermissionSeeder::class);
 
     // Crear usuarios con roles
