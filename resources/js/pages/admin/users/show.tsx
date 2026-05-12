@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import {
     ArrowLeft,
     Clock,
-    Edit,
     Pencil,
     ShieldCheck,
     User as UserIcon,
@@ -820,7 +819,7 @@ export default function Show({
                                                         <div className="flex gap-1">
                                                             {hasPermission('student_health.edit') && (
                                                                 <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500 hover:text-blue-600">
-                                                                    <Edit className="h-3.5 w-3.5" />
+                                                                    <Pencil className="h-3.5 w-3.5" />
                                                                 </Button>
                                                             )}
                                                             {hasPermission('student_health.delete') && (
@@ -1218,7 +1217,7 @@ export default function Show({
                                                                         );
                                                                     }}
                                                                 >
-                                                                    <Edit className="h-3.5 w-3.5" />
+                                                                    <Pencil className="h-3.5 w-3.5" />
                                                                 </Button>
                                                             )}
                                                             {hasPermission(

@@ -717,7 +717,7 @@ class AttendanceControllerTest extends TestCase
         $this->assertEquals(2, $attendance->attendanceActivities()->count());
     }
 
-    public function test_quick_assign_hours_route_returns_404(): void
+    public function test_bulk_assign_hours_creates_attendance_and_activity(): void
     {
         $session = FieldSession::factory()->create([
             'academic_year_id' => $this->academicYear->id,
@@ -728,15 +728,32 @@ class AttendanceControllerTest extends TestCase
         $student = User::factory()->create();
         $student->assignRole('alumno');
 
+        $category = ActivityCategory::factory()->create();
+
         $response = $this->actingAs($this->admin)->post(
-            "/admin/field-sessions/{$session->id}/attendance/quick-assign-hours",
+            "/admin/field-sessions/{$session->id}/attendance/bulk-assign-hours",
             [
-                'user_id' => $student->id,
-                'hours' => 3.0,
-                'activity_category_id' => ActivityCategory::factory()->create()->id,
+                'data' => [
+                    [
+                        'user_id' => $student->id,
+                        'hours' => 3.0,
+                        'activity_category_id' => $category->id,
+                    ],
+                ],
             ]
         );
 
-        $response->assertStatus(404);
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('attendances', [
+            'field_session_id' => $session->id,
+            'user_id' => $student->id,
+        ]);
+
+        $this->assertDatabaseHas('attendance_activities', [
+            'hours' => 3.0,
+            'activity_category_id' => $category->id,
+        ]);
     }
 }

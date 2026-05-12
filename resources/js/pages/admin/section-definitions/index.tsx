@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Edit, Layout, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Layout, Pencil, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -120,7 +120,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                 Volver
                             </Button>
                             {permissions.includes('section_definitions.create') && (
-                                <Button onClick={startCreate} disabled={isCreating} data-test="create-button">
+                                <Button onClick={startCreate} disabled={isCreating} size="sm" data-test="create-button">
                                     <Plus className="mr-2 h-4 w-4" />
                                     Nuevo
                                 </Button>
@@ -148,21 +148,23 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                     <InputError message={errors.name} />
                                 </div>
                                 <div className="flex items-center justify-end gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={cancelEdit}
-                                    >
-                                        Cancelar
-                                    </Button>
-                                    <Button 
-                                        type="submit" 
-                                        disabled={processing}
-                                        data-test={editingId ? `save-section-definition-${editingId}` : "create-section-definition-button"}
-                                    >
-                                        <Save className="mr-2 h-4 w-4" />
-                                        {data.id ? 'Actualizar' : 'Crear'}
-                                    </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={cancelEdit}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    disabled={processing}
+                                    size="sm"
+                                    data-test={editingId ? `save-section-definition-${editingId}` : "create-section-definition-button"}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    {data.id ? 'Actualizar' : 'Crear'}
+                                </Button>
                                 </div>
                             </form>
                         </div>
@@ -199,7 +201,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                                     onClick={() => startEdit(definition)}
                                                     data-test={`edit-section-definition-${definition.id}`}
                                                 >
-                                                    <Edit className="h-4 w-4" />
+                                                    <Pencil className="h-4 w-4" />
                                                 </Button>
                                             )}
                                             {permissions.includes('section_definitions.delete') && (

@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, Eye, Plus, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -230,14 +230,14 @@ export default function FieldSessionsIndex({
                                     <Link
                                         href={`/admin/field-sessions/${session.id}/edit`}
                                     >
-                                        <Edit className="h-4 w-4" />
+                                        <Pencil className="h-4 w-4" />
                                         <span className="sr-only">Editar</span>
                                     </Link>
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
                                     onClick={() => handleDelete(session.id)}
                                 >
                                     <Trash2 className="h-4 w-4" />

@@ -400,16 +400,14 @@ export default function Profile({
                     {showRolesAndPermissions && !isAlumno && !isRepresentante && (
                         <TabsContent value="info" className="space-y-6">
                             {/* Roles */}
-                            <Card>
-                                <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                    <div className="flex items-center gap-2">
-                                        <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                        <CardTitle className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                                            Mis Roles
-                                        </CardTitle>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="p-6">
+                            <div className="overflow-hidden rounded-xl border">
+                                <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
+                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
+                                    <h2 className="text-sm font-semibold">
+                                        Mis Roles
+                                    </h2>
+                                </div>
+                                <div className="p-6">
                                     <div className="flex flex-wrap gap-2">
                                         {userRoles.map((role) => (
                                             <Badge
@@ -421,20 +419,18 @@ export default function Profile({
                                             </Badge>
                                         ))}
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
 
                             {/* Permissions */}
-                            <Card>
-                                <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                    <div className="flex items-center gap-2">
-                                        <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                        <CardTitle className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                                            Mis Permisos
-                                        </CardTitle>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="p-6">
+                            <div className="overflow-hidden rounded-xl border">
+                                <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
+                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
+                                    <h2 className="text-sm font-semibold">
+                                        Mis Permisos
+                                    </h2>
+                                </div>
+                                <div className="p-6">
                                     {Object.keys(userPermissions).length > 0 ? (
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             {Object.entries(
@@ -472,8 +468,8 @@ export default function Profile({
                                             Sin permisos asignados.
                                         </p>
                                     )}
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         </TabsContent>
                     )}
 

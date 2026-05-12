@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Edit, Eye, Shield } from 'lucide-react';
+import { Eye, Pencil, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -107,7 +107,7 @@ export default function RolesIndex({ roles }: Props) {
                                                     title="Editar permisos"
                                                 >
                                                     <Link href={roleEdit({ role: role.id }).url}>
-                                                        <Edit className="h-4 w-4" />
+                                                        <Pencil className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
                                             )}

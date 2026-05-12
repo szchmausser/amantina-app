@@ -97,7 +97,7 @@ test('admin puede acceder al formulario de edición de jornada', function () {
     $page = visit("/admin/field-sessions/{$session->id}/edit");
 
     $page->assertPathIs("/admin/field-sessions/{$session->id}/edit")
-        ->assertSee('Editar Jornada')
+        ->assertSee('Editar:')
         ->assertSee('Riego de Plantas')
         ->assertNoJavaScriptErrors();
 });

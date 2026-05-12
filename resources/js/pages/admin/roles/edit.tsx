@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { AlertCircle, ArrowLeft, Check, Edit, Eye, Info, Pencil, PlusCircle, Shield, Trash2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Check, Eye, Info, Pencil, PlusCircle, Shield, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

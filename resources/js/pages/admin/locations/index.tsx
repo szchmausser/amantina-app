@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Edit, MapPin, Plus, Save, Trash2 } from 'lucide-react';
+import { MapPin, Pencil, Plus, Save, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -168,7 +168,7 @@ export default function LocationsIndex({ locations }: Props) {
                                     className="h-8 w-8 text-neutral-500"
                                     onClick={() => startEdit(location)}
                                 >
-                                    <Edit className="h-4 w-4" />
+                                    <Pencil className="h-4 w-4" />
                                     <span className="sr-only">Editar</span>
                                 </Button>
                                 <Button
@@ -205,7 +205,7 @@ export default function LocationsIndex({ locations }: Props) {
                                 realizan las jornadas de campo.
                             </p>
                         </div>
-                        <Button onClick={startCreate} disabled={isCreating}>
+                        <Button onClick={startCreate} disabled={isCreating} size="sm">
                             <Plus className="mr-2 h-4 w-4" />
                             Nueva Ubicación
                         </Button>
@@ -250,17 +250,18 @@ export default function LocationsIndex({ locations }: Props) {
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-end gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={cancelEdit}
-                                    >
-                                        Cancelar
-                                    </Button>
-                                    <Button type="submit" disabled={processing}>
-                                        <Save className="mr-2 h-4 w-4" />
-                                        {data.id ? 'Actualizar' : 'Crear'}
-                                    </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={cancelEdit}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button type="submit" disabled={processing} size="sm">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    {data.id ? 'Actualizar' : 'Crear'}
+                                </Button>
                                 </div>
                             </form>
                         </div>

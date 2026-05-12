@@ -2,7 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Calendar,
     CheckCircle2,
-    Edit,
+    Pencil,
     Plus,
     Settings,
     Trash2,
@@ -199,7 +199,7 @@ export default function AcademicYearIndex({ academicYears }: Props) {
                                                 academicYearsEdit(year.id).url
                                             }
                                         >
-                                            <Edit className="h-4 w-4" />
+                                            <Pencil className="h-4 w-4" />
                                             <span className="sr-only">
                                                 Editar
                                             </span>
@@ -210,7 +210,7 @@ export default function AcademicYearIndex({ academicYears }: Props) {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
                                         onClick={() => handleDelete(year.id)}
                                         title="Eliminar"
                                     >
@@ -246,7 +246,7 @@ export default function AcademicYearIndex({ academicYears }: Props) {
                             </p>
                         </div>
                         {hasPermission('academic_years.create') && (
-                            <Button asChild>
+                            <Button size="sm" asChild>
                                 <Link href={academicYearsCreate().url}>
                                     <Plus className="mr-2 h-4 w-4" />
                                     Nuevo Año Escolar

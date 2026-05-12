@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
-import { Edit, Eye, Plus, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Select,
@@ -226,7 +226,7 @@ export default function Index({ users, filters, availableRoles }: Props) {
                                         asChild
                                     >
                                         <Link href={userEdit(user.id).url}>
-                                            <Edit className="h-4 w-4" />
+                                            <Pencil className="h-4 w-4" />
                                             <span className="sr-only">
                                                 Editar
                                             </span>
@@ -237,7 +237,7 @@ export default function Index({ users, filters, availableRoles }: Props) {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
                                         onClick={() => handleDelete(user.id)}
                                     >
                                         <Trash2 className="h-4 w-4" />
@@ -273,7 +273,7 @@ export default function Index({ users, filters, availableRoles }: Props) {
 
     // Botón crear usuario
     const createButton = hasPermission('users.create') ? (
-        <Button asChild className="sm:ml-auto">
+        <Button asChild size="sm" className="sm:ml-auto">
             <Link href={userCreate().url}>
                 <Plus className="mr-2 h-4 w-4" />
                 Nuevo Usuario

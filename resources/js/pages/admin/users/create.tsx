@@ -87,8 +87,8 @@ export default function Create({ roles }: Props) {
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Volver
                         </Button>
-                        <Button variant="outline" size="sm" asChild disabled={processing}>
-                            <Link href={userIndex().url}>Cancelar</Link>
+                        <Button variant="outline" size="sm" onClick={() => window.history.back()} disabled={processing}>
+                            Cancelar
                         </Button>
                         <Button type="submit" size="sm" disabled={processing} form="create-user-form" data-test="submit-button">
                             <Plus className="mr-2 h-4 w-4" />

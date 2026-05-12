@@ -559,7 +559,7 @@ export default function AttendanceIndex({
                                   : 'Cancelada'}
                         </Badge>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                    <Button variant="outline" size="sm" data-testid="back-button" onClick={() => window.history.back()}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Volver
                     </Button>

@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, Eye, Plus, Settings2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Eye, Pencil, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -200,14 +200,14 @@ export default function SectionsIndex({
                                     <Link
                                         href={`/admin/sections/${section.id}/edit`}
                                     >
-                                        <Edit className="h-4 w-4" />
+                                        <Pencil className="h-4 w-4" />
                                         <span className="sr-only">Editar</span>
                                     </Link>
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
                                     onClick={() => handleDelete(section.id)}
                                     title="Eliminar"
                                 >
@@ -244,13 +244,13 @@ export default function SectionsIndex({
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>
-                            <Button variant="outline" asChild>
+                            <Button variant="outline" size="sm" asChild>
                                 <Link href="/admin/section-definitions">
                                     <Settings2 className="mr-2 h-4 w-4" />
                                     Definiciones de secciones
                                 </Link>
                             </Button>
-                            <Button asChild>
+                            <Button size="sm" asChild>
                                 <Link
                                     href={`/admin/sections/create?academic_year_id=${selectedYearId}${selectedGradeId ? `&grade_id=${selectedGradeId}` : ''}`}
                                 >

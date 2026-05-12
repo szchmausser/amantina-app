@@ -292,7 +292,7 @@ export default function EnrollmentsIndex({
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                                className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
                                 onClick={() => handleDelete(enr.id)}
                             >
                                 <Trash2 className="h-4 w-4" />
@@ -351,13 +351,13 @@ export default function EnrollmentsIndex({
 
     const createButtons = (
         <div className="flex gap-2 sm:ml-auto">
-            <Button variant="outline" asChild>
+            <Button variant="outline" size="sm" asChild>
                 <Link href="/admin/enrollments/create">
                     <Plus className="mr-2 h-4 w-4" />
                     Nuevo Ingreso
                 </Link>
             </Button>
-            <Button asChild>
+            <Button size="sm" asChild>
                 <Link href="/admin/enrollments/promote">
                     <GraduationCap className="mr-2 h-4 w-4" />
                     Panel de Promoción

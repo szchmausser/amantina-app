@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, BookUser, Check, Search, Users, X } from 'lucide-react';
+import { ArrowLeft, BookUser, Check, Plus, Search, Users, X } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -259,20 +259,19 @@ export default function TeacherAssignmentsCreate({
                             </Button>
                             <Button
                                 variant="outline"
+                                size="sm"
                                 onClick={clearSelections}
-                                className="border-amber-300 text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-950/30"
                             >
                                 <X className="mr-2 h-4 w-4" />
                                 Deseleccionar
                             </Button>
                             <Button
-                                variant="outline"
                                 onClick={saveAssignments}
                                 disabled={!selectedTeacherId || !isDirty || isProcessing}
                                 size="sm"
                                 data-test="save-assignments-button"
-                                className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/30"
                             >
+                                <Plus className="mr-2 h-4 w-4" />
                                 {isProcessing ? 'Guardando...' : 'Guardar Cambios'}
                             </Button>
                         </div>

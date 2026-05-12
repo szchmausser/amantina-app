@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, Eye, Pencil, Trash2, Users, UserPlus } from 'lucide-react';
+import { ArrowLeft, Eye, Pencil, Trash2, Users, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -122,13 +122,13 @@ export default function SectionShow({ section, academicYear }: Props) {
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>
-                            <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/30">
+                            <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
                                 <Link href={`/admin/teacher-assignments/create?grade_id=${section.grade.id}&section_id=${section.id}`}>
                                     <UserPlus className="mr-2 h-4 w-4" />
                                     Asignación Docentes
                                 </Link>
                             </Button>
-                            <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/30">
+                            <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
                                 <Link href={`/admin/enrollments/create?grade_id=${section.grade.id}&section_id=${section.id}`}>
                                     <UserPlus className="mr-2 h-4 w-4" />
                                     Inscripción Alumnos

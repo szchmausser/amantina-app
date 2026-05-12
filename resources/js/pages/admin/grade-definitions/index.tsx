@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Edit, GraduationCap, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, GraduationCap, Pencil, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -124,7 +124,7 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                 Volver
                             </Button>
                             {permissions.includes('grade_definitions.create') && (
-                                <Button onClick={startCreate} disabled={isCreating} data-test="create-button">
+                                <Button onClick={startCreate} disabled={isCreating} size="sm" data-test="create-button">
                                     <Plus className="mr-2 h-4 w-4" />
                                     Nuevo
                                 </Button>
@@ -171,21 +171,23 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-end gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={cancelEdit}
-                                    >
-                                        Cancelar
-                                    </Button>
-                                    <Button 
-                                        type="submit" 
-                                        disabled={processing}
-                                        data-test={editingId ? `save-grade-definition-${editingId}` : "create-grade-definition-button"}
-                                    >
-                                        <Save className="mr-2 h-4 w-4" />
-                                        {data.id ? 'Actualizar' : 'Crear'}
-                                    </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={cancelEdit}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    disabled={processing}
+                                    size="sm"
+                                    data-test={editingId ? `save-grade-definition-${editingId}` : "create-grade-definition-button"}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    {data.id ? 'Actualizar' : 'Crear'}
+                                </Button>
                                 </div>
                             </form>
                         </div>
@@ -222,7 +224,7 @@ export default function GradeDefinitionsIndex({ gradeDefinitions }: Props) {
                                                     onClick={() => startEdit(definition)}
                                                     data-test={`edit-grade-definition-${definition.id}`}
                                                 >
-                                                    <Edit className="h-4 w-4" />
+                                                    <Pencil className="h-4 w-4" />
                                                 </Button>
                                             )}
                                             {permissions.includes('grade_definitions.delete') && (

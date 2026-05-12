@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays, Edit, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Pencil, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -120,7 +120,7 @@ export default function TermTypesIndex({ termTypes }: Props) {
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>
-                            <Button onClick={startCreate} disabled={isCreating}>
+                            <Button onClick={startCreate} disabled={isCreating} size="sm">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Nuevo
                             </Button>
@@ -167,12 +167,13 @@ export default function TermTypesIndex({ termTypes }: Props) {
                                     <Button
                                         type="button"
                                         variant="outline"
+                                        size="sm"
                                         onClick={cancelEdit}
                                     >
                                         Cancelar
                                     </Button>
-                                    <Button type="submit" disabled={processing}>
-                                        <Save className="mr-2 h-4 w-4" />
+                                    <Button type="submit" disabled={processing} size="sm">
+                                        <Plus className="mr-2 h-4 w-4" />
                                         {data.id ? 'Actualizar' : 'Crear'}
                                     </Button>
                                 </div>
@@ -207,7 +208,7 @@ export default function TermTypesIndex({ termTypes }: Props) {
                                             className="h-8 w-8 text-neutral-500"
                                             onClick={() => startEdit(type)}
                                         >
-                                            <Edit className="h-4 w-4" />
+                                            <Pencil className="h-4 w-4" />
                                         </Button>
                                         <Button
                                             variant="ghost"
