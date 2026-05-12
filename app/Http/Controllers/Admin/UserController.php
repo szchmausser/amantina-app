@@ -357,9 +357,14 @@ class UserController extends Controller
                 abort(403, 'Solo administradores pueden asignar permisos.');
             }
 
-            // VALIDACIÓN CRÍTICA #4: Ni admin puede cambiar sus propios permisos
+            // VALIDACIÓN CRÍTICA #4: Admin no puede CAMBIAR sus propios permisos
             if (auth()->id() === $user->id) {
-                abort(403, 'No puedes cambiar tus propios permisos.');
+                $currentPermissions = $user->getDirectPermissions()->pluck('name')->toArray();
+                $submittedPermissions = (array) $request->input('direct_permissions', []);
+
+                if (array_diff($submittedPermissions, $currentPermissions) || array_diff($currentPermissions, $submittedPermissions)) {
+                    abort(403, 'No puedes cambiar tus propios permisos.');
+                }
             }
         }
 
