@@ -223,6 +223,7 @@ export default function Profile({
                                                     <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                                         {userData.cedula || '—'}
                                                     </p>
+                                                    <input type="hidden" name="cedula" value={userData.cedula || ''} />
                                                 </div>
 
                                                 <div className="space-y-2">

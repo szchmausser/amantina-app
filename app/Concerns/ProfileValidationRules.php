@@ -34,7 +34,7 @@ trait ProfileValidationRules
             'required',
             'string',
             'max:20',
-            Rule::unique('users', 'cedula')->ignore($userId),
+            Rule::unique('users', 'cedula')->ignore($userId)->whereNull('deleted_at'),
         ];
     }
 
@@ -56,9 +56,7 @@ trait ProfileValidationRules
             'string',
             'email',
             'max:255',
-            $userId === null
-                ? Rule::unique(User::class)
-                : Rule::unique(User::class)->ignore($userId),
+            Rule::unique(User::class, 'email')->ignore($userId)->whereNull('deleted_at'),
         ];
     }
 

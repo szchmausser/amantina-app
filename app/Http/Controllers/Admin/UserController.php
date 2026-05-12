@@ -340,9 +340,14 @@ class UserController extends Controller
                 abort(403, 'Solo administradores pueden asignar roles.');
             }
 
-            // VALIDACIÓN CRÍTICA #2: Ni admin puede cambiar sus propios roles
+            // VALIDACIÓN CRÍTICA #2: Admin no puede CAMBIAR sus propios roles
             if (auth()->id() === $user->id) {
-                abort(403, 'No puedes cambiar tus propios roles.');
+                $currentRoles = $user->getRoleNames()->toArray();
+                $submittedRoles = (array) $request->input('roles', []);
+
+                if (array_diff($submittedRoles, $currentRoles) || array_diff($currentRoles, $submittedRoles)) {
+                    abort(403, 'No puedes cambiar tus propios roles.');
+                }
             }
         }
 

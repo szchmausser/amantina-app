@@ -2,12 +2,14 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Concerns\ProfileValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
 {
+    use ProfileValidationRules;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -26,29 +28,14 @@ class StoreUserRequest extends FormRequest
         $roles = $this->input('roles', []);
         $isAlumno = in_array('alumno', (array) $roles);
 
-        return [
-            'cedula' => [
-                'required',
-                'string',
-                'max:20',
-                Rule::unique('users')->whereNull('deleted_at'),
-            ],
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users')->whereNull('deleted_at'),
-            ],
-            'phone' => [$isAlumno ? 'nullable' : 'required', 'string', 'max:20'],
-            'address' => [$isAlumno ? 'nullable' : 'required', 'string', 'max:500'],
-            'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['string', 'exists:roles,name'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'is_transfer' => ['nullable', 'boolean'],
-            'institution_origin' => ['nullable', 'string', 'max:255'],
-        ];
+        return array_merge(
+            $this->profileRules(null, ! $isAlumno),
+            [
+                'roles' => ['required', 'array', 'min:1'],
+                'roles.*' => ['string', 'exists:roles,name'],
+                'password' => ['required', 'string', 'min:8', 'confirmed'],
+            ]
+        );
     }
 
     /**

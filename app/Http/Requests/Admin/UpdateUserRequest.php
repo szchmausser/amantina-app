@@ -2,13 +2,15 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Concerns\ProfileValidationRules;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UpdateUserRequest extends FormRequest
 {
+    use ProfileValidationRules;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -30,31 +32,16 @@ class UpdateUserRequest extends FormRequest
         $roles = $this->input('roles', []);
         $isAlumno = in_array('alumno', (array) $roles);
 
-        return [
-            'cedula' => [
-                'required',
-                'string',
-                'max:20',
-                Rule::unique('users')->ignore($userId)->whereNull('deleted_at'),
-            ],
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users')->ignore($userId)->whereNull('deleted_at'),
-            ],
-            'phone' => [$isAlumno ? 'nullable' : 'required', 'string', 'max:20'],
-            'address' => [$isAlumno ? 'nullable' : 'required', 'string', 'max:500'],
-            'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['string', 'exists:roles,name'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'is_transfer' => ['nullable', 'boolean'],
-            'institution_origin' => ['nullable', 'string', 'max:255'],
-            'direct_permissions' => ['nullable', 'array'],
-            'direct_permissions.*' => ['string', 'exists:permissions,name'],
-        ];
+        return array_merge(
+            $this->profileRules($userId, ! $isAlumno),
+            [
+                'roles' => ['required', 'array', 'min:1'],
+                'roles.*' => ['string', 'exists:roles,name'],
+                'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+                'direct_permissions' => ['nullable', 'array'],
+                'direct_permissions.*' => ['string', 'exists:permissions,name'],
+            ]
+        );
     }
 
     /**
