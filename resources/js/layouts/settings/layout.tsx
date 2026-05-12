@@ -49,13 +49,15 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const sidebarNavItems: NavEntry[] = [];
 
     // ── Académico ──
-    const academicItems: NavItem[] = [
-        {
+    const academicItems: NavItem[] = [];
+
+    if (auth.permissions?.includes('academic_years.edit')) {
+        academicItems.push({
             title: 'Datos Institucionales',
             href: editInstitution().url,
             icon: Building2,
-        },
-    ];
+        });
+    }
 
     if (auth.permissions?.includes('academic_years.view')) {
         academicItems.push({

@@ -3,8 +3,10 @@
 namespace App\Http\Middleware;
 
 use App\Models\Institution;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Spatie\Permission\Models\Role;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -43,7 +45,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'active_role' => $request->session()->get('active_role'),
                 'available_roles' => $request->user() ? $request->user()->getRoleNames()->filter(fn ($role) => in_array($role, ['admin', 'profesor', 'alumno', 'representante']))->values() : [],
-                'permissions' => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
+                'permissions' => $request->user() ? $this->activePermissions($request->user()) : [],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
@@ -54,5 +56,22 @@ class HandleInertiaRequests extends Middleware
             ],
             'institution' => fn () => Institution::with('media')->first()?->only(['name', 'logo_url', 'favicon_url']),
         ];
+    }
+
+    /**
+     * Get permissions scoped to the active session role.
+     * Falls back to all permissions when no active role is set.
+     */
+    protected function activePermissions(User $user): array
+    {
+        $activeRole = session('active_role');
+
+        if ($activeRole && $user->hasRole($activeRole)) {
+            $role = Role::findByName($activeRole);
+
+            return $role->permissions->pluck('name')->toArray();
+        }
+
+        return $user->getAllPermissions()->pluck('name')->toArray();
     }
 }

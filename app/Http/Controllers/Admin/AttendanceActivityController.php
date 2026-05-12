@@ -96,7 +96,7 @@ class AttendanceActivityController extends Controller
     {
         $attendance->loadMissing('fieldSession');
 
-        if (! auth()->user()->hasRole('admin') && $attendance->fieldSession->user_id !== auth()->id()) {
+        if (! auth()->user()->hasPermissionTo('users.edit') && $attendance->fieldSession->user_id !== auth()->id()) {
             abort(403, 'No tienes permiso para gestionar esta jornada.');
         }
     }

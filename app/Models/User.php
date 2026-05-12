@@ -10,17 +10,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Session;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, InteractsWithMedia, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
+    use HasFactory, InteractsWithMedia, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
+
+    use HasRoles {
+        HasRoles::hasPermissionTo as protected spatieHasPermissionTo;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -69,6 +76,49 @@ class User extends Authenticatable implements HasMedia
             'is_active' => 'boolean',
             'is_transfer' => 'boolean',
         ];
+    }
+
+    /**
+     * Check if the given role matches the active session role.
+     */
+    public function hasActiveRole(string $role): bool
+    {
+        return Session::get('active_role') === $role;
+    }
+
+    /**
+     * Override Spatie's hasPermissionTo to scope permissions to the active role.
+     * When a user logs in with a specific role context, only that role's
+     * permissions are considered for authorization.
+     */
+    public function hasPermissionTo($permission, $guardName = null): bool
+    {
+        $activeRole = Session::get('active_role');
+
+        if ($activeRole && $this->hasRole($activeRole)) {
+            try {
+                $role = Role::findByName($activeRole, $guardName ?? 'web');
+
+                if ($role->hasPermissionTo($permission)) {
+                    return true;
+                }
+            } catch (PermissionDoesNotExist $e) {
+                // Permission not found in DB, continue to check direct permissions
+            }
+
+            // Also check direct permissions assigned outside of roles
+            if ($this->getDirectPermissions()->pluck('name')->contains($permission)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        try {
+            return $this->spatieHasPermissionTo($permission, $guardName);
+        } catch (PermissionDoesNotExist $e) {
+            return false;
+        }
     }
 
     public function enrollments(): HasMany

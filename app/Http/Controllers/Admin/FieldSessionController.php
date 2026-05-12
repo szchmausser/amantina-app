@@ -216,7 +216,7 @@ class FieldSessionController extends Controller
         Gate::authorize('field_sessions.edit');
 
         // Professors can only edit their own sessions
-        if (! auth()->user()->hasRole('admin') && $fieldSession->user_id !== auth()->id()) {
+        if (! auth()->user()->hasPermissionTo('users.edit') && $fieldSession->user_id !== auth()->id()) {
             abort(403, 'No tienes permiso para editar esta jornada.');
         }
 
@@ -243,7 +243,7 @@ class FieldSessionController extends Controller
     public function update(UpdateFieldSessionRequest $request, FieldSession $fieldSession): RedirectResponse
     {
         // Double-check ownership (also checked in edit method)
-        if (! auth()->user()->hasRole('admin') && $fieldSession->user_id !== auth()->id()) {
+        if (! auth()->user()->hasPermissionTo('users.edit') && $fieldSession->user_id !== auth()->id()) {
             abort(403, 'No tienes permiso para editar esta jornada.');
         }
 
@@ -290,7 +290,7 @@ class FieldSessionController extends Controller
         Gate::authorize('field_sessions.delete');
 
         // Verificar que el profesor solo pueda eliminar sus propias jornadas
-        if (! auth()->user()->hasRole('admin') && $fieldSession->user_id !== auth()->id()) {
+        if (! auth()->user()->hasPermissionTo('users.edit') && $fieldSession->user_id !== auth()->id()) {
             abort(403, 'No tienes permiso para eliminar esta jornada.');
         }
 

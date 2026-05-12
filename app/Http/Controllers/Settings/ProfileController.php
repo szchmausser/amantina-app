@@ -166,9 +166,9 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        // Only admins can delete their own accounts
-        if (! $user->hasRole('admin')) {
-            abort(403, 'Solo los administradores pueden eliminar cuentas. Contacte a un administrador.');
+        // Only users with users.delete permission can delete their own accounts
+        if (! $user->hasPermissionTo('users.delete')) {
+            abort(403, 'No tienes permiso para eliminar cuentas. Contacta a un administrador.');
         }
 
         Auth::logout();

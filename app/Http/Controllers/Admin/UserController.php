@@ -334,10 +334,10 @@ class UserController extends Controller
     {
         Gate::authorize('update', $user);
 
-        // VALIDACIÓN CRÍTICA #1: Solo admin puede cambiar roles
+        // VALIDACIÓN CRÍTICA #1: Solo quien tenga permiso roles.edit puede cambiar roles
         if ($request->has('roles')) {
-            if (! auth()->user()->hasRole('admin')) {
-                abort(403, 'Solo administradores pueden asignar roles.');
+            if (! auth()->user()->hasPermissionTo('roles.edit')) {
+                abort(403, 'No tienes permiso para asignar roles.');
             }
 
             // VALIDACIÓN CRÍTICA #2: Admin no puede CAMBIAR sus propios roles
@@ -351,10 +351,10 @@ class UserController extends Controller
             }
         }
 
-        // VALIDACIÓN CRÍTICA #3: Solo admin puede cambiar permisos directos
+        // VALIDACIÓN CRÍTICA #3: Solo quien tenga permiso permissions.edit puede cambiar permisos directos
         if ($request->has('direct_permissions')) {
-            if (! auth()->user()->hasRole('admin')) {
-                abort(403, 'Solo administradores pueden asignar permisos.');
+            if (! auth()->user()->hasPermissionTo('permissions.edit')) {
+                abort(403, 'No tienes permiso para asignar permisos.');
             }
 
             // VALIDACIÓN CRÍTICA #4: Admin no puede CAMBIAR sus propios permisos

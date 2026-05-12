@@ -32,7 +32,7 @@ class AttendanceActivityPolicy
      */
     public function update(User $user, AttendanceActivity $activity): bool
     {
-        if ($user->hasRole('admin')) {
+        if ($user->hasPermissionTo('users.edit')) {
             return $user->hasPermissionTo('attendance_activities.edit');
         }
 
@@ -45,7 +45,7 @@ class AttendanceActivityPolicy
      */
     public function delete(User $user, AttendanceActivity $activity): bool
     {
-        if ($user->hasRole('admin')) {
+        if ($user->hasPermissionTo('users.edit')) {
             return $user->hasPermissionTo('attendance_activities.delete');
         }
 

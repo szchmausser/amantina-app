@@ -35,10 +35,6 @@ class AppServiceProvider extends ServiceProvider
             SetActiveRoleContext::class
         );
 
-        Gate::before(static function ($user, $ability) {
-            return $user->hasRole('admin') ? true : null;
-        });
-
         // Register non-model policies
         Gate::policy('dashboard', DashboardPolicy::class);
         Gate::policy(ExternalHour::class, ExternalHourPolicy::class);

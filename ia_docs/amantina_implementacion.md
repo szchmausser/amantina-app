@@ -212,7 +212,7 @@ Define la infraestructura técnica de roles para permitir la lógica de "Login c
 
 - **`database/seeders/RoleAndPermissionSeeder.php`:** Crea los 4 roles base y 46 permisos organizados por módulo
 - **Permisos definidos:** `users.*`, `roles.*`, `permissions.*`, `academic_years.*`, `school_terms.*`, `grades.*`, `sections.*`, `enrollments.*`, `assignments.*`, `academic_info.view`, `health_conditions.*`, `student_health.*`
-- **Asignación:** `admin` recibe los 46 permisos; `profesor` recibe `users.view`, `enrollments.view`, `assignments.view`, `academic_info.view`
+- **Asignación:** `admin` recibe todos los permisos; `profesor` recibe los de su tabla más abajo
 
 #### ENTREGA
 
@@ -243,12 +243,12 @@ Este hito es **exclusivamente** de infraestructura de permisos. Se definen TODOS
 
 **Asignación por rol:**
 
-| Rol             | Permisos heredados                                                         |
-| --------------- | -------------------------------------------------------------------------- |
-| `admin`         | **Todos los 46 permisos**                                                  |
-| `profesor`      | `users.view`, `enrollments.view`, `assignments.view`, `academic_info.view` |
-| `alumno`        | Ninguno (solo lectura de su propio perfil)                                 |
-| `representante` | Ninguno (solo lectura de su representado)                                  |
+| Rol             | Permisos heredados                                                                                                                                                                                                                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `admin`         | **Todos los permisos**                                                                                                                                                                                                                                                                                                          |
+| `profesor`      | `users.view`, `academic_info.view`, `activity_categories.*`, `locations.*`, `field_sessions.*`, `attendances.*`, `attendance_activities.*`, `dashboard.view`, `accumulated_hours.view`                                                                                                                                         |
+| `alumno`        | `dashboard.view`, `accumulated_hours.view`                                                                                                                                                                                                                                                                                      |
+| `representante` | `dashboard.view`, `accumulated_hours.view`                                                                                                                                                                                                                                                                                      |
 
 > **NOTA:** Los permisos de hitos futuros (9-14) se agregarán progresivamente al `RoleAndPermissionSeeder` cuando se implementen. Por ahora solo existen los listados arriba.
 
@@ -534,17 +534,17 @@ Vincula usuarios con la estructura académica y permite la promoción masiva de 
 
 | Permiso              | Protege                                | Roles que lo tienen |
 | -------------------- | -------------------------------------- | ------------------- |
-| `enrollments.view`   | Listado de inscripciones               | `admin`, `profesor` |
+| `enrollments.view`   | Listado de inscripciones               | `admin`             |
 | `enrollments.create` | Crear inscripciones / promover alumnos | `admin`             |
 | `enrollments.edit`   | Editar inscripciones                   | `admin`             |
 | `enrollments.delete` | Eliminar inscripciones                 | `admin`             |
-| `assignments.view`   | Listado de asignaciones docentes       | `admin`, `profesor` |
+| `assignments.view`   | Listado de asignaciones docentes       | `admin`             |
 | `assignments.create` | Asignar profesores a secciones         | `admin`             |
 | `assignments.edit`   | Editar asignaciones                    | `admin`             |
 | `assignments.delete` | Eliminar asignaciones                  | `admin`             |
 | `academic_info.view` | Vista general de info académica        | `admin`, `profesor` |
 
-**Nota:** El profesor puede **ver** inscripciones y asignaciones pero no crearlas ni editarlas. Solo el admin puede inscribir alumnos y asignar profesores.
+**Nota:** Solo el admin puede gestionar inscripciones y asignaciones docentes. El profesor no tiene acceso a estos módulos.
 
 ---
 

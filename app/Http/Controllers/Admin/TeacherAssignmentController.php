@@ -18,7 +18,7 @@ class TeacherAssignmentController extends Controller
 {
     public function index(Request $request): Response|RedirectResponse
     {
-        Gate::authorize('assignments.viewAny');
+        Gate::authorize('assignments.view');
 
         return redirect()->route('admin.teacher-assignments.create');
     }

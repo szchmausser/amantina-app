@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Institution;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,6 +17,8 @@ class InstitutionController extends Controller
      */
     public function edit(Request $request): Response
     {
+        Gate::authorize('academic_years.edit');
+
         return Inertia::render('settings/institution', [
             'institution' => Institution::first(),
         ]);
@@ -26,6 +29,8 @@ class InstitutionController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
+        Gate::authorize('academic_years.edit');
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'address' => ['nullable', 'string'],

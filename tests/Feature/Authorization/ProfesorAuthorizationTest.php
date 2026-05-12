@@ -83,8 +83,6 @@ class ProfesorAuthorizationTest extends TestCase
     {
         $allowedPermissions = [
             'users.view',
-            'enrollments.view',
-            'assignments.view',
             'academic_info.view',
             'activity_categories.view',
             'activity_categories.create',
@@ -223,15 +221,12 @@ class ProfesorAuthorizationTest extends TestCase
     }
 
     /**
-     * Verifica que el profesor puede ver inscripciones.
+     * Verifica que el profesor NO puede ver inscripciones (solo admin).
      */
-    public function test_profesor_can_view_enrollments(): void
+    public function test_profesor_cannot_view_enrollments(): void
     {
         $response = $this->actingAs($this->profesor)->get(route('admin.enrollments.index'));
-        $response->assertOk();
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('admin/enrollments/index'),
-        );
+        $response->assertForbidden();
     }
 
     /**

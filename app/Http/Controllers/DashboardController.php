@@ -28,23 +28,22 @@ class DashboardController extends Controller
             ? AcademicYear::find($yearId)
             : AcademicYear::active()->first();
 
-        // Admin has full access
-        if ($user->hasRole('admin')) {
+        // Route to dashboard based on active session role
+        $activeRole = $request->session()->get('active_role');
+
+        if ($activeRole === 'admin') {
             return $this->adminDashboard($user, $activeYear);
         }
 
-        // Profesor sees their sections
-        if ($user->hasRole('profesor')) {
+        if ($activeRole === 'profesor') {
             return $this->teacherDashboard($user, $activeYear);
         }
 
-        // Alumno sees own progress
-        if ($user->hasRole('alumno')) {
+        if ($activeRole === 'alumno') {
             return $this->studentDashboard($user, $activeYear);
         }
 
-        // Representante sees their student's progress
-        if ($user->hasRole('representante')) {
+        if ($activeRole === 'representante') {
             return $this->representativeDashboard($user, $activeYear);
         }
 

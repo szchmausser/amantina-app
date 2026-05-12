@@ -277,7 +277,7 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Permiso | Admin | Profesor | Alumno | Representante | Notas |
 |---------|-------|----------|--------|---------------|-------|
-| `enrollments.view` | ✅ | ✅ | ❌ | ❌ | Profesor solo ve inscripciones |
+| `enrollments.view` | ✅ | ❌ | ❌ | ❌ | Solo admin ve inscripciones |
 | `enrollments.create` | ✅ | ❌ | ❌ | ❌ | Solo admin inscribe estudiantes |
 | `enrollments.edit` | ✅ | ❌ | ❌ | ❌ | Solo admin modifica inscripciones |
 | `enrollments.delete` | ✅ | ❌ | ❌ | ❌ | Solo admin elimina inscripciones |
@@ -286,10 +286,10 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Ruta | Método | Permiso Requerido | Admin | Profesor | Alumno | Representante |
 |------|--------|-------------------|-------|----------|--------|---------------|
-| `/admin/enrollments` | GET | `enrollments.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
+| `/admin/enrollments` | GET | `enrollments.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/enrollments/create` | GET | `enrollments.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/enrollments` | POST | `enrollments.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
-| `/admin/enrollments/{id}` | GET | `enrollments.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
+| `/admin/enrollments/{id}` | GET | `enrollments.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/enrollments/{id}/edit` | GET | `enrollments.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/enrollments/{id}` | PUT | `enrollments.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/enrollments/{id}` | DELETE | `enrollments.delete` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
@@ -306,7 +306,7 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Permiso | Admin | Profesor | Alumno | Representante | Notas |
 |---------|-------|----------|--------|---------------|-------|
-| `assignments.view` | ✅ | ✅ | ❌ | ❌ | Profesor ve sus asignaciones |
+| `assignments.view` | ✅ | ❌ | ❌ | ❌ | Solo admin ve asignaciones |
 | `assignments.create` | ✅ | ❌ | ❌ | ❌ | Solo admin asigna profesores |
 | `assignments.edit` | ✅ | ❌ | ❌ | ❌ | Solo admin modifica asignaciones |
 | `assignments.delete` | ✅ | ❌ | ❌ | ❌ | Solo admin elimina asignaciones |
@@ -315,10 +315,10 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Ruta | Método | Permiso Requerido | Admin | Profesor | Alumno | Representante |
 |------|--------|-------------------|-------|----------|--------|---------------|
-| `/admin/assignments` | GET | `assignments.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
+| `/admin/assignments` | GET | `assignments.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/assignments/create` | GET | `assignments.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/assignments` | POST | `assignments.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
-| `/admin/assignments/{id}` | GET | `assignments.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
+| `/admin/assignments/{id}` | GET | `assignments.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/assignments/{id}/edit` | GET | `assignments.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/assignments/{id}` | PUT | `assignments.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/assignments/{id}` | DELETE | `assignments.delete` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
@@ -624,11 +624,63 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 ---
 
+### 21. Definiciones de Grados (grade_definitions)
+
+**Permisos disponibles**:
+- `grade_definitions.view`
+- `grade_definitions.create`
+- `grade_definitions.edit`
+- `grade_definitions.delete`
+
+| Permiso | Admin | Profesor | Alumno | Representante | Notas |
+|---------|-------|----------|--------|---------------|-------|
+| `grade_definitions.view` | ✅ | ❌ | ❌ | ❌ | Solo admin gestiona catálogo |
+| `grade_definitions.create` | ✅ | ❌ | ❌ | ❌ | Solo admin crea definiciones |
+| `grade_definitions.edit` | ✅ | ❌ | ❌ | ❌ | Solo admin edita definiciones |
+| `grade_definitions.delete` | ✅ | ❌ | ❌ | ❌ | Solo admin elimina definiciones |
+
+**Rutas y Acciones**:
+
+| Ruta | Método | Permiso Requerido | Admin | Profesor | Alumno | Representante |
+|------|--------|-------------------|-------|----------|--------|---------------|
+| `/admin/grade-definitions` | GET | `grade_definitions.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/grade-definitions` | POST | `grade_definitions.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/grade-definitions/{id}` | PUT | `grade_definitions.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/grade-definitions/{id}` | DELETE | `grade_definitions.delete` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+
+---
+
+### 22. Definiciones de Secciones (section_definitions)
+
+**Permisos disponibles**:
+- `section_definitions.view`
+- `section_definitions.create`
+- `section_definitions.edit`
+- `section_definitions.delete`
+
+| Permiso | Admin | Profesor | Alumno | Representante | Notas |
+|---------|-------|----------|--------|---------------|-------|
+| `section_definitions.view` | ✅ | ❌ | ❌ | ❌ | Solo admin gestiona catálogo |
+| `section_definitions.create` | ✅ | ❌ | ❌ | ❌ | Solo admin crea definiciones |
+| `section_definitions.edit` | ✅ | ❌ | ❌ | ❌ | Solo admin edita definiciones |
+| `section_definitions.delete` | ✅ | ❌ | ❌ | ❌ | Solo admin elimina definiciones |
+
+**Rutas y Acciones**:
+
+| Ruta | Método | Permiso Requerido | Admin | Profesor | Alumno | Representante |
+|------|--------|-------------------|-------|----------|--------|---------------|
+| `/admin/section-definitions` | GET | `section_definitions.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/section-definitions` | POST | `section_definitions.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/section-definitions/{id}` | PUT | `section_definitions.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/section-definitions/{id}` | DELETE | `section_definitions.delete` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+
+---
+
 ## 👥 Permisos por Rol
 
 ### Admin (Administrador)
 
-**Total de permisos**: TODOS (76 permisos)
+**Total de permisos**: TODOS (79 permisos)
 
 El rol admin tiene acceso completo a todos los módulos del sistema sin restricciones.
 
@@ -640,12 +692,10 @@ El rol admin tiene acceso completo a todos los módulos del sistema sin restricc
 
 ### Profesor (Docente)
 
-**Total de permisos**: 26 permisos
+**Total de permisos**: 24 permisos
 
 ```
 users.view
-enrollments.view
-assignments.view
 academic_info.view
 activity_categories.view
 activity_categories.create
@@ -675,7 +725,7 @@ accumulated_hours.view
 - Solo puede gestionar jornadas donde es el profesor asignado
 - Solo puede gestionar asistencias de sus propias jornadas
 - No puede modificar estructura académica (años, grados, secciones)
-- No puede inscribir estudiantes
+- No puede ver inscripciones ni asignaciones docentes
 
 ---
 
@@ -1214,12 +1264,12 @@ Para cada módulo administrativo, verificar:
 
 | Rol | Total Permisos | % del Total |
 |-----|----------------|-------------|
-| Admin | 76 | 100% |
-| Profesor | 26 | 34% |
+| Admin | 79 | 100% |
+| Profesor | 24 | 30% |
 | Alumno | 2 | 3% |
 | Representante | 2 | 3% |
 
-**Total de permisos en el sistema**: 76
+**Total de permisos en el sistema**: 79
 
 **Módulos con restricciones especiales**: 3
 - Jornadas de Campo (field_sessions)
@@ -1288,9 +1338,9 @@ test('usuario sin permiso academic_years.create NO puede crear', function () {
 
 ---
 
-**Última Actualización**: Abril 30, 2026  
-**Actualizado por**: Kiro AI  
-**Versión**: 1.0  
+**Última Actualización**: Mayo 12, 2026  
+**Actualizado por**: opencode AI  
+**Versión**: 1.2  
 **Estado**: 📋 DOCUMENTO MAESTRO - FUENTE ÚNICA DE VERDAD
 
 
@@ -1300,14 +1350,12 @@ test('usuario sin permiso academic_years.create NO puede crear', function () {
 
 ### ✅ Admin - Acceso Total
 
-**Puede acceder a TODAS las rutas del sistema** (76 permisos)
+**Puede acceder a TODAS las rutas del sistema** (79 permisos)
 
 ### 🔒 Profesor - Acceso Limitado
 
-**Puede acceder a** (26 permisos):
+**Puede acceder a** (24 permisos):
 - ✅ `/admin/users` (solo ver)
-- ✅ `/admin/enrollments` (solo ver)
-- ✅ `/admin/assignments` (solo ver)
 - ✅ `/admin/academic-info` (solo ver)
 - ✅ `/admin/activity-categories` (CRUD completo)
 - ✅ `/admin/locations` (CRUD completo)
@@ -1318,12 +1366,13 @@ test('usuario sin permiso academic_years.create NO puede crear', function () {
 - ✅ `/accumulated-hours` (ver)
 
 **NO puede acceder a**:
-- ❌ Gestión de usuarios, roles y permisos
+- ❌ Gestión de usuarios (crear/editar/eliminar), roles y permisos
 - ❌ Estructura académica (años, períodos, grados, secciones)
-- ❌ Inscripciones (crear/editar/eliminar)
-- ❌ Asignaciones de profesores (crear/editar/eliminar)
+- ❌ Inscripciones (ver, crear, editar, eliminar)
+- ❌ Asignaciones de profesores (ver, crear, editar, eliminar)
 - ❌ Salud de estudiantes
 - ❌ Horas externas
+- ❌ Definiciones de grados y secciones
 
 ### 🔒 Alumno - Solo Visualización
 
@@ -1374,5 +1423,5 @@ Para cada módulo, verificar:
 
 ---
 
-**Versión**: 2.0 (con rutas y métodos HTTP)  
-**Última Actualización**: Abril 30, 2026
+**Versión**: 1.2 (con rutas y métodos HTTP)  
+**Última Actualización**: Mayo 12, 2026

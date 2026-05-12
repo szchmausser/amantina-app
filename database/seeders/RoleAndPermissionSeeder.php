@@ -125,8 +125,6 @@ class RoleAndPermissionSeeder extends Seeder
             if ($roleName === 'profesor') {
                 $role->syncPermissions([
                     'users.view',
-                    'enrollments.view',
-                    'assignments.view',
                     'academic_info.view',
                     'activity_categories.view',
                     'activity_categories.create',

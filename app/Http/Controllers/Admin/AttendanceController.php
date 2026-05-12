@@ -132,7 +132,7 @@ class AttendanceController extends Controller
         ])
         )->values();
 
-        $isAdmin = auth()->user()->hasRole('admin');
+        $isAdmin = auth()->user()->hasPermissionTo('users.edit');
 
         return Inertia::render('admin/attendances/index', [
             'fieldSession' => $fieldSession,
@@ -302,11 +302,12 @@ class AttendanceController extends Controller
 
     /**
      * Authorize that the current user can manage attendance for this session.
-     * Admins can manage any session; professors can only manage their own.
+     * Users with users.edit permission can manage any session; others
+     * can only manage their own.
      */
     protected function authorizeSessionAccess(FieldSession $fieldSession): void
     {
-        if (! auth()->user()->hasRole('admin') && $fieldSession->user_id !== auth()->id()) {
+        if (! auth()->user()->hasPermissionTo('users.edit') && $fieldSession->user_id !== auth()->id()) {
             abort(403, 'No tienes permiso para gestionar esta jornada.');
         }
     }
@@ -318,7 +319,7 @@ class AttendanceController extends Controller
     {
         $attendance->loadMissing('fieldSession');
 
-        if (! auth()->user()->hasRole('admin') && $attendance->fieldSession->user_id !== auth()->id()) {
+        if (! auth()->user()->hasPermissionTo('users.edit') && $attendance->fieldSession->user_id !== auth()->id()) {
             abort(403, 'No tienes permiso para gestionar esta asistencia.');
         }
     }
