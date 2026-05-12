@@ -4,8 +4,8 @@ use App\Models\HealthCondition;
 use App\Models\StudentHealthRecord;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
