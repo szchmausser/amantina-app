@@ -11,12 +11,24 @@ use App\Models\Section;
 use App\Models\SectionDefinition;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class SectionController extends Controller
+class SectionController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:sections.view', only: ['index', 'show']),
+            new Middleware('can:sections.create', only: ['create', 'store']),
+            new Middleware('can:sections.edit', only: ['edit', 'update']),
+            new Middleware('can:sections.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -63,6 +75,8 @@ class SectionController extends Controller
      */
     public function store(StoreSectionRequest $request): RedirectResponse
     {
+        Gate::authorize('sections.create');
+
         $sectionDefinition = SectionDefinition::find($request->section_definition_id);
 
         Section::create([
@@ -116,6 +130,8 @@ class SectionController extends Controller
      */
     public function update(UpdateSectionRequest $request, Section $section): RedirectResponse
     {
+        Gate::authorize('sections.edit');
+
         $section->update($request->validated());
 
         return redirect()->route('admin.sections.index', [

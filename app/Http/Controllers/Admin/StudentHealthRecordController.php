@@ -7,15 +7,28 @@ use App\Http\Requests\Admin\StoreStudentHealthRecordRequest;
 use App\Http\Requests\Admin\UpdateStudentHealthRecordRequest;
 use App\Models\StudentHealthRecord;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 
-class StudentHealthRecordController extends Controller
+class StudentHealthRecordController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:student_health.create', only: ['store']),
+            new Middleware('can:student_health.edit', only: ['update']),
+            new Middleware('can:student_health.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreStudentHealthRecordRequest $request)
     {
+        Gate::authorize('student_health.create');
+
         $record = StudentHealthRecord::create($request->validated());
 
         // Handle file uploads
@@ -41,6 +54,8 @@ class StudentHealthRecordController extends Controller
      */
     public function update(UpdateStudentHealthRecordRequest $request, StudentHealthRecord $studentHealthRecord)
     {
+        Gate::authorize('student_health.edit');
+
         $studentHealthRecord->update($request->validated());
 
         // Handle new file uploads

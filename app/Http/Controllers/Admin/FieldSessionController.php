@@ -72,6 +72,8 @@ class FieldSessionController extends Controller
      */
     public function store(StoreFieldSessionRequest $request): RedirectResponse
     {
+        Gate::authorize('field_sessions.create');
+
         $activeYear = AcademicYear::where('is_active', true)->firstOrFail();
         $validated = $request->validated();
         $validated['academic_year_id'] = $activeYear->id;
@@ -242,6 +244,8 @@ class FieldSessionController extends Controller
      */
     public function update(UpdateFieldSessionRequest $request, FieldSession $fieldSession): RedirectResponse
     {
+        Gate::authorize('field_sessions.edit');
+
         // Double-check ownership (also checked in edit method)
         if (! auth()->user()->hasPermissionTo('users.edit') && $fieldSession->user_id !== auth()->id()) {
             abort(403, 'No tienes permiso para editar esta jornada.');

@@ -7,12 +7,24 @@ use App\Http\Requests\Admin\StoreAcademicYearRequest;
 use App\Http\Requests\Admin\UpdateAcademicYearRequest;
 use App\Models\AcademicYear;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class AcademicYearController extends Controller
+class AcademicYearController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:academic_years.view', only: ['index', 'show']),
+            new Middleware('can:academic_years.create', only: ['create', 'store']),
+            new Middleware('can:academic_years.edit', only: ['edit', 'update']),
+            new Middleware('can:academic_years.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

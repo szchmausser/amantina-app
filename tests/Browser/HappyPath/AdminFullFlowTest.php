@@ -690,6 +690,7 @@ test('admin puede configurar toda la estructura académica en secuencia', functi
         'user_id' => $teacher->id,
         'section_id' => $sectionA->id,
         'academic_year_id' => $academicYear->id,
+        'grade_id' => $grade1->id,
     ]);
 
     // 8. Verify the academic structure overview page shows created data

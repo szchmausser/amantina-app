@@ -10,369 +10,106 @@ uses(RefreshDatabase::class, Browsable::class);
 /**
  * SECURITY TESTS: Admin Modules Access Control
  *
- * Estos tests verifican que solo usuarios con rol admin pueden acceder a módulos administrativos:
- * - Admin: acceso completo a todos los módulos
- * - Profesor: acceso limitado a módulos operativos (enrollments, field-sessions, activity-categories, locations)
- * - Alumno: NO puede acceder a módulos admin (403)
- * - Representante: NO puede acceder a módulos admin (403)
+ * Verifica que usuarios sin permisos adecuados no pueden acceder a módulos administrativos.
+ * Usa data providers para consolidar tests repetitivos y mantener cobertura sin duplicación.
+ *
+ * Cobertura:
+ * - Alumno: NO puede acceder a ningún módulo admin
+ * - Representante: NO puede acceder a ningún módulo admin
+ * - Profesor: acceso limitado (solo módulos operativos con permiso explícito)
  */
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
 });
 
 // ============================================================================
-// TESTS: Alumno NO puede acceder a módulos administrativos
+// Data providers
 // ============================================================================
 
-test('alumno no puede acceder a años escolares', function () {
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
+/**
+ * Módulos a los que alumno y representante NO pueden acceder.
+ * [role, route, expectedPageTitle]
+ */
+dataset('forbidden_for_student_and_representative', [
+    ['alumno', '/admin/academic-years', 'Años Escolares'],
+    ['alumno', '/admin/school-terms', 'Lapsos Académicos'],
+    ['alumno', '/admin/grades', 'Grados'],
+    ['alumno', '/admin/sections', 'Secciones'],
+    ['alumno', '/admin/enrollments', 'Inscripciones'],
+    ['alumno', '/admin/teacher-assignments', 'Asignaciones Docentes'],
+    ['alumno', '/admin/field-sessions', 'Jornadas de Campo'],
+    ['alumno', '/admin/activity-categories', 'Categorías de Actividades'],
+    ['alumno', '/admin/locations', 'Ubicaciones'],
+    ['alumno', '/admin/health-conditions', 'Condiciones de Salud'],
+    ['alumno', '/admin/student-health', 'Salud de Estudiantes'],
+    ['alumno', '/admin/external-hours', 'Horas Externas'],
+    ['alumno', '/admin/grade-definitions', 'Definiciones de Grados'],
+    ['alumno', '/admin/section-definitions', 'Definiciones de Secciones'],
 
-    $this->actingAs($alumno);
+    ['representante', '/admin/academic-years', 'Años Escolares'],
+    ['representante', '/admin/school-terms', 'Lapsos Académicos'],
+    ['representante', '/admin/grades', 'Grados'],
+    ['representante', '/admin/sections', 'Secciones'],
+    ['representante', '/admin/enrollments', 'Inscripciones'],
+    ['representante', '/admin/teacher-assignments', 'Asignaciones Docentes'],
+    ['representante', '/admin/field-sessions', 'Jornadas de Campo'],
+    ['representante', '/admin/activity-categories', 'Categorías de Actividades'],
+    ['representante', '/admin/locations', 'Ubicaciones'],
+    ['representante', '/admin/health-conditions', 'Condiciones de Salud'],
+    ['representante', '/admin/student-health', 'Salud de Estudiantes'],
+    ['representante', '/admin/external-hours', 'Horas Externas'],
+    ['representante', '/admin/grade-definitions', 'Definiciones de Grados'],
+    ['representante', '/admin/section-definitions', 'Definiciones de Secciones'],
+]);
 
-    $page = visit('/admin/academic-years');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Años Escolares');
-});
-
-test('alumno no puede acceder a lapsos académicos', function () {
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $page = visit('/admin/school-terms');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Lapsos Académicos');
-});
-
-test('alumno no puede acceder a grados', function () {
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $page = visit('/admin/grades');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Grados');
-});
-
-test('alumno no puede acceder a secciones', function () {
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $page = visit('/admin/sections');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Secciones');
-});
-
-test('alumno no puede acceder a inscripciones', function () {
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $page = visit('/admin/enrollments');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Inscripciones');
-});
-
-test('alumno no puede acceder a asignaciones de profesores', function () {
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $page = visit('/admin/teacher-assignments');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Asignaciones Docentes');
-});
-
-test('alumno no puede acceder a jornadas de campo', function () {
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $page = visit('/admin/field-sessions');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Jornadas de Campo');
-});
-
-test('alumno no puede acceder a catálogos (categorías de actividad)', function () {
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $page = visit('/admin/activity-categories');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Categorías de Actividades');
-});
-
-test('alumno no puede acceder a catálogos (ubicaciones)', function () {
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $page = visit('/admin/locations');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Ubicaciones');
-});
-
-test('alumno no puede acceder a catálogos (condiciones de salud)', function () {
-    $alumno = User::factory()->create();
-    $alumno->assignRole('alumno');
-
-    $this->actingAs($alumno);
-
-    $page = visit('/admin/health-conditions');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Condiciones de Salud');
-});
+/**
+ * Módulos a los que profesor NO puede acceder (solo admin).
+ * Profesor SÍ puede acceder a: field-sessions, activity-categories, locations, enrollments.
+ */
+dataset('forbidden_for_profesor', [
+    ['/admin/academic-years', 'Años Escolares'],
+    ['/admin/school-terms', 'Lapsos Académicos'],
+    ['/admin/grades', 'Grados'],
+    ['/admin/sections', 'Secciones'],
+    ['/admin/teacher-assignments', 'Asignaciones Docentes'],
+    ['/admin/health-conditions', 'Condiciones de Salud'],
+    ['/admin/student-health', 'Salud de Estudiantes'],
+    ['/admin/external-hours', 'Horas Externas'],
+    ['/admin/grade-definitions', 'Definiciones de Grados'],
+    ['/admin/section-definitions', 'Definiciones de Secciones'],
+    ['/admin/enrollments', 'Inscripciones'],
+]);
 
 // ============================================================================
-// TESTS: Representante NO puede acceder a módulos administrativos
+// Tests consolidados
 // ============================================================================
 
-test('representante no puede acceder a años escolares', function () {
-    $representante = User::factory()->create();
-    $representante->assignRole('representante');
-
-    $this->actingAs($representante);
-
-    $page = visit('/admin/academic-years');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Años Escolares');
-});
-
-test('representante no puede acceder a lapsos académicos', function () {
-    $representante = User::factory()->create();
-    $representante->assignRole('representante');
-
-    $this->actingAs($representante);
-
-    $page = visit('/admin/school-terms');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Lapsos Académicos');
-});
-
-test('representante no puede acceder a grados', function () {
-    $representante = User::factory()->create();
-    $representante->assignRole('representante');
-
-    $this->actingAs($representante);
-
-    $page = visit('/admin/grades');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Grados');
-});
-
-test('representante no puede acceder a secciones', function () {
-    $representante = User::factory()->create();
-    $representante->assignRole('representante');
-
-    $this->actingAs($representante);
-
-    $page = visit('/admin/sections');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Secciones');
-});
-
-test('representante no puede acceder a inscripciones', function () {
-    $representante = User::factory()->create();
-    $representante->assignRole('representante');
-
-    $this->actingAs($representante);
-
-    $page = visit('/admin/enrollments');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Inscripciones');
-});
-
-test('representante no puede acceder a asignaciones de profesores', function () {
-    $representante = User::factory()->create();
-    $representante->assignRole('representante');
-
-    $this->actingAs($representante);
-
-    $page = visit('/admin/teacher-assignments');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Asignaciones Docentes');
-});
-
-test('representante no puede acceder a jornadas de campo', function () {
-    $representante = User::factory()->create();
-    $representante->assignRole('representante');
-
-    $this->actingAs($representante);
-
-    $page = visit('/admin/field-sessions');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Jornadas de Campo');
-});
-
-test('representante no puede acceder a catálogos (categorías de actividad)', function () {
-    $representante = User::factory()->create();
-    $representante->assignRole('representante');
-
-    $this->actingAs($representante);
-
-    $page = visit('/admin/activity-categories');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Categorías de Actividades');
-});
-
-test('representante no puede acceder a catálogos (ubicaciones)', function () {
-    $representante = User::factory()->create();
-    $representante->assignRole('representante');
-
-    $this->actingAs($representante);
-
-    $page = visit('/admin/locations');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Ubicaciones');
-});
-
-test('representante no puede acceder a catálogos (condiciones de salud)', function () {
-    $representante = User::factory()->create();
-    $representante->assignRole('representante');
-
-    $this->actingAs($representante);
-
-    $page = visit('/admin/health-conditions');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Condiciones de Salud');
-});
-
-// ============================================================================
-// TESTS: Profesor NO puede acceder a módulos administrativos (excepto field-sessions)
-// ============================================================================
-
-test('profesor no puede acceder a años escolares', function () {
-    $profesor = User::factory()->create();
-    $profesor->assignRole('profesor');
-
-    $this->actingAs($profesor);
-
-    $page = visit('/admin/academic-years');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Años Escolares');
-});
-
-test('profesor no puede acceder a lapsos académicos', function () {
-    $profesor = User::factory()->create();
-    $profesor->assignRole('profesor');
-
-    $this->actingAs($profesor);
-
-    $page = visit('/admin/school-terms');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Lapsos Académicos');
-});
-
-test('profesor no puede acceder a grados', function () {
-    $profesor = User::factory()->create();
-    $profesor->assignRole('profesor');
-
-    $this->actingAs($profesor);
-
-    $page = visit('/admin/grades');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Grados');
-});
-
-test('profesor no puede acceder a secciones', function () {
-    $profesor = User::factory()->create();
-    $profesor->assignRole('profesor');
-
-    $this->actingAs($profesor);
-
-    $page = visit('/admin/sections');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Secciones');
-});
-
-test('profesor no puede acceder a asignaciones de profesores', function () {
-    $profesor = User::factory()->create();
-    $profesor->assignRole('profesor');
-
-    $this->actingAs($profesor);
-
-    $page = visit('/admin/teacher-assignments');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Asignaciones Docentes');
-});
-
-// Nota: Profesor SÍ puede acceder a estos módulos (tiene permisos):
-// - /admin/enrollments (enrollments.view) - para ver sus alumnos
-// - /admin/field-sessions (field_sessions.*) - para gestionar jornadas
-// - /admin/activity-categories (activity_categories.*) - para gestionar categorías
-// - /admin/locations (locations.*) - para gestionar ubicaciones
-// Estos tests NO están incluidos porque son casos de acceso autorizado
-
-test('profesor no puede acceder a catálogos (condiciones de salud)', function () {
-    $profesor = User::factory()->create();
-    $profesor->assignRole('profesor');
-
-    $this->actingAs($profesor);
-
-    $page = visit('/admin/health-conditions');
-    $page->wait(2);
-
-    $page->assertSee('403');
-    $page->assertDontSee('Condiciones de Salud');
-});
+test('rol sin permisos no puede acceder a módulo administrativo')
+    ->with('forbidden_for_student_and_representative')
+    ->assert(function ($role, $route, $titleText) {
+        $user = User::factory()->create();
+        $user->assignRole($role);
+
+        $this->actingAs($user);
+
+        $page = visit($route);
+        $page->wait(2);
+
+        $page->assertSee('403');
+        $page->assertDontSee($titleText);
+    });
+
+test('profesor no puede acceder a módulo solo-admin')
+    ->with('forbidden_for_profesor')
+    ->assert(function ($route, $titleText) {
+        $profesor = User::factory()->create();
+        $profesor->assignRole('profesor');
+
+        $this->actingAs($profesor);
+
+        $page = visit($route);
+        $page->wait(2);
+
+        $page->assertSee('403');
+        $page->assertDontSee($titleText);
+    });

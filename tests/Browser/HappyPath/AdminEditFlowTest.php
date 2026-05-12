@@ -20,8 +20,7 @@ use Database\Seeders\TermTypeSeeder;
  * 1. Editar Año Escolar
  * 2. Editar Lapso Académico
  * 3. Editar Grado
- * 4. Editar Sección
- * 5. Editar Usuario
+ * 4. Editar Usuario
  */
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
@@ -120,6 +119,10 @@ test('admin puede editar un lapso académico existente', function () {
 
     // Verificar que redirigió al listado (la edición fue exitosa)
     $page->assertSee('Lapso 1');
+
+    // Verificar que la fecha de fin actualizada aparece en el listado
+    // formatDate() renderiza como DD/MM/YYYY
+    $page->assertSee('20/12/2024');
 });
 
 // ============================================================================
@@ -157,54 +160,23 @@ test('admin puede editar un grado existente', function () {
     expect($page->url())->toContain('/admin/grades');
     expect($page->url())->not->toContain('/edit');
 
+    // Verificar que el grado editado sigue apareciendo en el listado
+    // Nota: el campo 'order' no se muestra en el listado de grados,
+    // por lo que se verifica el nombre del grado como prueba de que la edición fue exitosa
+    $page->assertSee($grade->name);
+
     // Verificar que no hay errores de JavaScript tras la edición exitosa
     $page->assertNoJavaScriptErrors();
 });
 
 // ============================================================================
-// FASE 2.4: Editar Sección
-// ============================================================================
-
-test('admin puede editar una sección existente', function () {
-    // Crear estructura completa con factory
-    $academicYear = AcademicYear::factory()->create([
-        'name' => '2024-2025',
-        'is_active' => true,
-    ]);
-
-    $grade = Grade::factory()->create([
-        'academic_year_id' => $academicYear->id,
-        'order' => 1,
-    ]);
-
-    $section = Section::factory()->create([
-        'grade_id' => $grade->id,
-        'academic_year_id' => $academicYear->id,
-    ]);
-
-    // Navegar a la página de edición
-    $page = visit("/admin/sections/{$section->id}/edit");
-    $page->wait(2);
-    $page->assertSee('Editar Sección');
-
-    // NOTE: Section name comes from definition and cannot be edited
-    // The form only allows changing the academic year and grade (both disabled in edit mode)
-    // So we just verify the page loads correctly and submit without changes
-
-    // Submit without changes (just to verify the form works)
-    $page->click('[data-test="submit-button"]');
-    $page->wait(5);
-
-    // Verificar redirección (la URL ya no debe contener /edit)
-    expect($page->url())->toContain('/admin/sections');
-    expect($page->url())->not->toContain('/edit');
-
-    // Verificar que redirigió al listado (la edición fue exitosa)
-    $page->assertSee($section->name);
-});
-
-// ============================================================================
 // FASE 2.5: Editar Usuario
+// ============================================================================
+
+// NOTA: FASE 2.4 (Editar Sección) fue eliminada porque en modo edición
+// todos los campos del formulario están deshabilitados (academic_year, grade,
+// section_definition son Selects con disabled={isEditing}), por lo que no hay
+// nada que editar. La sección es un test puramente ornamental sin verificación útil.
 // ============================================================================
 
 test('admin puede editar un usuario existente', function () {

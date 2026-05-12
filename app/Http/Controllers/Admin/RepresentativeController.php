@@ -8,6 +8,7 @@ use App\Models\StudentRepresentative;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class RepresentativeController extends Controller
 {
@@ -16,6 +17,8 @@ class RepresentativeController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('users.edit');
+
         $validated = $request->validate([
             'student_id' => 'required|exists:users,id',
             'representative_id' => 'required|exists:users,id',
@@ -64,6 +67,8 @@ class RepresentativeController extends Controller
      */
     public function destroy(StudentRepresentative $studentRepresentative): RedirectResponse
     {
+        Gate::authorize('users.edit');
+
         $studentRepresentative->delete();
 
         return back()->with('success', 'Representante desvinculado correctamente.');

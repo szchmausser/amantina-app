@@ -10,12 +10,23 @@ use App\Models\TeacherAssignment;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class TeacherAssignmentController extends Controller
+class TeacherAssignmentController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:assignments.view', only: ['index', 'create']),
+            new Middleware('can:assignments.create', only: ['store']),
+            new Middleware('can:assignments.delete', only: ['destroy']),
+        ];
+    }
+
     public function index(Request $request): Response|RedirectResponse
     {
         Gate::authorize('assignments.view');

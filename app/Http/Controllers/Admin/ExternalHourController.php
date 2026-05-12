@@ -8,11 +8,23 @@ use App\Http\Requests\Admin\UpdateExternalHourRequest;
 use App\Models\ExternalHour;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Response;
 
-class ExternalHourController extends Controller
+class ExternalHourController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:external_hours.view', only: ['index']),
+            new Middleware('can:external_hours.create', only: ['store']),
+            new Middleware('can:external_hours.edit', only: ['update']),
+            new Middleware('can:external_hours.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of external hours for a given student.
      */
@@ -36,6 +48,8 @@ class ExternalHourController extends Controller
      */
     public function store(StoreExternalHourRequest $request): RedirectResponse
     {
+        Gate::authorize('external_hours.create');
+
         $externalHour = ExternalHour::create([
             ...$request->validated(),
             'admin_id' => $request->user()->id,
@@ -57,6 +71,8 @@ class ExternalHourController extends Controller
      */
     public function update(UpdateExternalHourRequest $request, ExternalHour $externalHour): RedirectResponse
     {
+        Gate::authorize('external_hours.edit');
+
         $externalHour->update($request->validated());
 
         if ($request->hasFile('documents')) {

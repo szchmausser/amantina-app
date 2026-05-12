@@ -28,11 +28,17 @@ beforeEach(function () {
 // ─── CATEGORÍAS DE ACTIVIDADES ────────────────────────────────────────────────
 
 test('admin puede ver el listado de categorías de actividades', function () {
+    // Crear categorías de actividad con factory
+    ActivityCategory::factory()->create(['name' => 'Siembra']);
+    ActivityCategory::factory()->create(['name' => 'Cosecha']);
+
     $page = visit('/admin/activity-categories');
 
     $page->assertPathIs('/admin/activity-categories')
         ->assertSee('Categorías de Actividades')
         ->assertSee('Nueva Categoría')
+        ->assertSee('Siembra')
+        ->assertSee('Cosecha')
         ->assertNoJavaScriptErrors();
 });
 
@@ -48,6 +54,10 @@ test('admin puede ver categorías existentes', function () {
 });
 
 test('profesor puede ver categorías de actividades', function () {
+    // Crear datos que el profesor debe poder ver
+    ActivityCategory::factory()->create(['name' => 'Riego']);
+    ActivityCategory::factory()->create(['name' => 'Fumigación']);
+
     $profesor = User::factory()->create();
     $profesor->assignRole('profesor');
 
@@ -56,6 +66,8 @@ test('profesor puede ver categorías de actividades', function () {
     $page = visit('/admin/activity-categories');
 
     $page->assertPathIs('/admin/activity-categories')
+        ->assertSee('Riego')
+        ->assertSee('Fumigación')
         ->assertNoJavaScriptErrors();
 });
 
@@ -88,11 +100,17 @@ test('usuario sin permiso activity_categories.view NO puede ver listado (represe
 // ─── CONDICIONES DE SALUD ─────────────────────────────────────────────────────
 
 test('admin puede ver el listado de condiciones de salud', function () {
+    // Crear condiciones de salud con factory
+    HealthCondition::factory()->create(['name' => 'Asma']);
+    HealthCondition::factory()->create(['name' => 'Diabetes']);
+
     $page = visit('/admin/health-conditions');
 
     $page->assertPathIs('/admin/health-conditions')
         ->assertSee('Condiciones de Salud')
         ->assertSee('Nueva Condición')
+        ->assertSee('Asma')
+        ->assertSee('Diabetes')
         ->assertNoJavaScriptErrors();
 });
 
@@ -114,6 +132,11 @@ test('admin puede ver el listado de roles', function () {
 
     $page->assertPathIs('/admin/roles')
         ->assertSee('Roles del Sistema')
+        // Verificar que los roles del seeder se muestran en la UI
+        // El componente renderiza role.name con primera letra mayúscula
+        ->assertSee('Admin')
+        ->assertSee('Profesor')
+        ->assertSee('Alumno')
         ->assertNoJavaScriptErrors();
 });
 
@@ -122,6 +145,10 @@ test('admin puede ver el listado de permisos', function () {
 
     $page->assertPathIs('/admin/permissions')
         ->assertSee('Permisos del Sistema')
+        // Verificar que los grupos de permisos del seeder se muestran en la UI
+        // El componente renderiza formatModuleName() sobre el prefijo del permiso
+        ->assertSee('Roles')
+        ->assertSee('Users')
         ->assertNoJavaScriptErrors();
 });
 

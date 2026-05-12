@@ -25,7 +25,8 @@ class BasicRoleTest extends TestCase
     }
 
     /**
-     * Verifica que un usuario puede tener un rol asignado.
+     * Verifica que un usuario puede tener un rol asignado
+     * y que el rol le otorga acceso HTTP real.
      */
     public function test_user_can_be_assigned_a_role(): void
     {
@@ -36,5 +37,10 @@ class BasicRoleTest extends TestCase
 
         $this->assertTrue($user->hasRole('profesor'));
         $this->assertFalse($user->hasRole('admin'));
+
+        // Verify the role grants actual HTTP access
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk();
     }
 }

@@ -61,8 +61,7 @@ test('admin puede eliminar un año escolar', function () {
     $page->assertSee($academicYear->name);
 
     // Click en botón eliminar (abre el AlertDialog)
-    // Usar selector CSS: botón con clase text-red-500 (el botón de eliminar)
-    $page->click('button.text-red-500');
+    $page->click('[data-testid="delete-btn"]');
     $page->wait(1);
 
     // Verificar que el AlertDialog aparece
@@ -109,7 +108,7 @@ test('admin puede eliminar un lapso académico', function () {
     $page->assertSee('Lapso 1');
 
     // Click en botón eliminar (abre el AlertDialog)
-    $page->click('button.text-red-500');
+    $page->click('[data-testid="delete-btn"]');
     $page->wait(1);
 
     // Verificar que el AlertDialog aparece
@@ -151,7 +150,7 @@ test('admin puede eliminar un grado', function () {
     $page->assertSee('1er Año');
 
     // Click en botón eliminar (abre el AlertDialog)
-    $page->click('button.text-red-500');
+    $page->click('[data-testid="delete-btn"]');
     $page->wait(1);
 
     // Verificar que el AlertDialog aparece
@@ -199,7 +198,7 @@ test('admin puede eliminar una sección', function () {
     $page->assertSee('Sección A');
 
     // Click en botón eliminar (abre el AlertDialog)
-    $page->click('button.text-red-500');
+    $page->click('[data-testid="delete-btn"]');
     $page->wait(1);
 
     // Verificar que el AlertDialog aparece
@@ -236,7 +235,7 @@ test('admin puede eliminar un usuario', function () {
 
     // Click en botón eliminar del usuario Juan Pérez (no del admin)
     // Usar un selector más específico: buscar la fila que contiene "Juan Pérez" y hacer click en su botón eliminar
-    $page->click('tr:has-text("Juan Pérez") button.text-red-500');
+    $page->click('tr:has-text("Juan Pérez") [data-testid="delete-btn"]');
     $page->wait(1);
 
     // Verificar que el AlertDialog aparece
@@ -302,7 +301,7 @@ test('admin puede desinscribir un alumno de una sección', function () {
 
     // Click en botón eliminar (papelera) del alumno
     // Usar selector específico para evitar conflictos
-    $page->click('tr:has-text("Pedro Martínez") button.text-red-500');
+    $page->click('tr:has-text("Pedro Martínez") [data-testid="delete-btn"]');
     $page->wait(1);
 
     // Verificar que el AlertDialog aparece
@@ -353,6 +352,7 @@ test('admin puede desasignar un profesor de una sección', function () {
     // Crear asignación de profesor a sección
     $assignment = TeacherAssignment::factory()->create([
         'academic_year_id' => $academicYear->id,
+        'grade_id' => $grade->id,
         'user_id' => $teacher->id,
         'section_id' => $section->id,
     ]);

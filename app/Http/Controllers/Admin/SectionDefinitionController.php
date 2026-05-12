@@ -7,12 +7,24 @@ use App\Http\Requests\Admin\StoreSectionDefinitionRequest;
 use App\Http\Requests\Admin\UpdateSectionDefinitionRequest;
 use App\Models\SectionDefinition;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class SectionDefinitionController extends Controller
+class SectionDefinitionController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:section_definitions.view', only: ['index']),
+            new Middleware('can:section_definitions.create', only: ['store']),
+            new Middleware('can:section_definitions.edit', only: ['update']),
+            new Middleware('can:section_definitions.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -30,6 +42,8 @@ class SectionDefinitionController extends Controller
      */
     public function store(StoreSectionDefinitionRequest $request): RedirectResponse
     {
+        Gate::authorize('section_definitions.create');
+
         SectionDefinition::create($request->validated());
 
         return redirect()->route('admin.section-definitions.index')
@@ -41,6 +55,8 @@ class SectionDefinitionController extends Controller
      */
     public function update(UpdateSectionDefinitionRequest $request, SectionDefinition $sectionDefinition): RedirectResponse
     {
+        Gate::authorize('section_definitions.edit');
+
         $sectionDefinition->update($request->validated());
 
         return redirect()->route('admin.section-definitions.index')

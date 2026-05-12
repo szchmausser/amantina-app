@@ -11,12 +11,24 @@ use App\Models\TermType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class SchoolTermController extends Controller
+class SchoolTermController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:school_terms.view', only: ['index', 'show']),
+            new Middleware('can:school_terms.create', only: ['create', 'store']),
+            new Middleware('can:school_terms.edit', only: ['edit', 'update']),
+            new Middleware('can:school_terms.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -71,6 +83,8 @@ class SchoolTermController extends Controller
      */
     public function store(StoreSchoolTermRequest $request): RedirectResponse
     {
+        Gate::authorize('school_terms.create');
+
         $termType = TermType::find($request->term_type_id);
 
         SchoolTerm::create([
@@ -101,6 +115,8 @@ class SchoolTermController extends Controller
      */
     public function update(UpdateSchoolTermRequest $request, SchoolTerm $schoolTerm): RedirectResponse
     {
+        Gate::authorize('school_terms.edit');
+
         $termType = TermType::find($request->term_type_id);
 
         $schoolTerm->update([

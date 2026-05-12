@@ -10,12 +10,24 @@ use App\Models\Grade;
 use App\Models\GradeDefinition;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class GradeController extends Controller
+class GradeController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:grades.view', only: ['index', 'show']),
+            new Middleware('can:grades.create', only: ['create', 'store']),
+            new Middleware('can:grades.edit', only: ['edit', 'update']),
+            new Middleware('can:grades.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -58,6 +70,8 @@ class GradeController extends Controller
      */
     public function store(StoreGradeRequest $request): RedirectResponse
     {
+        Gate::authorize('grades.create');
+
         $gradeDefinition = GradeDefinition::find($request->grade_definition_id);
 
         Grade::create([
@@ -89,6 +103,8 @@ class GradeController extends Controller
      */
     public function update(UpdateGradeRequest $request, Grade $grade): RedirectResponse
     {
+        Gate::authorize('grades.edit');
+
         $grade->update($request->validated());
 
         return redirect()->route('admin.grades.index', ['academic_year_id' => $grade->academic_year_id])

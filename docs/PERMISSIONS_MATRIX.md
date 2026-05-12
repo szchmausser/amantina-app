@@ -569,6 +569,27 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 |------|--------|-------------------|-------|----------|--------|---------------|
 | `/dashboard` | GET | `dashboard.view` | ✅ | ✅ | ✅ | ✅ |
 
+**🔑 Criterio de selección: por ROL, no por permiso**
+
+El permiso `dashboard.view` controla el ACCESO a la ruta `/dashboard` (todos los roles lo tienen). Sin embargo, el CONTENIDO del dashboard se determina por el **rol activo en sesión** (`session('active_role')`), NO por permisos individuales.
+
+**Lógica de ruteo en `DashboardController`**:
+
+```
+active_role === 'admin'         → renderiza 'admin/dashboard'         (KPIs institucionales)
+active_role === 'profesor'      → renderiza 'teacher/dashboard'       (datos de sus secciones)
+active_role === 'alumno'        → renderiza 'student/dashboard'       (progreso personal)
+active_role === 'representante' → renderiza 'representative/dashboard' (progreso de representados)
+sin active_role                 → renderiza 'dashboard' (mensaje: "No tienes un rol asignado")
+```
+
+**Implicaciones**:
+- ✅ El permiso `dashboard.view` es la entrada — sin él, no se llega al controlador
+- ✅ El `active_role` determina QUÉ dashboard se muestra — cada rol ve datos distintos
+- ✅ Si un usuario tiene múltiples roles, ve el dashboard correspondiente al rol activo en sesión
+- ⚠️ El `active_role` se establece en el login (vía `EnsureRoleContext` / `SetActiveRoleContext`) y puede cambiar si el sistema implementa switcher de roles
+- ⚠️ Si `active_role` no está definido, se muestra un fallback genérico — esto NUNCA debería ocurrir en producción
+
 ---
 
 ### 19. Horas Acumuladas (accumulated_hours)

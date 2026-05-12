@@ -7,12 +7,24 @@ use App\Http\Requests\Admin\StoreHealthConditionRequest;
 use App\Http\Requests\Admin\UpdateHealthConditionRequest;
 use App\Models\HealthCondition;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class HealthConditionController extends Controller
+class HealthConditionController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:health_conditions.view', only: ['index']),
+            new Middleware('can:health_conditions.create', only: ['store']),
+            new Middleware('can:health_conditions.edit', only: ['update']),
+            new Middleware('can:health_conditions.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -34,6 +46,8 @@ class HealthConditionController extends Controller
      */
     public function store(StoreHealthConditionRequest $request): RedirectResponse
     {
+        Gate::authorize('health_conditions.create');
+
         HealthCondition::create($request->validated());
 
         return redirect()->route('admin.health-conditions.index')
@@ -45,6 +59,8 @@ class HealthConditionController extends Controller
      */
     public function update(UpdateHealthConditionRequest $request, HealthCondition $healthCondition): RedirectResponse
     {
+        Gate::authorize('health_conditions.edit');
+
         $healthCondition->update($request->validated());
 
         return redirect()->route('admin.health-conditions.index')

@@ -32,6 +32,11 @@ class GradeSectionDefinitionPermissionsTest extends TestCase
         $this->assertTrue($admin->hasPermissionTo('grade_definitions.create'));
         $this->assertTrue($admin->hasPermissionTo('grade_definitions.edit'));
         $this->assertTrue($admin->hasPermissionTo('grade_definitions.delete'));
+
+        // Verify actual HTTP access
+        $this->actingAs($admin)
+            ->get(route('admin.grade-definitions.index'))
+            ->assertOk();
     }
 
     public function test_admin_has_section_definitions_permissions(): void
@@ -43,6 +48,11 @@ class GradeSectionDefinitionPermissionsTest extends TestCase
         $this->assertTrue($admin->hasPermissionTo('section_definitions.create'));
         $this->assertTrue($admin->hasPermissionTo('section_definitions.edit'));
         $this->assertTrue($admin->hasPermissionTo('section_definitions.delete'));
+
+        // Verify actual HTTP access
+        $this->actingAs($admin)
+            ->get(route('admin.section-definitions.index'))
+            ->assertOk();
     }
 
     public function test_non_admin_role_does_not_have_grade_definitions_permissions(): void
@@ -52,6 +62,11 @@ class GradeSectionDefinitionPermissionsTest extends TestCase
 
         $this->assertFalse($profesor->hasPermissionTo('grade_definitions.view'));
         $this->assertFalse($profesor->hasPermissionTo('grade_definitions.create'));
+
+        // Verify actual HTTP 403
+        $this->actingAs($profesor)
+            ->get(route('admin.grade-definitions.index'))
+            ->assertForbidden();
     }
 
     public function test_non_admin_role_does_not_have_section_definitions_permissions(): void
@@ -61,5 +76,10 @@ class GradeSectionDefinitionPermissionsTest extends TestCase
 
         $this->assertFalse($alumno->hasPermissionTo('section_definitions.view'));
         $this->assertFalse($alumno->hasPermissionTo('section_definitions.create'));
+
+        // Verify actual HTTP 403
+        $this->actingAs($alumno)
+            ->get(route('admin.section-definitions.index'))
+            ->assertForbidden();
     }
 }

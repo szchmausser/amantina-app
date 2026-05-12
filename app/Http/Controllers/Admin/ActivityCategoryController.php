@@ -7,12 +7,24 @@ use App\Http\Requests\Admin\StoreActivityCategoryRequest;
 use App\Http\Requests\Admin\UpdateActivityCategoryRequest;
 use App\Models\ActivityCategory;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ActivityCategoryController extends Controller
+class ActivityCategoryController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:activity_categories.view', only: ['index']),
+            new Middleware('can:activity_categories.create', only: ['store']),
+            new Middleware('can:activity_categories.edit', only: ['update']),
+            new Middleware('can:activity_categories.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -34,6 +46,8 @@ class ActivityCategoryController extends Controller
      */
     public function store(StoreActivityCategoryRequest $request): RedirectResponse
     {
+        Gate::authorize('activity_categories.create');
+
         ActivityCategory::create($request->validated());
 
         return redirect()->route('admin.activity-categories.index')
@@ -45,6 +59,8 @@ class ActivityCategoryController extends Controller
      */
     public function update(UpdateActivityCategoryRequest $request, ActivityCategory $activityCategory): RedirectResponse
     {
+        Gate::authorize('activity_categories.edit');
+
         $activityCategory->update($request->validated());
 
         return redirect()->route('admin.activity-categories.index')

@@ -26,6 +26,7 @@ test('admin puede iniciar sesión y llegar al dashboard', function () {
         ->click('[data-testid="login-button"]')
         ->wait(3)
         ->assertPathIs('/dashboard')
+        ->assertSee('Panel de Administración')
         ->assertNoJavaScriptErrors();
 });
 

@@ -12,12 +12,23 @@ use App\Models\Section;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class EnrollmentController extends Controller
+class EnrollmentController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:enrollments.view', only: ['index']),
+            new Middleware('can:enrollments.create', only: ['create', 'store', 'showPromotionPanel', 'promote']),
+            new Middleware('can:enrollments.delete', only: ['destroy']),
+        ];
+    }
+
     public function index(Request $request): Response
     {
         Gate::authorize('enrollments.view');

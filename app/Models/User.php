@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Image\Enums\Fit;
@@ -103,6 +104,11 @@ class User extends Authenticatable implements HasMedia
                     return true;
                 }
             } catch (PermissionDoesNotExist $e) {
+                Log::warning('PermissionDoesNotExist in hasPermissionTo (active role)', [
+                    'permission' => is_string($permission) ? $permission : gettype($permission),
+                    'active_role' => $activeRole,
+                    'user_id' => $this->id,
+                ]);
                 // Permission not found in DB, continue to check direct permissions
             }
 
@@ -117,6 +123,38 @@ class User extends Authenticatable implements HasMedia
         try {
             return $this->spatieHasPermissionTo($permission, $guardName);
         } catch (PermissionDoesNotExist $e) {
+            Log::warning('PermissionDoesNotExist in hasPermissionTo fallback', [
+                'permission' => is_string($permission) ? $permission : gettype($permission),
+                'user_id' => $this->id,
+                'context' => 'fallback_no_active_role',
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Check permission explicitly for a given role, independent of session state.
+     * Use in jobs, commands, notifications, and contexts without active HTTP session.
+     */
+    public function hasPermissionForRole(string $permission, string $role, ?string $guardName = null): bool
+    {
+        if (! $this->hasRole($role)) {
+            return false;
+        }
+
+        try {
+            $roleModel = Role::findByName($role, $guardName ?? 'web');
+
+            return $roleModel->hasPermissionTo($permission)
+                || $this->getDirectPermissions()->pluck('name')->contains($permission);
+        } catch (PermissionDoesNotExist $e) {
+            Log::warning('PermissionDoesNotExist in hasPermissionForRole', [
+                'permission' => $permission,
+                'role' => $role,
+                'user_id' => $this->id,
+            ]);
+
             return false;
         }
     }

@@ -7,12 +7,24 @@ use App\Http\Requests\Admin\StoreLocationRequest;
 use App\Http\Requests\Admin\UpdateLocationRequest;
 use App\Models\Location;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class LocationController extends Controller
+class LocationController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:locations.view', only: ['index']),
+            new Middleware('can:locations.create', only: ['store']),
+            new Middleware('can:locations.edit', only: ['update']),
+            new Middleware('can:locations.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -34,6 +46,8 @@ class LocationController extends Controller
      */
     public function store(StoreLocationRequest $request): RedirectResponse
     {
+        Gate::authorize('locations.create');
+
         Location::create($request->validated());
 
         return redirect()->route('admin.locations.index')
@@ -45,6 +59,8 @@ class LocationController extends Controller
      */
     public function update(UpdateLocationRequest $request, Location $location): RedirectResponse
     {
+        Gate::authorize('locations.edit');
+
         $location->update($request->validated());
 
         return redirect()->route('admin.locations.index')

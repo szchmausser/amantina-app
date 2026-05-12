@@ -7,12 +7,24 @@ use App\Http\Requests\Admin\StoreGradeDefinitionRequest;
 use App\Http\Requests\Admin\UpdateGradeDefinitionRequest;
 use App\Models\GradeDefinition;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class GradeDefinitionController extends Controller
+class GradeDefinitionController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:grade_definitions.view', only: ['index']),
+            new Middleware('can:grade_definitions.create', only: ['store']),
+            new Middleware('can:grade_definitions.edit', only: ['update']),
+            new Middleware('can:grade_definitions.delete', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -30,6 +42,8 @@ class GradeDefinitionController extends Controller
      */
     public function store(StoreGradeDefinitionRequest $request): RedirectResponse
     {
+        Gate::authorize('grade_definitions.create');
+
         GradeDefinition::create($request->validated());
 
         return redirect()->route('admin.grade-definitions.index')
@@ -41,6 +55,8 @@ class GradeDefinitionController extends Controller
      */
     public function update(UpdateGradeDefinitionRequest $request, GradeDefinition $gradeDefinition): RedirectResponse
     {
+        Gate::authorize('grade_definitions.edit');
+
         $gradeDefinition->update($request->validated());
 
         return redirect()->route('admin.grade-definitions.index')
