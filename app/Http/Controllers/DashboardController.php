@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\Grade;
 use App\Models\Section;
+use App\Models\TeacherAssignment;
 use App\Models\User;
 use App\Services\HourAccumulatorService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,7 +40,7 @@ class DashboardController extends Controller
         }
 
         if ($activeRole === 'profesor') {
-            return $this->teacherDashboard($user, $activeYear);
+            return $this->teacherDashboard($user, $activeYear, $request);
         }
 
         if ($activeRole === 'alumno') {
@@ -116,12 +118,51 @@ class DashboardController extends Controller
     /**
      * Teacher dashboard with section-specific data.
      */
-    protected function teacherDashboard(User $user, ?AcademicYear $year): Response
+    protected function teacherDashboard(User $user, ?AcademicYear $year, Request $request): Response
     {
         $yearId = $year?->id;
-        $data = $this->hourAccumulator->getTeacherDashboard($user->id, $yearId);
-        $distribution = $this->hourAccumulator->getTeacherStudentDistribution($user->id, $yearId);
-        $upcomingSessions = $this->hourAccumulator->getTeacherUpcomingSessions($user->id, $yearId);
+        $teacherId = $user->id;
+
+        // Get sections where the teacher actually has data (from field sessions),
+        // not just formal teacher_assignments
+        $teacherSectionIds = DB::table('attendances')
+            ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
+            ->join('enrollments', function ($join) use ($yearId) {
+                $join->on('attendances.user_id', '=', 'enrollments.user_id')
+                    ->whereNull('enrollments.deleted_at');
+                if ($yearId) {
+                    $join->where('enrollments.academic_year_id', $yearId);
+                }
+            })
+            ->where('field_sessions.user_id', $teacherId)
+            ->whereNull('attendances.deleted_at')
+            ->whereNull('field_sessions.deleted_at')
+            ->distinct()
+            ->pluck('enrollments.section_id')
+            ->merge(
+                // Also include sections from teacher_assignments as fallback
+                TeacherAssignment::where('user_id', $teacherId)
+                    ->whereNull('deleted_at')
+                    ->pluck('section_id')
+            )
+            ->unique()
+            ->values();
+
+        $teacherSections = Section::whereIn('id', $teacherSectionIds)
+            ->with('grade')->get();
+
+        $grades = $teacherSections->map(fn ($s) => $s->grade)
+            ->unique('id')
+            ->values()
+            ->map(fn ($g) => ['id' => $g->id, 'name' => $g->name]);
+
+        // Grade/section filters from query params
+        $gradeId = $request->query('grade_id') ? (int) $request->query('grade_id') : null;
+        $sectionId = $request->query('section_id') ? (int) $request->query('section_id') : null;
+
+        $data = $this->hourAccumulator->getTeacherDashboard($teacherId, $yearId, $gradeId, $sectionId);
+        $distribution = $this->hourAccumulator->getTeacherStudentDistribution($teacherId, $yearId);
+        $upcomingSessions = $this->hourAccumulator->getTeacherUpcomingSessions($teacherId, $yearId);
 
         return Inertia::render('teacher/dashboard', [
             'activeYear' => $year ? [
@@ -146,6 +187,15 @@ class DashboardController extends Controller
             'topStudents' => $distribution['topStudents'] ?? [],
             'studentsWithNoHours' => $distribution['studentsWithNoHours'] ?? [],
             'upcomingSessions' => $upcomingSessions,
+            // Grade/section filter data
+            'grades' => $grades->toArray(),
+            'filterSections' => $teacherSections->map(fn ($s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'grade_id' => $s->grade_id,
+            ])->values()->toArray(),
+            'selectedGradeId' => $gradeId,
+            'selectedSectionId' => $sectionId,
         ]);
     }
 

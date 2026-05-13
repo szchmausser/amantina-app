@@ -816,7 +816,7 @@ class HourAccumulatorService
     /**
      * Get teacher-specific dashboard data.
      */
-    public function getTeacherDashboard(int $teacherId, ?int $academicYearId = null): array
+    public function getTeacherDashboard(int $teacherId, ?int $academicYearId = null, ?int $gradeId = null, ?int $sectionId = null): array
     {
         $yearId = $this->resolveYearId($academicYearId);
         $quota = $this->getQuota($yearId);
@@ -959,6 +959,8 @@ class HourAccumulatorService
             ->whereNull('activity_categories.deleted_at')
             ->whereNull('users.deleted_at')
             ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
+            ->when($gradeId, fn ($q) => $q->where('grades.id', $gradeId))
+            ->when($sectionId, fn ($q) => $q->where('sec.id', $sectionId))
             ->select(
                 'activity_categories.name as category_name',
                 'users.id as student_id',
@@ -989,13 +991,24 @@ class HourAccumulatorService
             ->join('attendances', 'attendance_activities.attendance_id', '=', 'attendances.id')
             ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
             ->join('activity_categories', 'attendance_activities.activity_category_id', '=', 'activity_categories.id')
+            ->join('enrollments', function ($join) use ($yearId) {
+                $join->on('attendances.user_id', '=', 'enrollments.user_id')
+                    ->whereNull('enrollments.deleted_at');
+                if ($yearId) {
+                    $join->where('enrollments.academic_year_id', $yearId);
+                }
+            })
+            ->join('sections as sec', 'enrollments.section_id', '=', 'sec.id')
             ->where('field_sessions.user_id', $teacherId)
             ->where('attendances.attended', true)
             ->whereNull('attendance_activities.deleted_at')
             ->whereNull('attendances.deleted_at')
             ->whereNull('field_sessions.deleted_at')
             ->whereNull('activity_categories.deleted_at')
+            ->whereNull('sec.deleted_at')
             ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
+            ->when($gradeId, fn ($q) => $q->where('sec.grade_id', $gradeId))
+            ->when($sectionId, fn ($q) => $q->where('enrollments.section_id', $sectionId))
             ->select(
                 'activity_categories.name as category_name',
                 DB::raw('SUM(attendance_activities.hours) as total_hours'),

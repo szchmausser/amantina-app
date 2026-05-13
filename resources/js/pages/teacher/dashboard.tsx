@@ -24,6 +24,13 @@ import { StatCard, StatGrid } from '@/components/ui/stat-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StudentListBadge } from '@/components/ui/student-list-badge';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
@@ -73,6 +80,10 @@ interface Props {
     topStudents: TeacherDashboardData['topStudents'];
     studentsWithNoHours: TeacherDashboardData['studentsWithNoHours'];
     upcomingSessions: TeacherDashboardData['upcomingSessions'];
+    grades: TeacherDashboardData['grades'];
+    filterSections: TeacherDashboardData['filterSections'];
+    selectedGradeId: TeacherDashboardData['selectedGradeId'];
+    selectedSectionId: TeacherDashboardData['selectedSectionId'];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -99,6 +110,10 @@ export default function TeacherDashboard({
     topStudents,
     studentsWithNoHours,
     upcomingSessions,
+    grades,
+    filterSections,
+    selectedGradeId,
+    selectedSectionId,
 }: Props) {
     const yearRequiredHours = activeYear?.requiredHours ?? 0;
 
@@ -123,6 +138,37 @@ export default function TeacherDashboard({
             .getElementById('teacher-sections')
             ?.scrollIntoView({ behavior: 'smooth' });
     };
+
+    // Handle grade/section filter changes for category distribution
+    const handleGradeChange = (value: string) => {
+        router.get(
+            dashboard().url,
+            {
+                grade_id: value === 'all' ? null : value,
+                section_id: null,
+            },
+            { preserveState: true },
+        );
+    };
+
+    const handleSectionChange = (value: string) => {
+        router.get(
+            dashboard().url,
+            {
+                grade_id: selectedGradeId,
+                section_id: value === 'all' ? null : value,
+            },
+            { preserveState: true },
+        );
+    };
+
+    // Filter sections by selected grade
+    const filteredSections = useMemo(() => {
+        if (selectedGradeId) {
+            return filterSections.filter(s => s.grade_id === selectedGradeId);
+        }
+        return filterSections;
+    }, [filterSections, selectedGradeId]);
 
     // Compute average hours from distribution data
     const totalHours =
@@ -386,18 +432,57 @@ export default function TeacherDashboard({
                     {/* ===== CATEGORY DISTRIBUTION ===== */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <BookOpen className="h-4 w-4" />
-                                Distribución por Categoría
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Info className="h-3 w-3 cursor-help text-muted-foreground" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                                    <p className="text-xs">Horas totales acumuladas por <strong>todos</strong> tus estudiantes en cada tipo de actividad durante tus jornadas de campo. No es un promedio por estudiante, es la suma total.</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </CardTitle>
+                            <div className="space-y-3">
+                                {/* Filter row */}
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <span className="text-sm font-medium text-muted-foreground">Filtrar por:</span>
+                                    <Select
+                                        value={selectedGradeId?.toString() ?? 'all'}
+                                        onValueChange={handleGradeChange}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Grado" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todos los grados</SelectItem>
+                                            {grades.map((grade) => (
+                                                <SelectItem key={grade.id} value={grade.id.toString()}>
+                                                    {grade.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Select
+                                        value={selectedSectionId?.toString() ?? 'all'}
+                                        onValueChange={handleSectionChange}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Sección" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todas las secciones</SelectItem>
+                                            {filteredSections.map((section) => (
+                                                <SelectItem key={section.id} value={section.id.toString()}>
+                                                    {section.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <CardTitle className="flex items-center gap-2">
+                                    <BookOpen className="h-4 w-4" />
+                                    Distribución por Categoría
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Info className="h-3 w-3 cursor-help text-muted-foreground" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="text-xs">Horas totales acumuladas por <strong>todos</strong> tus estudiantes en cada tipo de actividad durante tus jornadas de campo. No es un promedio por estudiante, es la suma total.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </CardTitle>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">

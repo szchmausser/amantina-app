@@ -188,6 +188,11 @@ export interface TeacherDashboardData {
     topStudents: TeacherScopedStudent[];
     studentsWithNoHours: TeacherScopedStudent[];
     upcomingSessions: UpcomingSession[];
+    // Grade/section filters
+    grades: { id: number; name: string }[];
+    filterSections: { id: number; name: string; grade_id: number }[];
+    selectedGradeId: number | null;
+    selectedSectionId: number | null;
 }
 
 export interface StudentDashboardData {

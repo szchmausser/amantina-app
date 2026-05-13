@@ -192,7 +192,7 @@ export default function AdminDashboard({
                 grade_id: value === 'all' ? null : value,
                 section_id: null,
             },
-            { preserveState: true, only: ['categoryDistribution', 'selectedGradeId', 'selectedSectionId'] },
+            { preserveState: true },
         );
     };
 
@@ -203,7 +203,7 @@ export default function AdminDashboard({
                 grade_id: selectedGradeId,
                 section_id: value === 'all' ? null : value,
             },
-            { preserveState: true, only: ['categoryDistribution', 'selectedGradeId', 'selectedSectionId'] },
+            { preserveState: true },
         );
     };
 
