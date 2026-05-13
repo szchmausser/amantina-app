@@ -35,6 +35,11 @@ class FieldSessionController extends Controller
         $query = FieldSession::with(['academicYear', 'schoolTerm', 'teacher', 'status'])
             ->orderByDesc('start_datetime');
 
+        // Teachers only see their own sessions
+        if (session('active_role') === 'profesor') {
+            $query->where('user_id', auth()->id());
+        }
+
         if ($statusId) {
             $query->where('status_id', $statusId);
         }
@@ -64,6 +69,8 @@ class FieldSessionController extends Controller
             'statuses' => $statuses,
             'activityCategories' => ActivityCategory::orderBy('name')->get(['id', 'name']),
             'locations' => Location::orderBy('name')->get(['id', 'name']),
+            'authUserId' => auth()->id(),
+            'isTeacher' => session('active_role') === 'profesor',
         ]);
     }
 

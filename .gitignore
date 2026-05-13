@@ -33,3 +33,5 @@ yarn-error.log
 /.temp/
 /playwright-report/
 /test-results/
+# Local Pi runtime state
+.atl/

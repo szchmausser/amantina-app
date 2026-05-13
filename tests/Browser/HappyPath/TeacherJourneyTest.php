@@ -242,3 +242,80 @@ test('profesor puede ver el detalle de una jornada con asistencia y horas asigna
     $page->assertSee('Jornada Integrada: Huerto Escolar')
         ->assertNoJavaScriptErrors();
 });
+
+// ============================================================================
+// PASO 6: Profesor expande/colapsa lista de estudiantes por sección
+// ============================================================================
+
+test('profesor puede expandir y colapsar la lista de estudiantes por sección', function () {
+    $this->actingAs($this->teacher);
+
+    $sectionId = $this->section->id;
+
+    $page = visit('/dashboard');
+
+    $page->assertPathIs('/dashboard')
+        ->assertSee('Sección A');
+
+    // Toggle button should exist and show correct collapsed text
+    $page->assertPresent("[data-testid=\"teacher-section-toggle-{$sectionId}\"]")
+        ->assertSee('Ver 2 estudiantes');
+
+    // Students grid should NOT be present when collapsed
+    $page->assertMissing("[data-testid=\"teacher-section-students-{$sectionId}\"]");
+
+    // Click toggle to expand
+    $page->click("[data-testid=\"teacher-section-toggle-{$sectionId}\"]");
+
+    // Students grid should now be visible
+    $page->assertVisible("[data-testid=\"teacher-section-students-{$sectionId}\"]");
+
+    // Toggle button should show collapse text
+    $page->assertSee('Ocultar estudiantes');
+
+    // Verify student names are visible in the grid
+    $page->assertSee('Lucía Mendoza')
+        ->assertSee('Pedro Sánchez');
+
+    // Click toggle to collapse
+    $page->click("[data-testid=\"teacher-section-toggle-{$sectionId}\"]");
+
+    // Students grid should be hidden again
+    $page->assertMissing("[data-testid=\"teacher-section-students-{$sectionId}\"]");
+
+    // Button text should revert to collapsed state
+    $page->assertSee('Ver 2 estudiantes');
+
+    $page->assertNoJavaScriptErrors();
+});
+
+// ============================================================================
+// PASO 7: Profesor ve una sección sin estudiantes
+// ============================================================================
+
+test('profesor ve mensaje de sección vacía cuando no hay estudiantes', function () {
+    // Create an empty section assigned to the teacher
+    $emptySection = Section::factory()->for($this->academicYear)->for($this->grade)->create([
+        'name' => 'Sección Vacía',
+    ]);
+
+    TeacherAssignment::factory()->create([
+        'user_id' => $this->teacher->id,
+        'academic_year_id' => $this->academicYear->id,
+        'grade_id' => $this->grade->id,
+        'section_id' => $emptySection->id,
+    ]);
+
+    $this->actingAs($this->teacher);
+
+    $page = visit('/dashboard');
+
+    $page->assertPathIs('/dashboard')
+        ->assertSee('Sección Vacía')
+        ->assertSee('No hay estudiantes en esta sección.');
+
+    // Toggle button should NOT be present for empty section
+    $page->assertMissing("[data-testid=\"teacher-section-toggle-{$emptySection->id}\"]");
+
+    $page->assertNoJavaScriptErrors();
+});

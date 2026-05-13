@@ -3,7 +3,6 @@
 use App\Models\AcademicYear;
 use App\Models\Grade;
 use App\Models\SchoolTerm;
-use App\Models\Section;
 use App\Models\TermType;
 use App\Models\User;
 use Database\Seeders\FieldSessionStatusSeeder;

@@ -34,6 +34,7 @@ class InstitutionTest extends TestCase
     public function test_institution_settings_can_be_updated()
     {
         $user = User::factory()->create();
+        $user->assignRole('admin');
 
         $response = $this->actingAs($user)->patch(route('institution.update'), [
             'name' => 'New Institution Name',
@@ -57,6 +58,7 @@ class InstitutionTest extends TestCase
     public function test_institution_settings_requires_name()
     {
         $user = User::factory()->create();
+        $user->assignRole('admin');
 
         $response = $this->actingAs($user)->patch(route('institution.update'), [
             'name' => '',

@@ -162,7 +162,7 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Permiso | Admin | Profesor | Alumno | Representante | Notas |
 |---------|-------|----------|--------|---------------|-------|
-| `academic_years.view` | ✅ | ❌ | ❌ | ❌ | Solo admin gestiona años académicos |
+| `academic_years.view` | ✅ | ✅ | ❌ | ❌ | Profesor puede ver años académicos (solo lectura) |
 | `academic_years.create` | ✅ | ❌ | ❌ | ❌ | Solo admin crea años académicos |
 | `academic_years.edit` | ✅ | ❌ | ❌ | ❌ | Solo admin edita años académicos |
 | `academic_years.delete` | ✅ | ❌ | ❌ | ❌ | Solo admin elimina años académicos |
@@ -171,10 +171,10 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Ruta | Método | Permiso Requerido | Admin | Profesor | Alumno | Representante |
 |------|--------|-------------------|-------|----------|--------|---------------|
-| `/admin/academic-years` | GET | `academic_years.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/academic-years` | GET | `academic_years.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
 | `/admin/academic-years/create` | GET | `academic_years.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/academic-years` | POST | `academic_years.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
-| `/admin/academic-years/{id}` | GET | `academic_years.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/academic-years/{id}` | GET | `academic_years.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
 | `/admin/academic-years/{id}/edit` | GET | `academic_years.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/academic-years/{id}` | PUT | `academic_years.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/academic-years/{id}` | DELETE | `academic_years.delete` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
@@ -191,7 +191,7 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Permiso | Admin | Profesor | Alumno | Representante | Notas |
 |---------|-------|----------|--------|---------------|-------|
-| `school_terms.view` | ✅ | ❌ | ❌ | ❌ | Solo admin gestiona períodos |
+| `school_terms.view` | ✅ | ✅ | ❌ | ❌ | Profesor puede ver lapsos (solo lectura) |
 | `school_terms.create` | ✅ | ❌ | ❌ | ❌ | Solo admin crea períodos |
 | `school_terms.edit` | ✅ | ❌ | ❌ | ❌ | Solo admin edita períodos |
 | `school_terms.delete` | ✅ | ❌ | ❌ | ❌ | Solo admin elimina períodos |
@@ -200,10 +200,10 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Ruta | Método | Permiso Requerido | Admin | Profesor | Alumno | Representante |
 |------|--------|-------------------|-------|----------|--------|---------------|
-| `/admin/school-terms` | GET | `school_terms.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/school-terms` | GET | `school_terms.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
 | `/admin/school-terms/create` | GET | `school_terms.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/school-terms` | POST | `school_terms.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
-| `/admin/school-terms/{id}` | GET | `school_terms.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/school-terms/{id}` | GET | `school_terms.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
 | `/admin/school-terms/{id}/edit` | GET | `school_terms.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/school-terms/{id}` | PUT | `school_terms.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/school-terms/{id}` | DELETE | `school_terms.delete` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
@@ -220,7 +220,7 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Permiso | Admin | Profesor | Alumno | Representante | Notas |
 |---------|-------|----------|--------|---------------|-------|
-| `grades.view` | ✅ | ❌ | ❌ | ❌ | Solo admin gestiona grados |
+| `grades.view` | ✅ | ✅ | ❌ | ❌ | Profesor puede ver grados (solo lectura) |
 | `grades.create` | ✅ | ❌ | ❌ | ❌ | Solo admin crea grados |
 | `grades.edit` | ✅ | ❌ | ❌ | ❌ | Solo admin edita grados |
 | `grades.delete` | ✅ | ❌ | ❌ | ❌ | Solo admin elimina grados |
@@ -229,7 +229,7 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Ruta | Método | Permiso Requerido | Admin | Profesor | Alumno | Representante |
 |------|--------|-------------------|-------|----------|--------|---------------|
-| `/admin/grades` | GET | `grades.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/grades` | GET | `grades.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
 | `/admin/grades/create` | GET | `grades.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/grades` | POST | `grades.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/grades/{id}/edit` | GET | `grades.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
@@ -248,7 +248,7 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Permiso | Admin | Profesor | Alumno | Representante | Notas |
 |---------|-------|----------|--------|---------------|-------|
-| `sections.view` | ✅ | ❌ | ❌ | ❌ | Solo admin gestiona secciones |
+| `sections.view` | ✅ | ✅ | ❌ | ❌ | Profesor puede ver secciones (solo lectura) |
 | `sections.create` | ✅ | ❌ | ❌ | ❌ | Solo admin crea secciones |
 | `sections.edit` | ✅ | ❌ | ❌ | ❌ | Solo admin edita secciones |
 | `sections.delete` | ✅ | ❌ | ❌ | ❌ | Solo admin elimina secciones |
@@ -257,10 +257,10 @@ Los permisos siguen el formato: `{modulo}.{accion}`
 
 | Ruta | Método | Permiso Requerido | Admin | Profesor | Alumno | Representante |
 |------|--------|-------------------|-------|----------|--------|---------------|
-| `/admin/sections` | GET | `sections.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/sections` | GET | `sections.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
 | `/admin/sections/create` | GET | `sections.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/sections` | POST | `sections.create` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
-| `/admin/sections/{id}` | GET | `sections.view` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
+| `/admin/sections/{id}` | GET | `sections.view` | ✅ | ✅ | ❌ 403 | ❌ 403 |
 | `/admin/sections/{id}/edit` | GET | `sections.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/sections/{id}` | PUT | `sections.edit` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
 | `/admin/sections/{id}` | DELETE | `sections.delete` | ✅ | ❌ 403 | ❌ 403 | ❌ 403 |
@@ -713,11 +713,15 @@ El rol admin tiene acceso completo a todos los módulos del sistema sin restricc
 
 ### Profesor (Docente)
 
-**Total de permisos**: 24 permisos
+**Total de permisos**: 28 permisos
 
 ```
 users.view
 academic_info.view
+academic_years.view
+school_terms.view
+grades.view
+sections.view
 activity_categories.view
 activity_categories.create
 activity_categories.edit
@@ -1286,7 +1290,7 @@ Para cada módulo administrativo, verificar:
 | Rol | Total Permisos | % del Total |
 |-----|----------------|-------------|
 | Admin | 79 | 100% |
-| Profesor | 24 | 30% |
+| Profesor | 28 | 35% |
 | Alumno | 2 | 3% |
 | Representante | 2 | 3% |
 

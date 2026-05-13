@@ -32,20 +32,32 @@ export function AppSidebar() {
         icon: LayoutGrid,
     });
 
-    if (auth.permissions?.includes('academic_info.view')) {
+    // Teacher-specific items
+    if (auth.active_role === 'profesor') {
         mainNavItems.push({
-            title: 'Información Académica',
-            href: academicInfoIndex().url,
-            icon: LayoutDashboard,
-        });
-    }
-
-    if (auth.permissions?.includes('field_sessions.view')) {
-        mainNavItems.push({
-            title: 'Jornadas',
+            title: 'Mis Jornadas',
             href: '/admin/field-sessions',
             icon: CalendarCheck,
         });
+    }
+
+    // Admin items (hidden for profesor role)
+    if (auth.active_role !== 'profesor') {
+        if (auth.permissions?.includes('academic_info.view')) {
+            mainNavItems.push({
+                title: 'Información Académica',
+                href: academicInfoIndex().url,
+                icon: LayoutDashboard,
+            });
+        }
+
+        if (auth.permissions?.includes('field_sessions.view')) {
+            mainNavItems.push({
+                title: 'Jornadas',
+                href: '/admin/field-sessions',
+                icon: CalendarCheck,
+            });
+        }
     }
 
     return (

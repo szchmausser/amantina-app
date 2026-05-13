@@ -39,6 +39,8 @@ interface Props {
     statuses: Status[];
     activityCategories: CatalogItem[];
     locations: CatalogItem[];
+    authUserId: number;
+    isTeacher: boolean;
 }
 
 export default function FieldSessionCreate({
@@ -48,6 +50,8 @@ export default function FieldSessionCreate({
     statuses,
     activityCategories,
     locations,
+    authUserId,
+    isTeacher,
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
@@ -59,7 +63,7 @@ export default function FieldSessionCreate({
         name: '',
         description: '',
         school_term_id: '',
-        user_id: '',
+        user_id: isTeacher ? authUserId.toString() : '',
         activity_name: '',
         location_name: '',
         start_datetime: '',
@@ -88,20 +92,7 @@ export default function FieldSessionCreate({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.post('/admin/field-sessions', {
-            name: data.name,
-            description: data.description,
-            school_term_id: data.school_term_id
-                ? parseInt(data.school_term_id)
-                : null,
-            user_id: data.user_id ? parseInt(data.user_id) : null,
-            activity_name: data.activity_name || null,
-            location_name: data.location_name || null,
-            start_datetime: data.start_datetime,
-            end_datetime: data.end_datetime,
-            status_id: data.status_id ? parseInt(data.status_id) : null,
-            cancellation_reason: data.cancellation_reason || null,
-        });
+        post('/admin/field-sessions');
     };
 
     return (
@@ -205,26 +196,38 @@ export default function FieldSessionCreate({
                                 <Label htmlFor="user_id">
                                     Profesor Responsable
                                 </Label>
-                                <Select
-                                    value={data.user_id}
-                                    onValueChange={(val) =>
-                                        setData('user_id', val)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Seleccionar profesor" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {teachers.map((teacher) => (
-                                            <SelectItem
-                                                key={teacher.id}
-                                                value={teacher.id.toString()}
-                                            >
-                                                {teacher.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                {isTeacher ? (
+                                    <div className="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+                                        {teachers.find(t => t.id === authUserId)?.name ?? 'Profesor'}
+                                    </div>
+                                ) : (
+                                    <Select
+                                        value={data.user_id}
+                                        onValueChange={(val) =>
+                                            setData('user_id', val)
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar profesor" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {teachers.map((teacher) => (
+                                                <SelectItem
+                                                    key={teacher.id}
+                                                    value={teacher.id.toString()}
+                                                >
+                                                    {teacher.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                                {isTeacher && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Eres el profesor responsable de esta
+                                        jornada.
+                                    </p>
+                                )}
                                 <InputError message={errors.user_id} />
                             </div>
                             <div className="space-y-2">

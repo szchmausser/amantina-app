@@ -3,6 +3,16 @@
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\ActivityCategory;
+use App\Models\Attendance;
+use App\Models\AttendanceActivity;
+use App\Models\Enrollment;
+use App\Models\FieldSession;
+use App\Models\Grade;
+use App\Models\HealthCondition;
+use App\Models\Section;
+use App\Models\StudentHealthRecord;
+use App\Models\TeacherAssignment;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -132,6 +142,15 @@ class DashboardControllerTest extends TestCase
             ->has('categoryDistribution')
             ->has('sessionsPerTerm')
             ->has('healthReminders')
+            ->has('totalStudents')
+            ->has('distribution')
+            ->has('onTrackStudents')
+            ->has('inProgressStudents')
+            ->has('atRiskStudents')
+            ->has('outstandingStudents')
+            ->has('topStudents')
+            ->has('studentsWithNoHours')
+            ->has('upcomingSessions')
         );
     }
 
@@ -213,6 +232,183 @@ class DashboardControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->where('activeYear', null)
+        );
+    }
+
+    // ============================================
+    // Teacher Enhanced Alerts Tests (Task 4.3)
+    // ============================================
+
+    public function test_low_attendance_includes_total_hours_in_teacher_dashboard_response(): void
+    {
+        $grade = Grade::factory()->create(['academic_year_id' => $this->activeYear->id]);
+        $section = Section::factory()->create([
+            'grade_id' => $grade->id,
+            'academic_year_id' => $this->activeYear->id,
+        ]);
+
+        TeacherAssignment::create([
+            'user_id' => $this->profesor->id,
+            'section_id' => $section->id,
+            'academic_year_id' => $this->activeYear->id,
+            'grade_id' => $grade->id,
+        ]);
+
+        $student = User::factory()->create();
+        $student->assignRole('alumno');
+
+        Enrollment::create([
+            'user_id' => $student->id,
+            'section_id' => $section->id,
+            'academic_year_id' => $this->activeYear->id,
+            'grade_id' => $grade->id,
+        ]);
+
+        // Create 2 attendances (below threshold of 3)
+        for ($i = 0; $i < 2; $i++) {
+            $session = FieldSession::factory()->create([
+                'user_id' => $this->profesor->id,
+                'academic_year_id' => $this->activeYear->id,
+                'start_datetime' => now()->subDays(10 + $i),
+            ]);
+
+            $attendance = Attendance::create([
+                'field_session_id' => $session->id,
+                'user_id' => $student->id,
+                'academic_year_id' => $this->activeYear->id,
+                'attended' => true,
+            ]);
+
+            AttendanceActivity::create([
+                'attendance_id' => $attendance->id,
+                'activity_category_id' => ActivityCategory::factory()->create()->id,
+                'hours' => 3.0,
+            ]);
+        }
+
+        $response = $this->actingAs($this->profesor)->get('/dashboard');
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('lowAttendanceStudents', 1)
+            ->where('lowAttendanceStudents.0.studentId', $student->id)
+            ->where('lowAttendanceStudents.0.attendanceCount', 2)
+            ->where('lowAttendanceStudents.0.totalHours', 6)
+        );
+    }
+
+    public function test_health_reminders_include_severity_in_teacher_dashboard_response(): void
+    {
+        $grade = Grade::factory()->create(['academic_year_id' => $this->activeYear->id]);
+        $section = Section::factory()->create([
+            'grade_id' => $grade->id,
+            'academic_year_id' => $this->activeYear->id,
+        ]);
+
+        TeacherAssignment::create([
+            'user_id' => $this->profesor->id,
+            'section_id' => $section->id,
+            'academic_year_id' => $this->activeYear->id,
+            'grade_id' => $grade->id,
+        ]);
+
+        $student = User::factory()->create();
+        $student->assignRole('alumno');
+
+        Enrollment::create([
+            'user_id' => $student->id,
+            'section_id' => $section->id,
+            'academic_year_id' => $this->activeYear->id,
+            'grade_id' => $grade->id,
+        ]);
+
+        $condition = HealthCondition::factory()->create(['name' => 'Asma']);
+        StudentHealthRecord::create([
+            'user_id' => $student->id,
+            'health_condition_id' => $condition->id,
+            'received_by' => $this->profesor->id,
+            'received_at' => now()->subDays(5),
+        ]);
+
+        $session = FieldSession::factory()->create([
+            'user_id' => $this->profesor->id,
+            'academic_year_id' => $this->activeYear->id,
+            'start_datetime' => now()->subDays(3),
+        ]);
+
+        Attendance::create([
+            'field_session_id' => $session->id,
+            'user_id' => $student->id,
+            'academic_year_id' => $this->activeYear->id,
+            'attended' => true,
+        ]);
+
+        $response = $this->actingAs($this->profesor)->get('/dashboard');
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('healthReminders', 1)
+            ->where('healthReminders.0.studentName', $student->name)
+            ->where('healthReminders.0.conditionName', 'Asma')
+            ->where('healthReminders.0.severity', 'medium')
+            ->where('healthReminders.0.daysSinceLastSession', fn ($v) => $v >= 3)
+        );
+    }
+
+    public function test_category_distribution_includes_count_in_teacher_dashboard_response(): void
+    {
+        $grade = Grade::factory()->create(['academic_year_id' => $this->activeYear->id]);
+        $section = Section::factory()->create([
+            'grade_id' => $grade->id,
+            'academic_year_id' => $this->activeYear->id,
+        ]);
+
+        TeacherAssignment::create([
+            'user_id' => $this->profesor->id,
+            'section_id' => $section->id,
+            'academic_year_id' => $this->activeYear->id,
+            'grade_id' => $grade->id,
+        ]);
+
+        $student = User::factory()->create();
+        $student->assignRole('alumno');
+
+        Enrollment::create([
+            'user_id' => $student->id,
+            'section_id' => $section->id,
+            'academic_year_id' => $this->activeYear->id,
+            'grade_id' => $grade->id,
+        ]);
+
+        $category = ActivityCategory::factory()->create(['name' => 'Siembra']);
+
+        for ($i = 0; $i < 2; $i++) {
+            $session = FieldSession::factory()->create([
+                'user_id' => $this->profesor->id,
+                'academic_year_id' => $this->activeYear->id,
+                'start_datetime' => now()->subDays(5 + $i),
+            ]);
+
+            $attendance = Attendance::create([
+                'field_session_id' => $session->id,
+                'user_id' => $student->id,
+                'academic_year_id' => $this->activeYear->id,
+                'attended' => true,
+            ]);
+
+            AttendanceActivity::create([
+                'attendance_id' => $attendance->id,
+                'activity_category_id' => $category->id,
+                'hours' => 2.5,
+            ]);
+        }
+
+        $response = $this->actingAs($this->profesor)->get('/dashboard');
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('categoryDistribution', 1)
+            ->where('categoryDistribution.0.categoryName', 'Siembra')
+            ->where('categoryDistribution.0.totalHours', 5)
+            ->where('categoryDistribution.0.count', 2)
+            ->where('categoryDistribution.0.minRequiredHours', null)
         );
     }
 }

@@ -4,7 +4,7 @@ import {
     CheckCircle2,
     Pencil,
     Plus,
-    Settings,
+    Eye,
     Trash2,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -177,12 +177,12 @@ export default function AcademicYearIndex({ academicYears }: Props) {
                                     size="icon"
                                     className="h-8 w-8 text-neutral-500 hover:text-blue-600"
                                     asChild
-                                    title="Configurar estructura"
+                                    title="Ver detalles"
                                 >
                                     <Link href={academicYearsShow(year.id).url}>
-                                        <Settings className="h-4 w-4" />
+                                        <Eye className="h-4 w-4" />
                                         <span className="sr-only">
-                                            Configurar
+                                            Ver
                                         </span>
                                     </Link>
                                 </Button>

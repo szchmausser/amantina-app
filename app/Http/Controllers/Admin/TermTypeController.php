@@ -17,7 +17,7 @@ class TermTypeController extends Controller
      */
     public function index(): Response
     {
-        Gate::authorize('school_terms.view');
+        Gate::authorize('school_terms.create');
 
         return Inertia::render('admin/term-types/index', [
             'termTypes' => TermType::orderBy('order')->get(),

@@ -6,6 +6,15 @@
                 "artisan",
                 "boost:mcp"
             ]
+        },
+        "engram": {
+            "command": "engram",
+            "args": [
+                "mcp",
+                "--tools=agent"
+            ],
+            "lifecycle": "lazy",
+            "directTools": true
         }
     }
 }

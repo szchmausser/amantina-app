@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\ExternalHour;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -497,6 +499,210 @@ class HourAccumulatorService
     }
 
     /**
+     * Get the section IDs assigned to a teacher (excluding soft-deleted assignments).
+     *
+     * @return Collection<int, int>
+     */
+    public function getTeacherSectionIds(int $teacherId): Collection
+    {
+        return DB::table('teacher_assignments')
+            ->where('user_id', $teacherId)
+            ->whereNull('deleted_at')
+            ->pluck('section_id');
+    }
+
+    /**
+     * Get student distribution overview for a teacher's assigned sections.
+     *
+     * Mirrors getInstitutionOverview() but scoped to the teacher's sections.
+     *
+     * @return array{
+     *     totalStudents: int,
+     *     distribution: array{onTrack: int, inProgress: int, atRisk: int, zeroHours: int},
+     *     onTrackStudents: list<array{id: int, name: string, sectionName: string, gradeName: string, hours: float, quota: float, percentage: float, status: string}>,
+     *     inProgressStudents: list<array{...}>,
+     *     atRiskStudents: list<array{...}>,
+     *     outstandingStudents: list<array{...}>,
+     *     topStudents: list<array{...}>,
+     *     studentsWithNoHours: list<array{...}>,
+     * }
+     */
+    public function getTeacherStudentDistribution(int $teacherId, ?int $yearId): array
+    {
+        $yearId = $this->resolveYearId($yearId);
+        $quota = $this->getQuota($yearId);
+        $sectionIds = $this->getTeacherSectionIds($teacherId);
+
+        if ($sectionIds->isEmpty()) {
+            return [
+                'totalStudents' => 0,
+                'distribution' => ['onTrack' => 0, 'inProgress' => 0, 'atRisk' => 0, 'zeroHours' => 0],
+                'onTrackStudents' => [],
+                'inProgressStudents' => [],
+                'atRiskStudents' => [],
+                'outstandingStudents' => [],
+                'topStudents' => [],
+                'studentsWithNoHours' => [],
+            ];
+        }
+
+        // Get all students enrolled in the teacher's sections
+        $allStudents = DB::table('enrollments')
+            ->join('users', 'enrollments.user_id', '=', 'users.id')
+            ->join('sections', 'enrollments.section_id', '=', 'sections.id')
+            ->join('grades', 'sections.grade_id', '=', 'grades.id')
+            ->whereIn('enrollments.section_id', $sectionIds)
+            ->when($yearId, fn ($q) => $q->where('enrollments.academic_year_id', $yearId))
+            ->whereNull('enrollments.deleted_at')
+            ->whereNull('users.deleted_at')
+            ->whereNull('sections.deleted_at')
+            ->whereNull('grades.deleted_at')
+            ->select(
+                'users.id as student_id',
+                'users.name as student_name',
+                'sections.name as section_name',
+                'grades.name as grade_name'
+            )
+            ->distinct()
+            ->get();
+
+        $onTrackCount = 0;
+        $inProgressCount = 0;
+        $atRiskCount = 0;
+        $zeroHoursCount = 0;
+
+        $onTrackStudents = [];
+        $inProgressStudents = [];
+        $atRiskStudents = [];
+        $outstandingStudents = [];
+        $studentsWithNoHours = [];
+
+        foreach ($allStudents as $student) {
+            $hours = $this->calculateJornadaHours($student->student_id, $yearId);
+            $percentage = $quota > 0 ? ($hours / $quota) * 100 : 0;
+            $status = $this->getStatusColor($percentage, $quota, $hours);
+
+            $studentData = [
+                'id' => (int) $student->student_id,
+                'name' => $student->student_name,
+                'sectionName' => $student->section_name,
+                'gradeName' => $student->grade_name,
+                'hours' => round($hours, 2),
+                'quota' => $quota,
+                'percentage' => round($percentage, 2),
+                'status' => $status,
+            ];
+
+            if ($hours == 0) {
+                $zeroHoursCount++;
+                $studentsWithNoHours[] = $studentData;
+            } elseif ($percentage >= 100) {
+                $onTrackCount++;
+                $outstandingStudents[] = $studentData;
+            } elseif ($percentage >= 80) {
+                $onTrackCount++;
+                $onTrackStudents[] = $studentData;
+            } elseif ($percentage >= 40) {
+                $inProgressCount++;
+                $inProgressStudents[] = $studentData;
+            } else {
+                $atRiskCount++;
+                $atRiskStudents[] = $studentData;
+            }
+        }
+
+        // Sort outstanding by hours descending
+        usort($outstandingStudents, fn ($a, $b) => $b['hours'] <=> $a['hours']);
+
+        // Sort at-risk by percentage ascending (worst first)
+        usort($atRiskStudents, fn ($a, $b) => $a['percentage'] <=> $b['percentage']);
+
+        // Build top students: all students with hours, sorted by hours descending
+        $topStudents = array_merge($outstandingStudents, $onTrackStudents, $inProgressStudents, $atRiskStudents);
+        usort($topStudents, fn ($a, $b) => $b['hours'] <=> $a['hours']);
+
+        $totalStudents = $allStudents->count();
+
+        return [
+            'totalStudents' => $totalStudents,
+            'distribution' => [
+                'onTrack' => $onTrackCount,
+                'inProgress' => $inProgressCount,
+                'atRisk' => $atRiskCount,
+                'zeroHours' => $zeroHoursCount,
+            ],
+            'onTrackStudents' => array_values($onTrackStudents),
+            'inProgressStudents' => array_values($inProgressStudents),
+            'atRiskStudents' => array_values($atRiskStudents),
+            'outstandingStudents' => array_values($outstandingStudents),
+            'topStudents' => array_values($topStudents),
+            'studentsWithNoHours' => array_values($studentsWithNoHours),
+        ];
+    }
+
+    /**
+     * Get upcoming field sessions for a teacher.
+     *
+     * Returns future sessions ordered by date ascending, limited to 10.
+     * Includes session name, date, location, status name, and section name.
+     *
+     * NOTE: field_sessions does not have a section_id FK. Section name is
+     * resolved via teacher_assignments. For multi-section teachers, the
+     * first section alphabetically is returned.
+     *
+     * @return list<array{id: int, name: string, date: string, location: string, statusName: string, sectionName: string}>
+     */
+    public function getTeacherUpcomingSessions(int $teacherId, ?int $yearId): array
+    {
+        $sectionIds = $this->getTeacherSectionIds($teacherId);
+
+        if ($sectionIds->isEmpty()) {
+            return [];
+        }
+
+        return DB::table('field_sessions')
+            ->join('field_session_statuses', 'field_sessions.status_id', '=', 'field_session_statuses.id')
+            ->join('teacher_assignments', function ($join) {
+                $join->on('field_sessions.user_id', '=', 'teacher_assignments.user_id')
+                    ->on('field_sessions.academic_year_id', '=', 'teacher_assignments.academic_year_id')
+                    ->whereNull('teacher_assignments.deleted_at');
+            })
+            ->join('sections', 'teacher_assignments.section_id', '=', 'sections.id')
+            ->where('field_sessions.user_id', $teacherId)
+            ->where('field_sessions.start_datetime', '>=', now())
+            ->whereNull('field_sessions.deleted_at')
+            ->whereNull('sections.deleted_at')
+            ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
+            ->select(
+                'field_sessions.id',
+                'field_sessions.name',
+                'field_sessions.start_datetime as date',
+                'field_sessions.location_name as location',
+                'field_session_statuses.name as status_name',
+                DB::raw('MIN(sections.name) as section_name')
+            )
+            ->groupBy(
+                'field_sessions.id',
+                'field_sessions.name',
+                'field_sessions.start_datetime',
+                'field_sessions.location_name',
+                'field_session_statuses.name'
+            )
+            ->orderBy('field_sessions.start_datetime')
+            ->limit(10)
+            ->get()
+            ->map(fn ($r) => [
+                'id' => (int) $r->id,
+                'name' => $r->name,
+                'date' => $r->date,
+                'location' => $r->location,
+                'statusName' => $r->status_name,
+                'sectionName' => $r->section_name,
+            ])
+            ->toArray();
+    }
+
+    /**
      * Get teacher-specific dashboard data.
      */
     public function getTeacherDashboard(int $teacherId, ?int $academicYearId = null): array
@@ -579,6 +785,7 @@ class HourAccumulatorService
         $lowAttendanceStudents = DB::table('enrollments')
             ->join('users', 'enrollments.user_id', '=', 'users.id')
             ->join('sections', 'enrollments.section_id', '=', 'sections.id')
+            ->join('grades', 'sections.grade_id', '=', 'grades.id')
             ->leftJoin('attendances', function ($join) use ($teacherId) {
                 $join->on('attendances.user_id', '=', 'users.id')
                     ->join('field_sessions as fs', 'attendances.field_session_id', '=', 'fs.id')
@@ -586,16 +793,24 @@ class HourAccumulatorService
                     ->whereNull('attendances.deleted_at')
                     ->whereNull('fs.deleted_at');
             })
+            ->leftJoin('attendance_activities', function ($join) {
+                $join->on('attendance_activities.attendance_id', '=', 'attendances.id')
+                    ->whereNull('attendance_activities.deleted_at');
+            })
             ->whereIn('enrollments.section_id', $assignedSections->pluck('section_id'))
             ->whereNull('enrollments.deleted_at')
             ->whereNull('users.deleted_at')
+            ->where('attendances.attended', true)
             ->select(
                 'users.id as student_id',
                 DB::raw('users.name as student_name'),
                 'sections.name as section_name',
-                DB::raw('COUNT(DISTINCT attendances.id) as attendance_count')
+                'grades.name as grade_name',
+                'enrollments.section_id',
+                DB::raw('COUNT(DISTINCT attendances.id) as attendance_count'),
+                DB::raw('COALESCE(SUM(attendance_activities.hours), 0) as total_hours')
             )
-            ->groupBy('users.id', 'users.name', 'sections.name')
+            ->groupBy('users.id', 'users.name', 'sections.name', 'grades.name', 'enrollments.section_id')
             ->having(DB::raw('COUNT(DISTINCT attendances.id)'), '<', 3)
             ->orderBy(DB::raw('COUNT(DISTINCT attendances.id)'))
             ->get()
@@ -603,9 +818,60 @@ class HourAccumulatorService
                 'studentId' => $r->student_id,
                 'studentName' => $r->student_name,
                 'sectionName' => $r->section_name,
+                'gradeName' => $r->grade_name,
+                'sectionId' => $r->section_id,
                 'attendanceCount' => $r->attendance_count,
+                'totalHours' => round((float) $r->total_hours, 2),
             ])
             ->toArray();
+
+        // Per-student breakdown per category (separate query to avoid groupBy conflicts)
+        $categoryStudents = DB::table('attendance_activities')
+            ->join('attendances', 'attendance_activities.attendance_id', '=', 'attendances.id')
+            ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
+            ->join('activity_categories', 'attendance_activities.activity_category_id', '=', 'activity_categories.id')
+            ->join('users', 'attendances.user_id', '=', 'users.id')
+            ->leftJoin('enrollments', function ($join) use ($yearId) {
+                $join->on('users.id', '=', 'enrollments.user_id')
+                    ->whereNull('enrollments.deleted_at');
+                if ($yearId) {
+                    $join->where('enrollments.academic_year_id', $yearId);
+                }
+            })
+            ->leftJoin('sections as sec', 'enrollments.section_id', '=', 'sec.id')
+            ->leftJoin('grades', 'sec.grade_id', '=', 'grades.id')
+            ->where('field_sessions.user_id', $teacherId)
+            ->where('attendances.attended', true)
+            ->whereNull('attendance_activities.deleted_at')
+            ->whereNull('attendances.deleted_at')
+            ->whereNull('field_sessions.deleted_at')
+            ->whereNull('activity_categories.deleted_at')
+            ->whereNull('users.deleted_at')
+            ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
+            ->select(
+                'activity_categories.name as category_name',
+                'users.id as student_id',
+                DB::raw('users.name as student_name'),
+                DB::raw('MAX(sec.name) as section_name'),
+                DB::raw('MAX(grades.name) as grade_name'),
+                DB::raw('SUM(attendance_activities.hours) as hours')
+            )
+            ->groupBy('activity_categories.name', 'users.id', 'users.name')
+            ->orderBy('activity_categories.name')
+            ->orderByDesc(DB::raw('SUM(attendance_activities.hours)'))
+            ->get();
+
+        // Group per-student results by category name
+        $studentsByCategory = [];
+        foreach ($categoryStudents as $row) {
+            $studentsByCategory[$row->category_name][] = [
+                'studentId' => $row->student_id,
+                'studentName' => $row->student_name,
+                'sectionName' => $row->section_name ?? '',
+                'gradeName' => $row->grade_name ?? '',
+                'hours' => round((float) $row->hours, 2),
+            ];
+        }
 
         // Category distribution in own sessions
         $categoryDistribution = DB::table('attendance_activities')
@@ -621,7 +887,8 @@ class HourAccumulatorService
             ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
             ->select(
                 'activity_categories.name as category_name',
-                DB::raw('SUM(attendance_activities.hours) as total_hours')
+                DB::raw('SUM(attendance_activities.hours) as total_hours'),
+                DB::raw('COUNT(DISTINCT attendances.id) as attendance_count')
             )
             ->groupBy('activity_categories.name')
             ->orderByDesc('total_hours')
@@ -629,6 +896,20 @@ class HourAccumulatorService
             ->map(fn ($r) => [
                 'categoryName' => $r->category_name,
                 'totalHours' => round((float) $r->total_hours, 2),
+                'count' => (int) $r->attendance_count,
+                'minRequiredHours' => null, // activity_categories has no min_required_hours column
+                'students' => collect($studentsByCategory[$r->category_name] ?? [])
+                    ->map(fn ($s) => [
+                        'studentId' => $s['studentId'],
+                        'studentName' => $s['studentName'],
+                        'sectionName' => $s['sectionName'],
+                        'gradeName' => $s['gradeName'],
+                        'hours' => $s['hours'],
+                        'percentage' => $r->total_hours > 0 ? round(($s['hours'] / (float) $r->total_hours) * 100, 1) : 0,
+                    ])
+                    ->take(10)
+                    ->values()
+                    ->toArray(),
             ])
             ->toArray();
 
@@ -674,12 +955,19 @@ class HourAccumulatorService
             ->orderByDesc('last_session_date')
             ->limit(10)
             ->get()
-            ->map(fn ($r) => [
-                'studentId' => $r->student_id,
-                'studentName' => $r->student_name,
-                'conditionName' => $r->condition_name,
-                'lastSessionDate' => $r->last_session_date,
-            ])
+            ->map(function ($r) {
+                $lastSessionDate = $r->last_session_date ? Carbon::parse($r->last_session_date) : null;
+                $daysSince = $lastSessionDate ? (int) $lastSessionDate->diffInDays(now()) : 0;
+
+                return [
+                    'studentId' => $r->student_id,
+                    'studentName' => $r->student_name,
+                    'conditionName' => $r->condition_name,
+                    'severity' => 'medium', // Default: health_conditions table has no severity column
+                    'lastSessionDate' => $r->last_session_date,
+                    'daysSinceLastSession' => $daysSince,
+                ];
+            })
             ->toArray();
 
         return [

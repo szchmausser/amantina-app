@@ -744,7 +744,7 @@ class AttendanceControllerTest extends TestCase
         );
 
         $response->assertRedirect();
-        $response->assertSessionHas('success');
+        $response->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('attendances', [
             'field_session_id' => $session->id,

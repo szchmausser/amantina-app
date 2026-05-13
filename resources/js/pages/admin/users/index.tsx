@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
-import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Select,
@@ -289,14 +289,24 @@ export default function Index({ users, filters, availableRoles }: Props) {
             <SettingsLayout>
                 <div className="flex h-full flex-1 flex-col gap-6">
                     {/* Título */}
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            Usuarios
-                        </h1>
-                        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                            Administra las cuentas de usuario, roles y permisos del
-                            sistema.
-                        </p>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                                Usuarios
+                            </h1>
+                            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                                Administra las cuentas de usuario, roles y permisos del
+                                sistema.
+                            </p>
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.history.back()}
+                        >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Volver
+                        </Button>
                     </div>
 
                     {/* Filtros usando componente reutilizable */}

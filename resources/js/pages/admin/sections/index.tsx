@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Eye, Pencil, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -75,6 +75,9 @@ export default function SectionsIndex({
     selectedYearId,
     selectedGradeId,
 }: Props) {
+    const { auth } = usePage<any>().props;
+    const hasPermission = (p: string) => auth.permissions?.includes(p);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Secciones', href: '/admin/sections' },
@@ -190,31 +193,35 @@ export default function SectionsIndex({
                                         <span className="sr-only">Ver</span>
                                     </Link>
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
-                                    asChild
-                                    title="Editar"
-                                >
-                                    <Link
-                                        href={`/admin/sections/${section.id}/edit`}
+                                {hasPermission('sections.edit') && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                        asChild
+                                        title="Editar"
                                     >
-                                        <Pencil className="h-4 w-4" />
-                                        <span className="sr-only">Editar</span>
-                                    </Link>
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
-                                    onClick={() => handleDelete(section.id)}
-                                    title="Eliminar"
-                                    data-testid="delete-btn"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                    <span className="sr-only">Eliminar</span>
-                                </Button>
+                                        <Link
+                                            href={`/admin/sections/${section.id}/edit`}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                            <span className="sr-only">Editar</span>
+                                        </Link>
+                                    </Button>
+                                )}
+                                {hasPermission('sections.delete') && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                        onClick={() => handleDelete(section.id)}
+                                        title="Eliminar"
+                                        data-testid="delete-btn"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Eliminar</span>
+                                    </Button>
+                                )}
                             </div>
                         </DataTableTD>
                     </DataTableTR>
@@ -245,20 +252,24 @@ export default function SectionsIndex({
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>
-                            <Button variant="outline" size="sm" asChild>
-                                <Link href="/admin/section-definitions">
-                                    <Settings2 className="mr-2 h-4 w-4" />
-                                    Definiciones de secciones
-                                </Link>
-                            </Button>
-                            <Button size="sm" asChild>
-                                <Link
-                                    href={`/admin/sections/create?academic_year_id=${selectedYearId}${selectedGradeId ? `&grade_id=${selectedGradeId}` : ''}`}
-                                >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Nueva Sección
-                                </Link>
-                            </Button>
+                            {hasPermission('section_definitions.view') && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href="/admin/section-definitions">
+                                        <Settings2 className="mr-2 h-4 w-4" />
+                                        Definiciones de secciones
+                                    </Link>
+                                </Button>
+                            )}
+                            {hasPermission('sections.create') && (
+                                <Button size="sm" asChild>
+                                    <Link
+                                        href={`/admin/sections/create?academic_year_id=${selectedYearId}${selectedGradeId ? `&grade_id=${selectedGradeId}` : ''}`}
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Nueva Sección
+                                    </Link>
+                                </Button>
+                            )}
                         </div>
                     </div>
 

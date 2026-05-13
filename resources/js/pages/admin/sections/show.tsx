@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Eye, Pencil, Trash2, Users, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -66,6 +66,8 @@ interface Props {
 }
 
 export default function SectionShow({ section, academicYear }: Props) {
+    const { auth } = usePage<any>().props;
+    const hasPermission = (p: string) => auth.permissions?.includes(p);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -122,35 +124,43 @@ export default function SectionShow({ section, academicYear }: Props) {
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>
-                            <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
-                                <Link href={`/admin/teacher-assignments/create?grade_id=${section.grade.id}&section_id=${section.id}`}>
-                                    <UserPlus className="mr-2 h-4 w-4" />
-                                    Asignación Docentes
-                                </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
-                                <Link href={`/admin/enrollments/create?grade_id=${section.grade.id}&section_id=${section.id}`}>
-                                    <UserPlus className="mr-2 h-4 w-4" />
-                                    Inscripción Alumnos
-                                </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild className="text-blue-600 border-blue-200 hover:bg-blue-50">
-                                <Link
-                                    href={`/admin/sections/${section.id}/edit`}
+                            {hasPermission('assignments.create') && (
+                                <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
+                                    <Link href={`/admin/teacher-assignments/create?grade_id=${section.grade.id}&section_id=${section.id}`}>
+                                        <UserPlus className="mr-2 h-4 w-4" />
+                                        Asignación Docentes
+                                    </Link>
+                                </Button>
+                            )}
+                            {hasPermission('enrollments.create') && (
+                                <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
+                                    <Link href={`/admin/enrollments/create?grade_id=${section.grade.id}&section_id=${section.id}`}>
+                                        <UserPlus className="mr-2 h-4 w-4" />
+                                        Inscripción Alumnos
+                                    </Link>
+                                </Button>
+                            )}
+                            {hasPermission('sections.edit') && (
+                                <Button variant="outline" size="sm" asChild className="text-blue-600 border-blue-200 hover:bg-blue-50">
+                                    <Link
+                                        href={`/admin/sections/${section.id}/edit`}
+                                    >
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Editar
+                                    </Link>
+                                </Button>
+                            )}
+                            {hasPermission('sections.delete') && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                                    onClick={handleDelete}
                                 >
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Editar
-                                </Link>
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                                onClick={handleDelete}
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                            </Button>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Eliminar
+                                </Button>
+                            )}
                         </div>
                     </div>
 

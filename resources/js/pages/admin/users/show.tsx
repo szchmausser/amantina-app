@@ -534,31 +534,70 @@ export default function Show({
                                             </div>
                                         )}
                                         {currentEnrollment ? (
-                                            <div className="space-y-1">
+                                            <div className="space-y-2">
                                                 <p className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                                     Grado y Sección
                                                 </p>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="font-medium"
-                                                    >
-                                                        {currentEnrollment.grade
-                                                            ?.name || '—'}
-                                                    </Badge>
-                                                    <span className="text-sm font-medium">
-                                                        Sección{' '}
-                                                        {currentEnrollment
-                                                            .section?.name ||
-                                                            '—'}
-                                                    </span>
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    {hasPermission('academic_years.view') ? (
+                                                        <Link href="/admin/academic-years">
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className="font-medium hover:bg-accent transition-colors cursor-pointer"
+                                                            >
+                                                                Año:{' '}
+                                                                {currentEnrollment
+                                                                    .academic_year?.name ||
+                                                                    '—'}
+                                                            </Badge>
+                                                        </Link>
+                                                    ) : (
+                                                        <Badge variant="secondary" className="font-medium">
+                                                            Año:{' '}
+                                                            {currentEnrollment
+                                                                .academic_year?.name ||
+                                                                '—'}
+                                                        </Badge>
+                                                    )}
+                                                    {hasPermission('grades.view') ? (
+                                                        <Link href="/admin/grades">
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className="font-medium hover:bg-accent transition-colors cursor-pointer"
+                                                            >
+                                                                Grado:{' '}
+                                                                {currentEnrollment.grade
+                                                                    ?.name || '—'}
+                                                            </Badge>
+                                                        </Link>
+                                                    ) : (
+                                                        <Badge variant="secondary" className="font-medium">
+                                                            Grado:{' '}
+                                                            {currentEnrollment.grade
+                                                                ?.name || '—'}
+                                                        </Badge>
+                                                    )}
+                                                    {hasPermission('sections.view') ? (
+                                                        <Link href="/admin/sections">
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className="font-medium hover:bg-accent transition-colors cursor-pointer"
+                                                            >
+                                                                Sección:{' '}
+                                                                {currentEnrollment
+                                                                    .section?.name ||
+                                                                    '—'}
+                                                            </Badge>
+                                                        </Link>
+                                                    ) : (
+                                                        <Badge variant="secondary" className="font-medium">
+                                                            Sección:{' '}
+                                                            {currentEnrollment
+                                                                .section?.name ||
+                                                                '—'}
+                                                        </Badge>
+                                                    )}
                                                 </div>
-                                                <p className="text-xs text-neutral-500">
-                                                    Año Escolar:{' '}
-                                                    {currentEnrollment
-                                                        .academic_year?.name ||
-                                                        '—'}
-                                                </p>
                                             </div>
                                         ) : (
                                             <div className="col-span-full rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800/50">

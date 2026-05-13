@@ -90,6 +90,8 @@ class DashboardController extends Controller
     {
         $yearId = $year?->id;
         $data = $this->hourAccumulator->getTeacherDashboard($user->id, $yearId);
+        $distribution = $this->hourAccumulator->getTeacherStudentDistribution($user->id, $yearId);
+        $upcomingSessions = $this->hourAccumulator->getTeacherUpcomingSessions($user->id, $yearId);
 
         return Inertia::render('teacher/dashboard', [
             'activeYear' => $year ? [
@@ -104,6 +106,16 @@ class DashboardController extends Controller
             'categoryDistribution' => $data['categoryDistribution'] ?? [],
             'sessionsPerTerm' => $data['sessionsPerTerm'] ?? [],
             'healthReminders' => $data['healthReminders'] ?? [],
+            // New props from student distribution
+            'totalStudents' => $distribution['totalStudents'] ?? 0,
+            'distribution' => $distribution['distribution'] ?? [],
+            'onTrackStudents' => $distribution['onTrackStudents'] ?? [],
+            'inProgressStudents' => $distribution['inProgressStudents'] ?? [],
+            'atRiskStudents' => $distribution['atRiskStudents'] ?? [],
+            'outstandingStudents' => $distribution['outstandingStudents'] ?? [],
+            'topStudents' => $distribution['topStudents'] ?? [],
+            'studentsWithNoHours' => $distribution['studentsWithNoHours'] ?? [],
+            'upcomingSessions' => $upcomingSessions,
         ]);
     }
 

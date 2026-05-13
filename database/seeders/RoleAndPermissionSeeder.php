@@ -126,6 +126,10 @@ class RoleAndPermissionSeeder extends Seeder
                 $role->syncPermissions([
                     'users.view',
                     'academic_info.view',
+                    'academic_years.view',
+                    'school_terms.view',
+                    'grades.view',
+                    'sections.view',
                     'activity_categories.view',
                     'activity_categories.create',
                     'activity_categories.edit',

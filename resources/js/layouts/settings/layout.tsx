@@ -128,7 +128,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     // ── Definiciones ──
     const definitionItems: NavItem[] = [];
 
-    if (auth.permissions?.includes('school_terms.view')) {
+    if (auth.permissions?.includes('school_terms.create')) {
         definitionItems.push({
             title: 'Lapsos',
             href: termTypesIndex().url,

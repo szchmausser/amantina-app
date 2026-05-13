@@ -1,11 +1,18 @@
+import { Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface StatCardProps {
     title: string;
     value: string | number;
     description?: string;
     icon?: React.ReactNode;
+    tooltip?: string;
     trend?: {
         value: number;
         isPositive: boolean;
@@ -18,17 +25,32 @@ export function StatCard({
     value,
     description,
     icon,
+    tooltip,
     trend,
     className,
 }: StatCardProps) {
     return (
         <Card className={cn('', className)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {title}
-                </CardTitle>
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <CardTitle className="truncate text-sm font-medium text-muted-foreground">
+                        {title}
+                    </CardTitle>
+                    {tooltip && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button className="shrink-0 rounded-full p-0.5 hover:bg-accent" type="button">
+                                    <Info className="h-4 w-4 text-muted-foreground" />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="text-sm">{tooltip}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    )}
+                </div>
                 {icon && (
-                    <div className="text-muted-foreground">{icon}</div>
+                    <div className="shrink-0 text-muted-foreground">{icon}</div>
                 )}
             </CardHeader>
             <CardContent>

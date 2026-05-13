@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, GraduationCap, Pencil, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import {
@@ -72,6 +72,9 @@ export default function GradesIndex({
     academicYears,
     selectedYearId,
 }: Props) {
+    const { auth } = usePage<any>().props;
+    const hasPermission = (p: string) => auth.permissions?.includes(p);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Grados', href: '/admin/grades' },
@@ -175,46 +178,52 @@ export default function GradesIndex({
                         </DataTableTD>
                         <DataTableTD className="text-right">
                             <div className="flex items-center justify-end gap-1">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
-                                    asChild
-                                    title="Añadir sección"
-                                >
-                                    <Link
-                                        href={`/admin/sections/create?grade_id=${grade.id}&academic_year_id=${grade.academic_year_id}`}
+                                {hasPermission('sections.create') && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                        asChild
+                                        title="Añadir sección"
                                     >
-                                        <Plus className="h-4 w-4" />
-                                        <span className="sr-only">
-                                            Añadir sección
-                                        </span>
-                                    </Link>
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
-                                    asChild
-                                    title="Editar"
-                                >
-                                    <Link
-                                        href={`/admin/grades/${grade.id}/edit`}
+                                        <Link
+                                            href={`/admin/sections/create?grade_id=${grade.id}&academic_year_id=${grade.academic_year_id}`}
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            <span className="sr-only">
+                                                Añadir sección
+                                            </span>
+                                        </Link>
+                                    </Button>
+                                )}
+                                {hasPermission('grades.edit') && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                        asChild
+                                        title="Editar"
                                     >
-                                        <Pencil className="h-4 w-4" />
-                                        <span className="sr-only">Editar</span>
-                                    </Link>
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
-                                    onClick={() => handleDelete(grade.id)}
-                                    data-testid="delete-btn"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                    <span className="sr-only">Eliminar</span>
-                                </Button>
+                                        <Link
+                                            href={`/admin/grades/${grade.id}/edit`}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                            <span className="sr-only">Editar</span>
+                                        </Link>
+                                    </Button>
+                                )}
+                                {hasPermission('grades.delete') && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                        onClick={() => handleDelete(grade.id)}
+                                        data-testid="delete-btn"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Eliminar</span>
+                                    </Button>
+                                )}
                             </div>
                         </DataTableTD>
                     </DataTableTR>
@@ -245,20 +254,24 @@ export default function GradesIndex({
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Volver
                             </Button>
-                            <Button variant="outline" size="sm" asChild>
-                                <Link href="/admin/grade-definitions">
-                                    <Settings2 className="mr-2 h-4 w-4" />
-                                    Definiciones de grados
-                                </Link>
-                            </Button>
-                            <Button size="sm" asChild>
-                                <Link
-                                    href={`/admin/grades/create?academic_year_id=${selectedYearId}`}
-                                >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Nuevo Grado
-                                </Link>
-                            </Button>
+                            {hasPermission('grade_definitions.view') && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href="/admin/grade-definitions">
+                                        <Settings2 className="mr-2 h-4 w-4" />
+                                        Definiciones de grados
+                                    </Link>
+                                </Button>
+                            )}
+                            {hasPermission('grades.create') && (
+                                <Button size="sm" asChild>
+                                    <Link
+                                        href={`/admin/grades/create?academic_year_id=${selectedYearId}`}
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Nuevo Grado
+                                    </Link>
+                                </Button>
+                            )}
                         </div>
                     </div>
 
