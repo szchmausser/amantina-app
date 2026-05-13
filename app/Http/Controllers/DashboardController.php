@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\Grade;
+use App\Models\Section;
 use App\Models\User;
 use App\Services\HourAccumulatorService;
 use Illuminate\Http\Request;
@@ -32,7 +34,7 @@ class DashboardController extends Controller
         $activeRole = $request->session()->get('active_role');
 
         if ($activeRole === 'admin') {
-            return $this->adminDashboard($user, $activeYear);
+            return $this->adminDashboard($user, $activeYear, $request);
         }
 
         if ($activeRole === 'profesor') {
@@ -56,10 +58,33 @@ class DashboardController extends Controller
     /**
      * Admin dashboard with institution-wide KPIs.
      */
-    protected function adminDashboard(User $user, ?AcademicYear $year): Response
+    protected function adminDashboard(User $user, ?AcademicYear $year, Request $request): Response
     {
         $yearId = $year?->id;
         $overview = $this->hourAccumulator->getInstitutionOverview($yearId);
+
+        // Grade/section filters for category distribution
+        $gradeId = $request->query('grade_id') ? (int) $request->query('grade_id') : null;
+        $sectionId = $request->query('section_id') ? (int) $request->query('section_id') : null;
+
+        $categoryDistribution = $this->hourAccumulator->getAdminCategoryDistribution($yearId, $gradeId, $sectionId);
+
+        // All grades for filter dropdown
+        $grades = Grade::query()
+            ->whereNull('deleted_at')
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->toArray();
+
+        // All sections for filter dropdown
+        $sections = Section::query()
+            ->join('grades', 'sections.grade_id', '=', 'grades.id')
+            ->whereNull('sections.deleted_at')
+            ->whereNull('grades.deleted_at')
+            ->orderBy('grades.name')
+            ->orderBy('sections.name')
+            ->get(['sections.id', 'sections.name', 'sections.grade_id'])
+            ->toArray();
 
         return Inertia::render('admin/dashboard', [
             'activeYear' => $year ? [
@@ -80,6 +105,11 @@ class DashboardController extends Controller
             'topSections' => $overview['topSections'] ?? [],
             'concerningSections' => $overview['concerningSections'] ?? [],
             'alerts' => $overview['alerts'] ?? [],
+            'categoryDistribution' => $categoryDistribution,
+            'grades' => $grades,
+            'sections' => $sections,
+            'selectedGradeId' => $gradeId,
+            'selectedSectionId' => $sectionId,
         ]);
     }
 

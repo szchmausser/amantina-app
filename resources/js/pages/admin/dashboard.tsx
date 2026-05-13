@@ -1,18 +1,21 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
-    Users,
     AlertTriangle,
-    CheckCircle2,
-    TrendingUp,
-    XCircle,
-    Star,
+    BookOpen,
     Calendar,
-    Info,
+    CheckCircle2,
+    ChevronDown,
+    ChevronUp,
     ExternalLink,
+    Info,
     MapPin,
+    Star,
+    TrendingUp,
     Trophy,
+    Users,
+    XCircle,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StudentListBadge } from '@/components/ui/student-list-badge';
@@ -28,8 +31,16 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types/navigation';
+import type { EnhancedCategoryDistribution } from '@/types/dashboard';
 
 interface Student {
     id: number;
@@ -113,6 +124,11 @@ interface Props {
             teacher: string | null;
         }>;
     };
+    categoryDistribution: EnhancedCategoryDistribution[];
+    grades: { id: number; name: string }[];
+    sections: { id: number; name: string; grade_id: number }[];
+    selectedGradeId: number | null;
+    selectedSectionId: number | null;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -141,10 +157,63 @@ export default function AdminDashboard({
     topSections,
     concerningSections,
     alerts,
+    categoryDistribution,
+    grades,
+    sections,
+    selectedGradeId,
+    selectedSectionId,
 }: Props) {
     const [showSessionsModal, setShowSessionsModal] = useState(false);
     const [showSessionsNoActivitiesModal, setShowSessionsNoActivitiesModal] = useState(false);
     const [showZeroHoursModal, setShowZeroHoursModal] = useState(false);
+
+    // Category expansion state — multiple categories can be open simultaneously
+    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+
+    const toggleCategory = (categoryName: string) => {
+        setExpandedCategories(prev => {
+            const next = new Set(prev);
+            if (next.has(categoryName)) next.delete(categoryName);
+            else next.add(categoryName);
+            return next;
+        });
+    };
+
+    const totalCategoryHours = useMemo(
+        () => categoryDistribution.reduce((sum, cat) => sum + cat.totalHours, 0),
+        [categoryDistribution],
+    );
+
+    // Handle grade/section filter changes
+    const handleGradeChange = (value: string) => {
+        router.get(
+            dashboard().url,
+            {
+                grade_id: value === 'all' ? null : value,
+                section_id: null,
+            },
+            { preserveState: true, only: ['categoryDistribution', 'selectedGradeId', 'selectedSectionId'] },
+        );
+    };
+
+    const handleSectionChange = (value: string) => {
+        router.get(
+            dashboard().url,
+            {
+                grade_id: selectedGradeId,
+                section_id: value === 'all' ? null : value,
+            },
+            { preserveState: true, only: ['categoryDistribution', 'selectedGradeId', 'selectedSectionId'] },
+        );
+    };
+
+    // Filter sections by selected grade
+    const filteredSections = useMemo(() => {
+        if (selectedGradeId) {
+            return sections.filter(s => s.grade_id === selectedGradeId);
+        }
+        return sections;
+    }, [sections, selectedGradeId]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -616,6 +685,189 @@ export default function AdminDashboard({
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Category Distribution */}
+                <Card>
+                    <CardHeader>
+                        <div className="space-y-3">
+                            {/* Filter row */}
+                            <div className="flex flex-wrap items-center gap-3">
+                                <span className="text-sm font-medium text-muted-foreground">Filtrar por:</span>
+                                <Select
+                                    value={selectedGradeId?.toString() ?? 'all'}
+                                    onValueChange={handleGradeChange}
+                                >
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Grado" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos los grados</SelectItem>
+                                        {grades.map((grade) => (
+                                            <SelectItem key={grade.id} value={grade.id.toString()}>
+                                                {grade.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Select
+                                    value={selectedSectionId?.toString() ?? 'all'}
+                                    onValueChange={handleSectionChange}
+                                >
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Sección" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todas las secciones</SelectItem>
+                                        {filteredSections.map((section) => (
+                                            <SelectItem key={section.id} value={section.id.toString()}>
+                                                {section.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <CardTitle className="flex items-center gap-2">
+                                <BookOpen className="h-4 w-4" />
+                                Distribución por Categoría
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Info className="h-3 w-3 cursor-help text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p className="text-xs">Horas totales acumuladas por <strong>todos</strong> los estudiantes en cada tipo de actividad durante las jornadas de campo. No es un promedio por estudiante, es la suma total.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </CardTitle>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-3">
+                            {categoryDistribution.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    Sin datos disponibles
+                                </p>
+                            ) : (
+                                categoryDistribution.map((cat) => {
+                                    const isExpanded = expandedCategories.has(cat.categoryName);
+                                    const hasStudents = cat.students && cat.students.length > 0;
+                                    return (
+                                    <div
+                                        key={cat.categoryName}
+                                        className="space-y-1.5"
+                                    >
+                                        {/* Title row: name + badges */}
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() =>
+                                                    toggleCategory(cat.categoryName)
+                                                }
+                                                className="flex items-center gap-1 text-sm text-left font-medium transition-colors hover:text-foreground"
+                                            >
+                                                {isExpanded ? (
+                                                    <ChevronUp className="h-3.5 w-3.5 shrink-0" />
+                                                ) : (
+                                                    <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                                )}
+                                                {cat.categoryName}
+                                            </button>
+                                            <div className="ml-auto flex shrink-0 gap-1.5">
+                                                {cat.count > 0 && (
+                                                    <span className="inline-flex items-center gap-1 rounded-md border bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-950/30 dark:border-purple-800 dark:text-purple-300 min-w-[110px] justify-center">
+                                                        {cat.count} participaciones
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Info className="h-3 w-3 cursor-help text-purple-500 dark:text-purple-400" />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p className="text-xs max-w-56">Cantidad de jornadas donde se registró esta actividad. Cuenta asistencias, no estudiantes. Un mismo alumno participando en 3 jornadas distintas cuenta como 3.</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </span>
+                                                )}
+                                                <span className="inline-flex items-center gap-1 rounded-md border bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-300 min-w-[110px] justify-center">
+                                                    {cat.totalHours.toFixed(1)} horas totales
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Info className="h-3 w-3 cursor-help text-blue-500 dark:text-blue-400" />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p className="text-xs max-w-56">Suma de horas de TODOS los estudiantes en esta categoría. Ejemplo: si 3 alumnos acumulan 3h cada uno en esta categoría, se muestran 9h.</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </span>
+                                                {totalCategoryHours > 0 && (
+                                                    <span className="inline-flex items-center gap-1 rounded-md border bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-300 min-w-[110px] justify-center">
+                                                        {(cat.totalHours / totalCategoryHours * 100).toFixed(1)}% del total
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Info className="h-3 w-3 cursor-help text-emerald-500 dark:text-emerald-400" />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p className="text-xs">Porcentaje que representa esta categoría del total de horas en todas las categorías.</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {/* Progress bar */}
+                                        <div className="h-2 overflow-hidden rounded-full bg-muted">
+                                            <div
+                                                className="h-full rounded-full bg-blue-500"
+                                                style={{
+                                                    width: `${Math.min(
+                                                        (cat.totalHours /
+                                                            (categoryDistribution[0]
+                                                                ?.totalHours ||
+                                                                 1)) *
+                                                             100,
+                                                         100,
+                                                    )}%`,
+                                                }}
+                                            />
+                                        </div>
+                                        {/* Expanded student list */}
+                                        {isExpanded && hasStudents && (
+                                            <div className="space-y-1.5 pt-1">
+                                                {cat.students.map((student) => (
+                                                    <button
+                                                        key={student.studentId}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            router.visit(
+                                                                `/admin/users/${student.studentId}`,
+                                                            );
+                                                        }}
+                                                        className="flex w-full items-center justify-between rounded-lg border bg-card px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+                                                    >
+                                                        <div>
+                                                            <span className="font-medium">{student.studentName}</span>
+                                                            <span className="ml-1.5 text-xs text-muted-foreground">
+                                                                · {student.gradeName} {student.sectionName}
+                                                            </span>
+                                                        </div>
+                                                        <span className="flex items-center gap-2 text-muted-foreground">
+                                                            <span>{student.hours.toFixed(1)}h</span>
+                                                            <span className="text-xs">
+                                                                ({student.percentage}%)
+                                                            </span>
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {isExpanded && !hasStudents && (
+                                            <p className="py-1 text-xs text-muted-foreground">
+                                                Sin estudiantes registrados
+                                            </p>
+                                        )}
+                                    </div>
+                                )})
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
 
                 {/* Sections Overview */}
                 <Card>

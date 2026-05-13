@@ -147,6 +147,9 @@ export interface AdminDashboardData {
         studentCount: number;
         averagePerStudent: number;
     }[];
+    categoryDistribution: EnhancedCategoryDistribution[];
+    grades: { id: number; name: string }[];
+    sections: { id: number; name: string; grade_id: number }[];
 }
 
 export interface TeacherDashboardData {

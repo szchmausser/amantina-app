@@ -499,6 +499,117 @@ class HourAccumulatorService
     }
 
     /**
+     * Get category distribution for admin dashboard (all teachers, optional grade/section filters).
+     *
+     * @return array<int, array{categoryName: string, totalHours: float, count: int, minRequiredHours: null, students: array}>
+     */
+    public function getAdminCategoryDistribution(?int $yearId = null, ?int $gradeId = null, ?int $sectionId = null): array
+    {
+        // Per-student breakdown per category
+        $categoryStudents = DB::table('attendance_activities')
+            ->join('attendances', 'attendance_activities.attendance_id', '=', 'attendances.id')
+            ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
+            ->join('activity_categories', 'attendance_activities.activity_category_id', '=', 'activity_categories.id')
+            ->join('users', 'attendances.user_id', '=', 'users.id')
+            ->join('enrollments', function ($join) use ($yearId) {
+                $join->on('users.id', '=', 'enrollments.user_id')
+                    ->whereNull('enrollments.deleted_at');
+                if ($yearId) {
+                    $join->where('enrollments.academic_year_id', $yearId);
+                }
+            })
+            ->join('sections as sec', 'enrollments.section_id', '=', 'sec.id')
+            ->join('grades', 'sec.grade_id', '=', 'grades.id')
+            ->where('attendances.attended', true)
+            ->whereNull('attendance_activities.deleted_at')
+            ->whereNull('attendances.deleted_at')
+            ->whereNull('field_sessions.deleted_at')
+            ->whereNull('activity_categories.deleted_at')
+            ->whereNull('users.deleted_at')
+            ->whereNull('sec.deleted_at')
+            ->whereNull('grades.deleted_at')
+            ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
+            ->when($gradeId, fn ($q) => $q->where('sec.grade_id', $gradeId))
+            ->when($sectionId, fn ($q) => $q->where('enrollments.section_id', $sectionId))
+            ->select(
+                'activity_categories.name as category_name',
+                'users.id as student_id',
+                DB::raw('users.name as student_name'),
+                DB::raw('sec.name as section_name'),
+                DB::raw('grades.name as grade_name'),
+                DB::raw('SUM(attendance_activities.hours) as hours')
+            )
+            ->groupBy('activity_categories.name', 'users.id', 'users.name', 'sec.name', 'grades.name')
+            ->orderBy('activity_categories.name')
+            ->orderByDesc(DB::raw('SUM(attendance_activities.hours)'))
+            ->get();
+
+        // Group per-student results by category name
+        $studentsByCategory = [];
+        foreach ($categoryStudents as $row) {
+            $studentsByCategory[$row->category_name][] = [
+                'studentId' => $row->student_id,
+                'studentName' => $row->student_name,
+                'sectionName' => $row->section_name ?? '',
+                'gradeName' => $row->grade_name ?? '',
+                'hours' => round((float) $row->hours, 2),
+            ];
+        }
+
+        // Category distribution across ALL teachers
+        $categoryDistribution = DB::table('attendance_activities')
+            ->join('attendances', 'attendance_activities.attendance_id', '=', 'attendances.id')
+            ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
+            ->join('activity_categories', 'attendance_activities.activity_category_id', '=', 'activity_categories.id')
+            ->join('enrollments', function ($join) use ($yearId) {
+                $join->on('attendances.user_id', '=', 'enrollments.user_id')
+                    ->whereNull('enrollments.deleted_at');
+                if ($yearId) {
+                    $join->where('enrollments.academic_year_id', $yearId);
+                }
+            })
+            ->join('sections as sec', 'enrollments.section_id', '=', 'sec.id')
+            ->where('attendances.attended', true)
+            ->whereNull('attendance_activities.deleted_at')
+            ->whereNull('attendances.deleted_at')
+            ->whereNull('field_sessions.deleted_at')
+            ->whereNull('activity_categories.deleted_at')
+            ->whereNull('sec.deleted_at')
+            ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
+            ->when($gradeId, fn ($q) => $q->where('sec.grade_id', $gradeId))
+            ->when($sectionId, fn ($q) => $q->where('enrollments.section_id', $sectionId))
+            ->select(
+                'activity_categories.name as category_name',
+                DB::raw('SUM(attendance_activities.hours) as total_hours'),
+                DB::raw('COUNT(DISTINCT attendances.id) as attendance_count')
+            )
+            ->groupBy('activity_categories.name')
+            ->orderByDesc('total_hours')
+            ->get()
+            ->map(fn ($r) => [
+                'categoryName' => $r->category_name,
+                'totalHours' => round((float) $r->total_hours, 2),
+                'count' => (int) $r->attendance_count,
+                'minRequiredHours' => null,
+                'students' => collect($studentsByCategory[$r->category_name] ?? [])
+                    ->map(fn ($s) => [
+                        'studentId' => $s['studentId'],
+                        'studentName' => $s['studentName'],
+                        'sectionName' => $s['sectionName'],
+                        'gradeName' => $s['gradeName'],
+                        'hours' => $s['hours'],
+                        'percentage' => $r->total_hours > 0 ? round(($s['hours'] / (float) $r->total_hours) * 100, 1) : 0,
+                    ])
+                    ->take(10)
+                    ->values()
+                    ->toArray(),
+            ])
+            ->toArray();
+
+        return $categoryDistribution;
+    }
+
+    /**
      * Get the section IDs assigned to a teacher (excluding soft-deleted assignments).
      *
      * @return Collection<int, int>
