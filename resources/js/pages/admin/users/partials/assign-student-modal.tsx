@@ -26,31 +26,31 @@ import { useInitials } from '@/hooks/use-initials';
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    studentId: number;
+    representativeId: number;
     relationshipTypes: any[];
-    availableRepresentatives: any[];
+    availableStudents: any[];
 }
 
-export default function AssignRepresentativeModal({
+export default function AssignStudentModal({
     isOpen,
     onClose,
-    studentId,
+    representativeId,
     relationshipTypes,
-    availableRepresentatives,
+    availableStudents,
 }: Props) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const getInitials = useInitials();
 
     const { data, setData, post, processing, errors, reset } = useForm({
-        student_id: studentId.toString(),
-        representative_id: '',
+        student_id: '',
+        representative_id: representativeId.toString(),
         relationship_type_id: '',
     });
 
     const filteredUsers =
         searchTerm.length >= 2
-            ? availableRepresentatives
+            ? availableStudents
                   .filter(
                       (u) =>
                           u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -62,13 +62,13 @@ export default function AssignRepresentativeModal({
 
     const handleSelectUser = (user: any) => {
         setSelectedUser(user);
-        setData('representative_id', user.id.toString());
+        setData('student_id', user.id.toString());
         setSearchTerm('');
     };
 
     const handleClearSelection = () => {
         setSelectedUser(null);
-        setData('representative_id', '');
+        setData('student_id', '');
     };
 
     const handleClose = () => {
@@ -93,19 +93,19 @@ export default function AssignRepresentativeModal({
         <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Asignar Representante</DialogTitle>
+                    <DialogTitle>Asignar Alumno</DialogTitle>
                     <DialogDescription>
-                        Vincula un representante legal a este alumno.
+                        Vincula un alumno a este representante legal.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {!selectedUser ? (
                         <div className="space-y-2">
-                            <Label>Buscar representante</Label>
+                            <Label>Buscar alumno</Label>
                             <div className="relative">
                                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="Escribe nombre, cédula o correo del representante..."
+                                    placeholder="Escribe nombre, cédula o correo del alumno..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="pl-8"
@@ -187,11 +187,18 @@ export default function AssignRepresentativeModal({
                                 />
                             </SelectTrigger>
                             <SelectContent>
-                                {relationshipTypes.map((rt) => (
-                                    <SelectItem key={rt.id} value={rt.id.toString()}>
-                                        {rt.name}
-                                    </SelectItem>
-                                ))}
+                                {(() => {
+                                    const parentType = relationshipTypes.find((rt: any) => ['Madre', 'Padre'].includes(rt.name));
+                                    const otherType = relationshipTypes.find((rt: any) => !['Madre', 'Padre'].includes(rt.name));
+                                    const options = [];
+                                    if (parentType) options.push({ id: parentType.id, label: 'hijo(a)' });
+                                    if (otherType) options.push({ id: otherType.id, label: 'otro' });
+                                    return options.map((opt) => (
+                                        <SelectItem key={opt.id} value={opt.id.toString()}>
+                                            {opt.label}
+                                        </SelectItem>
+                                    ));
+                                })()}
                             </SelectContent>
                         </Select>
                         {errors.relationship_type_id && (

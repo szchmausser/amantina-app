@@ -110,6 +110,14 @@ class UserController extends Controller
 
         $representativeRole = Role::where('name', 'representante')->first();
 
+        // Available students for assign-student modal (when viewing a representante)
+        $availableStudents = $user->hasRole('representante')
+            ? User::role('alumno')
+                ->whereDoesntHave('representatives', fn ($q) => $q->where('representative_id', $user->id))
+                ->orderBy('name')
+                ->get(['id', 'name', 'cedula', 'email'])
+            : collect();
+
         $user->load([
             'roles.permissions',
             'permissions',
@@ -247,8 +255,9 @@ class UserController extends Controller
             'hourStats' => $hourStats,
             'relationshipTypes' => RelationshipType::where('is_active', true)->get(),
             'availableRepresentatives' => $representativeRole
-                ? User::role('representante')->get(['id', 'name', 'cedula'])
+                ? User::role('representante')->get(['id', 'name', 'cedula', 'email'])
                 : [],
+            'availableStudents' => $availableStudents,
             'healthConditions' => HealthCondition::where('is_active', true)->get(),
             'academicYears' => AcademicYear::orderBy('name', 'desc')->get(['id', 'name']),
             'externalHours' => $user->hasRole('alumno')

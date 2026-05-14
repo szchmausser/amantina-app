@@ -55,6 +55,7 @@ import { store as linkRepresentative } from '@/routes/admin/student-representati
 import type { BreadcrumbItem, User } from '@/types';
 import { useState } from 'react';
 import AssignRepresentativeModal from './partials/assign-representative-modal';
+import AssignStudentModal from './partials/assign-student-modal';
 import HealthRecordModal from './partials/health-record-modal';
 import ExternalHourModal, {
     ExternalHourItem,
@@ -85,6 +86,7 @@ interface Props {
     currentEnrollment?: CurrentEnrollment | null;
     relationshipTypes: any[];
     availableRepresentatives: any[];
+    availableStudents?: { id: number; name: string; cedula: string }[];
     healthConditions: any[];
     hourHistory?: HourHistoryItem[];
     hourStats?: {
@@ -147,6 +149,7 @@ export default function Show({
     currentEnrollment,
     relationshipTypes,
     availableRepresentatives,
+    availableStudents = [],
     healthConditions,
     hourHistory,
     hourStats,
@@ -155,6 +158,7 @@ export default function Show({
 }: Props) {
     const { auth } = usePage<any>().props;
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [isAssignStudentModalOpen, setIsAssignStudentModalOpen] = useState(false);
     const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
     const [editingHealthRecord, setEditingHealthRecord] = useState<any>(null);
     const [isExternalHourModalOpen, setIsExternalHourModalOpen] =
@@ -651,11 +655,14 @@ export default function Show({
                                                                     <UserIcon className="h-4 w-4 text-neutral-500" />
                                                                 </div>
                                                                 <div>
-                                                                    <p className="text-sm font-semibold">
+                                                                    <Link
+                                                                        href={userShowDetail(rep.id).url}
+                                                                        className="text-sm font-semibold decoration-neutral-300 hover:underline"
+                                                                    >
                                                                         {
                                                                             rep.name
                                                                         }
-                                                                    </p>
+                                                                    </Link>
                                                                     <div className="flex items-center gap-2">
                                                                         <Badge
                                                                             variant="secondary"
@@ -726,11 +733,26 @@ export default function Show({
                         {/* Información de Representados (Solo si es representante) */}
                         {isRepresentante && (
                             <div className="overflow-hidden rounded-xl border">
-                                <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                    <Users className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
-                                        Estudiantes a Cargo
-                                    </h2>
+                                <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
+                                    <div className="flex items-center gap-2">
+                                        <Users className="h-4 w-4 text-neutral-500" />
+                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                            Estudiantes a Cargo
+                                        </h2>
+                                    </div>
+                                    {hasPermission('users.edit') && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 text-[10px] font-bold uppercase"
+                                            onClick={() =>
+                                                setIsAssignStudentModalOpen(true)
+                                            }
+                                        >
+                                            <UserPlus className="mr-1.5 h-3 w-3" />
+                                            Asignar
+                                        </Button>
+                                    )}
                                 </div>
                                 <div className="p-0">
                                     {user.represented_students &&
@@ -1537,6 +1559,16 @@ export default function Show({
                 relationshipTypes={relationshipTypes}
                 availableRepresentatives={availableRepresentatives}
             />
+
+            {isRepresentante && (
+                <AssignStudentModal
+                    isOpen={isAssignStudentModalOpen}
+                    onClose={() => setIsAssignStudentModalOpen(false)}
+                    representativeId={user.id}
+                    relationshipTypes={relationshipTypes}
+                    availableStudents={availableStudents}
+                />
+            )}
 
             <HealthRecordModal
                 isOpen={isHealthModalOpen}
