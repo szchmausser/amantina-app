@@ -503,7 +503,7 @@ class HourAccumulatorService
      *
      * @return array<int, array{categoryName: string, totalHours: float, count: int, minRequiredHours: null, students: array}>
      */
-    public function getAdminCategoryDistribution(?int $yearId = null, ?int $gradeId = null, ?int $sectionId = null): array
+    public function getAdminCategoryDistribution(?int $yearId = null, ?int $gradeId = null, ?int $sectionId = null, ?int $teacherId = null): array
     {
         // Per-student breakdown per category
         $categoryStudents = DB::table('attendance_activities')
@@ -531,6 +531,7 @@ class HourAccumulatorService
             ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
             ->when($gradeId, fn ($q) => $q->where('sec.grade_id', $gradeId))
             ->when($sectionId, fn ($q) => $q->where('enrollments.section_id', $sectionId))
+            ->when($teacherId, fn ($q) => $q->where('field_sessions.user_id', $teacherId))
             ->select(
                 'activity_categories.name as category_name',
                 'users.id as student_id',
@@ -578,10 +579,12 @@ class HourAccumulatorService
             ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
             ->when($gradeId, fn ($q) => $q->where('sec.grade_id', $gradeId))
             ->when($sectionId, fn ($q) => $q->where('enrollments.section_id', $sectionId))
+            ->when($teacherId, fn ($q) => $q->where('field_sessions.user_id', $teacherId))
             ->select(
                 'activity_categories.name as category_name',
                 DB::raw('SUM(attendance_activities.hours) as total_hours'),
-                DB::raw('COUNT(DISTINCT attendances.id) as attendance_count')
+                DB::raw('COUNT(DISTINCT attendances.id) as attendance_count'),
+                DB::raw('COUNT(DISTINCT field_sessions.id) as session_count')
             )
             ->groupBy('activity_categories.name')
             ->orderByDesc('total_hours')
@@ -590,6 +593,7 @@ class HourAccumulatorService
                 'categoryName' => $r->category_name,
                 'totalHours' => round((float) $r->total_hours, 2),
                 'count' => (int) $r->attendance_count,
+                'sessionCount' => (int) $r->session_count,
                 'minRequiredHours' => null,
                 'students' => collect($studentsByCategory[$r->category_name] ?? [])
                     ->map(fn ($s) => [
@@ -600,7 +604,6 @@ class HourAccumulatorService
                         'hours' => $s['hours'],
                         'percentage' => $r->total_hours > 0 ? round(($s['hours'] / (float) $r->total_hours) * 100, 1) : 0,
                     ])
-                    ->take(10)
                     ->values()
                     ->toArray(),
             ])
@@ -1012,7 +1015,8 @@ class HourAccumulatorService
             ->select(
                 'activity_categories.name as category_name',
                 DB::raw('SUM(attendance_activities.hours) as total_hours'),
-                DB::raw('COUNT(DISTINCT attendances.id) as attendance_count')
+                DB::raw('COUNT(DISTINCT attendances.id) as attendance_count'),
+                DB::raw('COUNT(DISTINCT field_sessions.id) as session_count')
             )
             ->groupBy('activity_categories.name')
             ->orderByDesc('total_hours')
@@ -1021,6 +1025,7 @@ class HourAccumulatorService
                 'categoryName' => $r->category_name,
                 'totalHours' => round((float) $r->total_hours, 2),
                 'count' => (int) $r->attendance_count,
+                'sessionCount' => (int) $r->session_count,
                 'minRequiredHours' => null, // activity_categories has no min_required_hours column
                 'students' => collect($studentsByCategory[$r->category_name] ?? [])
                     ->map(fn ($s) => [
@@ -1031,7 +1036,6 @@ class HourAccumulatorService
                         'hours' => $s['hours'],
                         'percentage' => $r->total_hours > 0 ? round(($s['hours'] / (float) $r->total_hours) * 100, 1) : 0,
                     ])
-                    ->take(10)
                     ->values()
                     ->toArray(),
             ])

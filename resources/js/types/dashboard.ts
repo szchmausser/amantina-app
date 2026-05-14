@@ -93,6 +93,7 @@ export interface EnhancedCategoryDistribution {
     categoryName: string;
     totalHours: number;
     count: number;
+    sessionCount: number;
     minRequiredHours: number | null;
     students: CategoryStudent[];
 }
@@ -150,6 +151,10 @@ export interface AdminDashboardData {
     categoryDistribution: EnhancedCategoryDistribution[];
     grades: { id: number; name: string }[];
     sections: { id: number; name: string; grade_id: number }[];
+    teachers: { id: number; name: string }[];
+    selectedGradeId: number | null;
+    selectedSectionId: number | null;
+    selectedTeacherId: number | null;
 }
 
 export interface TeacherDashboardData {

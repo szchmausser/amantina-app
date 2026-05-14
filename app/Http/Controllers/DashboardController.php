@@ -65,11 +65,12 @@ class DashboardController extends Controller
         $yearId = $year?->id;
         $overview = $this->hourAccumulator->getInstitutionOverview($yearId);
 
-        // Grade/section filters for category distribution
+        // Grade/section/teacher filters for category distribution
         $gradeId = $request->query('grade_id') ? (int) $request->query('grade_id') : null;
         $sectionId = $request->query('section_id') ? (int) $request->query('section_id') : null;
+        $teacherId = $request->query('teacher_id') ? (int) $request->query('teacher_id') : null;
 
-        $categoryDistribution = $this->hourAccumulator->getAdminCategoryDistribution($yearId, $gradeId, $sectionId);
+        $categoryDistribution = $this->hourAccumulator->getAdminCategoryDistribution($yearId, $gradeId, $sectionId, $teacherId);
 
         // All grades for filter dropdown
         $grades = Grade::query()
@@ -86,6 +87,12 @@ class DashboardController extends Controller
             ->orderBy('grades.name')
             ->orderBy('sections.name')
             ->get(['sections.id', 'sections.name', 'sections.grade_id'])
+            ->toArray();
+
+        // All teachers (users with 'profesor' role) for filter dropdown
+        $teachers = User::role('profesor')
+            ->orderBy('name')
+            ->get(['id', 'name'])
             ->toArray();
 
         return Inertia::render('admin/dashboard', [
@@ -110,8 +117,10 @@ class DashboardController extends Controller
             'categoryDistribution' => $categoryDistribution,
             'grades' => $grades,
             'sections' => $sections,
+            'teachers' => $teachers,
             'selectedGradeId' => $gradeId,
             'selectedSectionId' => $sectionId,
+            'selectedTeacherId' => $teacherId,
         ]);
     }
 

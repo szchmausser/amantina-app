@@ -122,6 +122,8 @@ interface HourHistoryFieldSession {
     start_datetime: string | null;
     status: string | null;
     academic_year_id: number;
+    academic_year_name: string;
+    teacher: string | null;
 }
 
 interface HourHistoryItem {
@@ -1340,14 +1342,20 @@ export default function Show({
                                                                                  ({item.fieldSession?.academic_year_name || 'Sin año'})
                                                                              </span>
                                                                          </p>
-                                                                         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
-                                                                             {item.fieldSession && (
-                                                                                 <span className="flex items-center gap-1">
-                                                                                     <Calendar className="h-3 w-3" />
-                                                                                     {item.fieldSession.start_datetime}
-                                                                                 </span>
-                                                                             )}
-                                                                             <span
+                                          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                              {item.fieldSession && (
+                                                  <span className="flex items-center gap-1">
+                                                      <Calendar className="h-3 w-3" />
+                                                      {item.fieldSession.start_datetime}
+                                                  </span>
+                                              )}
+                                              {item.fieldSession?.teacher && (
+                                                  <span className="flex items-center gap-1">
+                                                      <UserIcon className="h-3 w-3" />
+                                                      {item.fieldSession.teacher}
+                                                  </span>
+                                              )}
+                                              <span
                                                                                  className={`flex items-center gap-1 ${
                                                                                      item.attended
                                                                                          ? 'text-green-600'

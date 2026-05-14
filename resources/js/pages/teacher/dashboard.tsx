@@ -147,7 +147,7 @@ export default function TeacherDashboard({
                 grade_id: value === 'all' ? null : value,
                 section_id: null,
             },
-            { preserveState: true },
+            { preserveState: true, preserveScroll: true },
         );
     };
 
@@ -158,7 +158,7 @@ export default function TeacherDashboard({
                 grade_id: selectedGradeId,
                 section_id: value === 'all' ? null : value,
             },
-            { preserveState: true },
+            { preserveState: true, preserveScroll: true },
         );
     };
 
@@ -515,42 +515,55 @@ export default function TeacherDashboard({
                                                     {cat.categoryName}
                                                 </button>
                                                 <div className="ml-auto flex shrink-0 gap-1.5">
-                                                    {cat.count > 0 && (
-                                                        <span className="inline-flex items-center gap-1 rounded-md border bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-950/30 dark:border-purple-800 dark:text-purple-300 min-w-[110px] justify-center">
-                                                            {cat.count} participaciones
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <Info className="h-3 w-3 cursor-help text-purple-500 dark:text-purple-400" />
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p className="text-xs max-w-56">Cantidad de jornadas donde se registró esta actividad. Cuenta asistencias, no estudiantes. Un mismo alumno participando en 3 jornadas distintas cuenta como 3.</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </span>
-                                                    )}
-                                                    <span className="inline-flex items-center gap-1 rounded-md border bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-300 min-w-[110px] justify-center">
-                                                        {cat.totalHours.toFixed(1)} horas totales
+                                                    {cat.sessionCount > 0 && (
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
-                                                                <Info className="h-3 w-3 cursor-help text-blue-500 dark:text-blue-400" />
+                                                                <span className="inline-flex items-center gap-1 rounded-md border bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-300 min-w-[110px] justify-center cursor-help">
+                                                                    {cat.sessionCount} jornadas
+                                                                    <Info className="h-3 w-3 text-amber-500 dark:text-amber-400" />
+                                                                </span>
                                                             </TooltipTrigger>
                                                             <TooltipContent>
-                                                                <p className="text-xs max-w-56">Suma de horas de TODOS tus estudiantes en esta categoría. Ejemplo: si 3 alumnos acumulan 3h cada uno en esta categoría, se muestran 9h.</p>
+                                                                <p className="text-xs max-w-56">Cantidad de jornadas distintas donde se realizó esta actividad.</p>
                                                             </TooltipContent>
                                                         </Tooltip>
-                                                    </span>
+                                                    )}
+                                                    {cat.count > 0 && (
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span className="inline-flex items-center gap-1 rounded-md border bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-950/30 dark:border-purple-800 dark:text-purple-300 min-w-[110px] justify-center cursor-help">
+                                                                    {cat.count} participaciones
+                                                                    <Info className="h-3 w-3 text-purple-500 dark:text-purple-400" />
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p className="text-xs max-w-56">Cantidad de registros de asistencia donde se asignó esta actividad. Cada alumno en cada jornada cuenta como uno. Muchas participaciones con pocas horas = sesiones cortas. Pocas participaciones con muchas horas = jornadas intensivas. Muchas participaciones sobre pocos alumnos = unos pocos hacen casi todo. Muchas participaciones repartidas entre muchos = amplia participación. Si una categoría domina el total, hay dependencia. Si tiene muy pocas o cero, puede estar abandonada. Compara entre lapsos para ver estacionalidad y entre categorías para balancear la carga de los estudiantes.</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    )}
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <span className="inline-flex items-center gap-1 rounded-md border bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-300 min-w-[110px] justify-center cursor-help">
+                                                                {cat.totalHours.toFixed(1)} horas totales
+                                                                <Info className="h-3 w-3 text-blue-500 dark:text-blue-400" />
+                                                            </span>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                                <p className="text-xs max-w-56">Suma de horas de todos los estudiantes en esta categoría. Muchas horas con pocas participaciones = jornadas largas e intensivas. Pocas horas con muchas participaciones = sesiones breves pero frecuentes. Compara contra la cuota requerida para saber si esta actividad está aportando lo suficiente al cumplimiento. Si el porcentaje del total es muy alto, hay concentración excesiva en esta categoría. Si es muy bajo, puede estar desatendida.</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
                                                     {totalCategoryHours > 0 && (
-                                                        <span className="inline-flex items-center gap-1 rounded-md border bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-300 min-w-[110px] justify-center">
-                                                            {(cat.totalHours / totalCategoryHours * 100).toFixed(1)}% del total
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <Info className="h-3 w-3 cursor-help text-emerald-500 dark:text-emerald-400" />
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p className="text-xs">Porcentaje que representa esta categoría del total de horas en todas las categorías.</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </span>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span className="inline-flex items-center gap-1 rounded-md border bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-300 min-w-[110px] justify-center cursor-help">
+                                                                    {(cat.totalHours / totalCategoryHours * 100).toFixed(1)}% del total
+                                                                    <Info className="h-3 w-3 text-emerald-500 dark:text-emerald-400" />
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p className="text-xs">Porcentaje que representa esta categoría del total de horas en todas las categorías.</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
                                                     )}
                                                 </div>
                                             </div>

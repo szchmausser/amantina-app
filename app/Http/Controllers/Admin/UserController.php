@@ -277,7 +277,7 @@ class UserController extends Controller
             'hourHistory' => $user->hasRole('alumno')
                 ? Attendance::where('user_id', $user->id)
                     ->with(['fieldSession' => function ($query) {
-                        $query->with(['status', 'academicYear']);
+                        $query->with(['status', 'academicYear', 'teacher']);
                     }, 'attendanceActivities.activityCategory'])
                     ->get()
                     ->sortByDesc(fn ($a) => $a->fieldSession?->start_datetime ?? $a->created_at)
@@ -301,6 +301,7 @@ class UserController extends Controller
                                 'status' => $a->fieldSession->status?->name,
                                 'academic_year_id' => $a->fieldSession->academic_year_id,
                                 'academic_year_name' => $a->fieldSession->academicYear?->name ?? '—',
+                                'teacher' => $a->fieldSession->teacher?->name ?? '—',
                             ] : null,
                             'activities' => $a->attendanceActivities->map(fn ($act) => [
                                 'id' => $act->id,
