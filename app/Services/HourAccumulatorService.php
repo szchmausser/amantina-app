@@ -1166,13 +1166,14 @@ class HourAccumulatorService
         }
 
         // Session history
-        $sessionHistory = DB::table('attendances')
+        $sessions = DB::table('attendances')
             ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
             ->where('attendances.user_id', $studentId)
             ->where('attendances.attended', true)
             ->whereNull('attendances.deleted_at')
             ->whereNull('field_sessions.deleted_at')
             ->select(
+                'attendances.id as attendance_id',
                 'field_sessions.name as session_name',
                 'field_sessions.start_datetime as date',
                 'field_sessions.location_name as location',
@@ -1180,12 +1181,35 @@ class HourAccumulatorService
             )
             ->orderByDesc('field_sessions.start_datetime')
             ->limit(20)
+            ->get();
+
+        // Get activities for these attendances
+        $attendanceIds = $sessions->pluck('attendance_id')->toArray();
+        $activities = DB::table('attendance_activities')
+            ->join('activity_categories', 'attendance_activities.activity_category_id', '=', 'activity_categories.id')
+            ->whereIn('attendance_activities.attendance_id', $attendanceIds)
+            ->whereNull('attendance_activities.deleted_at')
+            ->select(
+                'attendance_activities.attendance_id',
+                'activity_categories.name as category_name',
+                'attendance_activities.hours'
+            )
             ->get()
+            ->groupBy('attendance_id');
+
+        $sessionHistory = $sessions
             ->map(fn ($r) => [
                 'sessionName' => $r->session_name,
                 'date' => $r->date,
                 'location' => $r->location,
                 'hours' => round((float) ($r->hours ?? 0), 2),
+                'activities' => ($activities->get($r->attendance_id) ?? collect())
+                    ->map(fn ($a) => [
+                        'categoryName' => $a->category_name,
+                        'hours' => round((float) $a->hours, 2),
+                    ])
+                    ->values()
+                    ->toArray(),
             ])
             ->toArray();
 

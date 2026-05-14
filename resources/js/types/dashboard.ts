@@ -216,6 +216,10 @@ export interface StudentDashboardData {
         date: string;
         location: string;
         hours: number;
+        activities: {
+            categoryName: string;
+            hours: number;
+        }[];
     }[];
     closureProjection: {
         projectedDate: string | null;

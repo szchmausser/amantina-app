@@ -116,11 +116,13 @@ class ProfileController extends Controller
                     'description' => $m->getCustomProperty('description', ''),
                 ])->values(),
             ])->values() : [],
-            'hourHistory' => $isAlumno ? Attendance::where('user_id', $user->id)
+            'hourHistory' => $isAlumno ? Attendance::where('attendances.user_id', $user->id)
+                ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
                 ->with(['fieldSession' => function ($query) {
                     $query->with('status');
                 }, 'attendanceActivities.activityCategory'])
-                ->orderBy('created_at', 'desc')
+                ->select('attendances.*')
+                ->orderBy('field_sessions.start_datetime', 'desc')
                 ->limit(50)
                 ->get()
                 ->map(fn ($a) => [
