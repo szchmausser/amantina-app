@@ -241,21 +241,22 @@ export interface StudentDashboardData {
     evidenceCount: number;
 }
 
-export interface RepresentativeDashboardData {
-    studentName: string;
-    studentId: number;
-    progress: HourAccumulation;
-    last4WeeksTrend: {
-        week: string;
-        hours: number;
-    }[];
+export interface RepresentativeStudentCard {
+    id: number;
+    name: string;
+    gradeName: string;
+    sectionName: string;
+    hours: number;
+    quota: number;
+    percentage: number;
+    status: TrafficLightStatus;
     nextSession: {
         name: string;
         date: string;
         location: string;
     } | null;
-    healthReminder: {
-        hasCondition: boolean;
-        conditionName: string | null;
-    };
+}
+
+export interface RepresentativeDashboardData {
+    students: RepresentativeStudentCard[];
 }

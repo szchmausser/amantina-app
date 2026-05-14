@@ -1296,103 +1296,89 @@ class HourAccumulatorService
     }
 
     /**
-     * Get representative-specific dashboard data.
+     * Get representative dashboard with all linked students' progress.
+     *
+     * @return array{students: list<array{id: int, name: string, gradeName: string, sectionName: string, hours: float, quota: float, percentage: float, status: string, nextSession: array{name: string, date: string, location: string}|null}>}
      */
     public function getRepresentativeDashboard(int $representativeId, ?int $academicYearId = null): array
     {
         $yearId = $this->resolveYearId($academicYearId);
 
-        // Get the student this representative represents
-        $student = DB::table('student_representatives')
+        // Get all students linked to this representative
+        $studentRecords = DB::table('student_representatives')
             ->join('users', 'student_representatives.student_id', '=', 'users.id')
             ->where('student_representatives.representative_id', $representativeId)
             ->whereNull('student_representatives.deleted_at')
             ->whereNull('users.deleted_at')
-            ->select('users.id as student_id', 'users.name')
-            ->first();
+            ->select('users.id as student_id', 'users.name as student_name')
+            ->orderBy('users.name')
+            ->get();
 
-        if ($student === null) {
-            return [
-                'studentName' => '',
-                'studentId' => null,
-                'progress' => [],
-                'last4WeeksTrend' => [],
-                'nextSession' => null,
-                'healthReminder' => ['hasCondition' => false, 'conditionName' => null],
-            ];
-        }
+        $students = [];
 
-        $studentId = $student->student_id;
-        $studentName = $student->name;
+        foreach ($studentRecords as $studentRecord) {
+            $studentId = $studentRecord->student_id;
 
-        // Progress
-        $progress = $this->getStudentTotalHours($studentId, $yearId);
+            // Progress
+            $progress = $this->getStudentTotalHours($studentId, $yearId);
 
-        // Last 4 weeks trend
-        // Use database-agnostic week truncation (PostgreSQL vs SQLite compatibility)
-        $weekExpression = $this->getWeekTruncationExpression('field_sessions.start_datetime');
-        $last4WeeksTrend = DB::table('attendances')
-            ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
-            ->leftJoin('attendance_activities', 'attendances.id', '=', 'attendance_activities.attendance_id')
-            ->where('attendances.user_id', $studentId)
-            ->where('attendances.attended', true)
-            ->whereNull('attendances.deleted_at')
-            ->whereNull('field_sessions.deleted_at')
-            ->whereNull('attendance_activities.deleted_at')
-            ->where('field_sessions.start_datetime', '>=', now()->subWeeks(4))
-            ->select(
-                DB::raw("{$weekExpression} as week"),
-                DB::raw('COALESCE(SUM(attendance_activities.hours), 0) as hours')
-            )
-            ->groupBy('week')
-            ->orderBy('week')
-            ->get()
-            ->map(fn ($r) => [
-                'week' => $r->week,
-                'hours' => round((float) $r->hours, 2),
-            ])
-            ->toArray();
+            // Current enrollment (grade and section) for active year
+            $enrollment = DB::table('enrollments')
+                ->join('sections', 'enrollments.section_id', '=', 'sections.id')
+                ->join('grades', 'sections.grade_id', '=', 'grades.id')
+                ->where('enrollments.user_id', $studentId)
+                ->whereNull('enrollments.deleted_at')
+                ->whereNull('sections.deleted_at')
+                ->whereNull('grades.deleted_at')
+                ->when($yearId, fn ($q) => $q->where('enrollments.academic_year_id', $yearId))
+                ->select('enrollments.section_id', 'sections.name as section_name', 'grades.name as grade_name')
+                ->first();
 
-        // Next scheduled session
-        $nextSession = DB::table('field_sessions')
-            ->join('field_session_statuses', 'field_sessions.status_id', '=', 'field_session_statuses.id')
-            ->where('field_session_statuses.name', 'planned')
-            ->whereNull('field_sessions.deleted_at')
-            ->where('field_sessions.start_datetime', '>', now())
-            ->select('field_sessions.name', 'field_sessions.start_datetime as date', 'field_sessions.location_name as location')
-            ->orderBy('field_sessions.start_datetime')
-            ->first();
+            $gradeName = $enrollment->grade_name ?? '';
+            $sectionName = $enrollment->section_name ?? '';
+            $sectionId = $enrollment->section_id ?? null;
 
-        // Health reminder
-        $healthReminder = DB::table('student_health_records')
-            ->join('health_conditions', 'student_health_records.health_condition_id', '=', 'health_conditions.id')
-            ->where('student_health_records.user_id', $studentId)
-            ->whereNull('student_health_records.deleted_at')
-            ->whereNull('health_conditions.deleted_at')
-            ->select('health_conditions.name as condition_name')
-            ->first();
+            // Next upcoming session for this student's section
+            $nextSession = null;
+            if ($sectionId !== null) {
+                $teacherIds = DB::table('teacher_assignments')
+                    ->where('section_id', $sectionId)
+                    ->whereNull('deleted_at')
+                    ->when($yearId, fn ($q) => $q->where('academic_year_id', $yearId))
+                    ->pluck('user_id');
 
-        return [
-            'studentName' => $studentName,
-            'studentId' => $studentId,
-            'progress' => [
-                'jornadaHours' => $progress['jornada_hours'],
-                'externalHours' => $progress['external_hours'],
-                'totalHours' => $progress['total_hours'],
+                if ($teacherIds->isNotEmpty()) {
+                    $nextSession = DB::table('field_sessions')
+                        ->join('field_session_statuses', 'field_sessions.status_id', '=', 'field_session_statuses.id')
+                        ->whereIn('field_sessions.user_id', $teacherIds)
+                        ->where('field_session_statuses.name', 'planned')
+                        ->where('field_sessions.start_datetime', '>', now())
+                        ->whereNull('field_sessions.deleted_at')
+                        ->select('field_sessions.name', 'field_sessions.start_datetime as date', 'field_sessions.location_name as location')
+                        ->orderBy('field_sessions.start_datetime')
+                        ->first();
+                }
+            }
+
+            $students[] = [
+                'id' => (int) $studentId,
+                'name' => $studentRecord->student_name,
+                'gradeName' => $gradeName,
+                'sectionName' => $sectionName,
+                'hours' => $progress['total_hours'],
                 'quota' => $progress['quota'],
                 'percentage' => $progress['percentage'],
                 'status' => $progress['status'],
-            ],
-            'last4WeeksTrend' => $last4WeeksTrend,
-            'nextSession' => $nextSession ? [
-                'name' => $nextSession->name,
-                'date' => $nextSession->date,
-                'location' => $nextSession->location,
-            ] : null,
-            'healthReminder' => [
-                'hasCondition' => $healthReminder !== null,
-                'conditionName' => $healthReminder?->condition_name,
-            ],
+                'nextSession' => $nextSession ? [
+                    'name' => $nextSession->name,
+                    'date' => $nextSession->date,
+                    'location' => $nextSession->location,
+                ] : null,
+            ];
+        }
+
+        return [
+            'students' => $students,
         ];
     }
 

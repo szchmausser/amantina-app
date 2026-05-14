@@ -1,16 +1,7 @@
-import { Head } from '@inertiajs/react';
-import {
-    Calendar,
-    Clock,
-    Activity,
-    AlertTriangle,
-    TrendingUp,
-    User,
-} from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { Calendar, User } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
-import { ProgressCard } from '@/components/ui/progress-card';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StatCard } from '@/components/ui/stat-card';
+import { Card, CardContent } from '@/components/ui/card';
 import { TrafficLightBadge } from '@/components/ui/traffic-light';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
@@ -22,12 +13,7 @@ interface Props {
         name: string;
         requiredHours: number;
     } | null;
-    studentName: RepresentativeDashboardData['studentName'];
-    studentId: RepresentativeDashboardData['studentId'];
-    progress: RepresentativeDashboardData['progress'];
-    last4WeeksTrend: RepresentativeDashboardData['last4WeeksTrend'];
-    nextSession: RepresentativeDashboardData['nextSession'];
-    healthReminder: RepresentativeDashboardData['healthReminder'];
+    students: RepresentativeDashboardData['students'];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -41,36 +27,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const progressBarColor = (status: string): string => {
+    if (status === 'green') return 'bg-emerald-500';
+    if (status === 'yellow') return 'bg-amber-500';
+    return 'bg-red-500';
+};
+
 export default function RepresentativeDashboard({
     activeYear,
-    studentName,
-    studentId,
-    progress,
-    last4WeeksTrend,
-    nextSession,
-    healthReminder,
+    students,
 }: Props) {
-    if (!studentId) {
-        return (
-            <AppLayout breadcrumbs={breadcrumbs}>
-                <Head title="Panel del Representante" />
-                <div className="flex h-full flex-1 flex-col items-center justify-center gap-4 p-8">
-                    <User className="h-16 w-16 text-muted-foreground" />
-                    <div className="text-center">
-                        <h1 className="text-xl font-semibold">
-                            Sin estudiante asignado
-                        </h1>
-                        <p className="mt-2 text-muted-foreground">
-                            No se encontró un estudiante asociado a tu cuenta.
-                            <br />
-                            Contacta al administrador del sistema.
-                        </p>
-                    </div>
-                </div>
-            </AppLayout>
-        );
-    }
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Panel del Representante" />
@@ -83,7 +49,7 @@ export default function RepresentativeDashboard({
                             Panel del Representante
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Progreso de {studentName}
+                            Seguimiento de horas de tus representados
                         </p>
                     </div>
                     {activeYear && (
@@ -96,192 +62,113 @@ export default function RepresentativeDashboard({
                     )}
                 </div>
 
-                {/* Health Reminder */}
-                {healthReminder.hasCondition && (
-                    <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
-                                <AlertTriangle className="h-5 w-5" />
-                                Condición de Salud
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-blue-700 dark:text-blue-300">
-                                <strong>{studentName}</strong> tiene registrado:{' '}
-                                <strong>{healthReminder.conditionName}</strong>
+                {/* Empty state */}
+                {students.length === 0 ? (
+                    <div className="flex flex-1 flex-col items-center justify-center gap-4 py-24">
+                        <User className="h-16 w-16 text-muted-foreground" />
+                        <div className="text-center">
+                            <h1 className="text-xl font-semibold">
+                                Sin estudiantes asignados
+                            </h1>
+                            <p className="mt-2 text-muted-foreground">
+                                No se encontraron estudiantes asociados a tu cuenta.
+                                <br />
+                                Contacta al administrador del sistema.
                             </p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Main Progress */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <div className="lg:col-span-2">
-                        <ProgressCard
-                            title="Horas de mi Representado"
-                            currentHours={progress.totalHours}
-                            quota={progress.quota}
-                            status={progress.status}
-                            subtitle={studentName}
-                            showProgress
-                            className="h-full"
-                        />
-                    </div>
-                    <div className="space-y-4">
-                        <StatCard
-                            title="Horas de Jornada"
-                            value={progress.jornadaHours.toFixed(1)}
-                            icon={<Clock className="h-4 w-4" />}
-                            description="En terreno"
-                        />
-                        <StatCard
-                            title="Porcentaje"
-                            value={`${progress.percentage.toFixed(1)}%`}
-                            icon={<TrendingUp className="h-4 w-4" />}
-                            description="Del total requerido"
-                        />
-                    </div>
-                </div>
-
-                {/* Traffic Light Status */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Estado Actual</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex items-center gap-4">
-                            <TrafficLightBadge status={progress.status} />
-                            <span className="text-sm text-muted-foreground">
-                                {progress.status === 'green' &&
-                                    'El estudiante ha cumplido con el cupo requerido.'}
-                                {progress.status === 'yellow' &&
-                                    'El estudiante está en camino de cumplir el cupo.'}
-                                {progress.status === 'red' &&
-                                    'El estudiante necesita más horas para cumplir el cupo.'}
-                            </span>
                         </div>
-                        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                            <div className="rounded-lg border p-4 text-center">
-                                <p className="text-sm text-muted-foreground">
-                                    Completado
-                                </p>
-                                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                                    {progress.totalHours.toFixed(1)}h
-                                </p>
-                            </div>
-                            <div className="rounded-lg border p-4 text-center">
-                                <p className="text-sm text-muted-foreground">
-                                    Restante
-                                </p>
-                                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                                    {Math.max(
-                                        0,
-                                        progress.quota - progress.totalHours,
-                                    ).toFixed(1)}
-                                    h
-                                </p>
-                            </div>
-                            <div className="rounded-lg border p-4 text-center">
-                                <p className="text-sm text-muted-foreground">
-                                    Requerido
-                                </p>
-                                <p className="text-2xl font-bold">
-                                    {progress.quota}h
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                ) : (
+                    /* Student cards */
+                    <div className="flex flex-col gap-4">
+                        {students.map((student) => (
+                            <Link
+                                key={student.id}
+                                href={`/admin/users/${student.id}`}
+                                className="block"
+                            >
+                                <Card className="rounded-xl border transition-colors hover:bg-accent">
+                                    <CardContent className="p-5">
+                                        {/* Top row: name + grade/section + traffic light */}
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex flex-wrap items-baseline gap-x-2">
+                                                    <span className="font-semibold">
+                                                        {student.name}
+                                                    </span>
+                                                    {(student.gradeName ||
+                                                        student.sectionName) && (
+                                                        <span className="text-sm text-muted-foreground">
+                                                            ·{' '}
+                                                            {student.gradeName}
+                                                            {student.sectionName &&
+                                                                ` ${student.sectionName}`}
+                                                        </span>
+                                                    )}
+                                                </div>
 
-                {/* Next Session */}
-                {nextSession && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4" />
-                                Próxima Sesión
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
-                                <div>
-                                    <p className="font-medium">
-                                        {nextSession.name}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {new Date(
-                                            nextSession.date,
-                                        ).toLocaleDateString('es-ES', {
-                                            weekday: 'long',
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                        })}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                        📍 {nextSession.location}
-                                    </p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
+                                                {/* Progress bar */}
+                                                <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-muted">
+                                                    <div
+                                                        className={`h-full rounded-full ${progressBarColor(student.status)} transition-all`}
+                                                        style={{
+                                                            width: `${Math.min(student.percentage, 100)}%`,
+                                                        }}
+                                                    />
+                                                </div>
 
-                {/* Last 4 Weeks Trend */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <TrendingUp className="h-4 w-4" />
-                            Actividad de las Últimas 4 Semanas
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {last4WeeksTrend.length === 0 ? (
-                            <p className="py-4 text-center text-sm text-muted-foreground">
-                                No hay actividad registrada en las últimas 4
-                                semanas
-                            </p>
-                        ) : (
-                            <div className="space-y-3">
-                                {last4WeeksTrend.map((week, idx) => (
-                                    <div
-                                        key={`${week.week}-${idx}`}
-                                        className="space-y-1"
-                                    >
-                                        <div className="flex justify-between text-sm">
-                                            <span>
-                                                Semana del{' '}
-                                                {new Date(
-                                                    week.week,
-                                                ).toLocaleDateString('es-ES')}
-                                            </span>
-                                            <span className="font-medium">
-                                                {week.hours.toFixed(1)}h
-                                            </span>
-                                        </div>
-                                        <div className="h-3 overflow-hidden rounded-full bg-muted">
-                                            <div
-                                                className="h-full rounded-full bg-blue-500 transition-all"
-                                                style={{
-                                                    width: `${
-                                                        (week.hours /
-                                                            (Math.max(
-                                                                ...last4WeeksTrend.map(
-                                                                    (w) =>
-                                                                        w.hours,
-                                                                ),
-                                                            ) || 1)) *
-                                                        100
-                                                    }%`,
-                                                }}
+                                                {/* Hours / quota + percentage */}
+                                                <p className="mt-1.5 text-sm tabular-nums">
+                                                    <span className="font-medium">
+                                                        {student.hours.toFixed(
+                                                            1,
+                                                        )}
+                                                        h
+                                                    </span>
+                                                    <span className="text-muted-foreground">
+                                                        {' '}
+                                                        / {student.quota}h
+                                                    </span>
+                                                    <span className="ml-2 text-muted-foreground">
+                                                        {student.percentage.toFixed(
+                                                            0,
+                                                        )}
+                                                        %
+                                                    </span>
+                                                </p>
+
+                                                {/* Next session */}
+                                                {student.nextSession && (
+                                                    <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                        <Calendar className="h-3 w-3" />
+                                                        <span>
+                                                            Próx. sesión:{' '}
+                                                            {new Date(
+                                                                student.nextSession.date,
+                                                            ).toLocaleDateString(
+                                                                'es-ES',
+                                                            )}
+                                                            {' · '}
+                                                            {
+                                                                student
+                                                                    .nextSession
+                                                                    .location
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Traffic light badge */}
+                                            <TrafficLightBadge
+                                                status={student.status}
                                             />
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        ))}
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

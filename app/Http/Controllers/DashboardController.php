@@ -235,7 +235,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Representative dashboard with student's progress.
+     * Representative dashboard with all linked students' progress.
      */
     protected function representativeDashboard(User $user, ?AcademicYear $year): Response
     {
@@ -248,12 +248,7 @@ class DashboardController extends Controller
                 'name' => $year->name,
                 'requiredHours' => (float) $year->required_hours,
             ] : null,
-            'studentName' => $data['studentName'] ?? '',
-            'studentId' => $data['studentId'] ?? null,
-            'progress' => $data['progress'] ?? [],
-            'last4WeeksTrend' => $data['last4WeeksTrend'] ?? [],
-            'nextSession' => $data['nextSession'] ?? null,
-            'healthReminder' => $data['healthReminder'] ?? [],
+            'students' => $data['students'] ?? [],
         ]);
     }
 }
