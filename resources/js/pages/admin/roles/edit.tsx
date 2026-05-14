@@ -159,7 +159,7 @@ export default function RolesEdit({
                                         Rol Personalizado
                                     </Badge>
                                 )}
-                                <Badge variant="outline" className="text-[10px] text-neutral-500">
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 dark:text-neutral-400">
                                     {data.permissions.length} Permisos Seleccionados
                                 </Badge>
                             </div>
@@ -184,15 +184,15 @@ export default function RolesEdit({
                         {['admin', 'profesor', 'alumno', 'representante'].includes(role.name) && (
                             <div className="rounded-xl border border-blue-100 bg-blue-50/30 p-4 dark:border-blue-900/20 dark:bg-blue-950/10">
                                 <div className="flex gap-3">
-                                    <Info className="h-4 w-4 shrink-0 text-blue-500 mt-0.5" />
+                                    <Info className="h-4 w-4 shrink-0 text-blue-500 mt-0.5 dark:text-blue-400" />
                                     <div className="space-y-1">
-                                        <p className="text-xs font-bold text-blue-700 uppercase tracking-wider dark:text-blue-400">
+                                        <p className="text-xs font-bold text-blue-700 uppercase tracking-wider dark:text-blue-400 dark:text-blue-300">
                                             Rol de Sistema
                                         </p>
                                         <p className="text-sm text-blue-800/80 leading-relaxed dark:text-blue-300/80">
                                             {ROLE_DESCRIPTIONS[role.name.toLowerCase()]}
                                         </p>
-                                        <p className="text-[11px] font-medium text-blue-600/70 dark:text-blue-500/60 italic">
+                                        <p className="text-[11px] font-medium text-blue-600/70 dark:text-blue-500/60 italic dark:text-blue-400">
                                             * Los roles fundamentales tienen un propósito fijo, pero puedes ajustar sus permisos aquí.
                                         </p>
                                     </div>
@@ -201,11 +201,11 @@ export default function RolesEdit({
                         )}
 
                         {is_protected && (
-                            <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-950/10">
+                            <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-950/10 dark:border-amber-800">
                                 <div className="flex gap-3">
-                                    <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+                                    <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5 dark:text-amber-400" />
                                     <div className="space-y-1">
-                                        <p className="text-xs font-bold text-amber-700 uppercase tracking-wider dark:text-amber-400">
+                                        <p className="text-xs font-bold text-amber-700 uppercase tracking-wider dark:text-amber-400 dark:text-amber-300">
                                             Modo Protegido
                                         </p>
                                         <p className="text-sm text-amber-800/80 leading-relaxed dark:text-amber-300/80">
@@ -230,8 +230,8 @@ export default function RolesEdit({
                         <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
                             <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                 <div className="flex items-center gap-2">
-                                    <Shield className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                    <Shield className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                         Configuración de Permisos
                                     </h2>
                                 </div>
@@ -257,7 +257,7 @@ export default function RolesEdit({
                                                 className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-neutral-50/50 px-4 py-3 dark:border-neutral-700/50 dark:bg-neutral-800/30 sm:flex-row sm:items-center sm:justify-between"
                                             >
                                                 <div className="flex items-center gap-3 border-b pb-3 sm:border-b-0 sm:pb-0">
-                                                    <span className="text-xs font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-300 min-w-[120px]">
+                                                    <span className="text-xs font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-300 min-w-[120px] dark:text-neutral-400">
                                                         {formatModuleName(module)}
                                                     </span>
                                                 </div>
@@ -308,7 +308,7 @@ export default function RolesEdit({
                                                         />
                                                         <Label
                                                             htmlFor={`module-${module}`}
-                                                            className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 cursor-pointer hover:text-neutral-600 dark:hover:text-neutral-300"
+                                                            className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 cursor-pointer hover:text-neutral-600 dark:hover:text-neutral-300 dark:text-neutral-500 dark:hover:text-neutral-400"
                                                         >
                                                             Todos
                                                         </Label>

@@ -158,7 +158,7 @@ export default function FieldSessionsIndex({
             <DataTableBody>
                 {fieldSessions.data.map((session, index) => (
                     <DataTableTR key={session.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(fieldSessions.current_page - 1) * perPage +
                                 index +
                                 1}
@@ -190,7 +190,7 @@ export default function FieldSessionsIndex({
                         <DataTableTD className="text-sm text-neutral-600 dark:text-neutral-400">
                             <Link
                                 href={`/admin/users/${session.teacher.id}`}
-                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100"
+                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100 dark:hover:text-blue-400"
                             >
                                 {session.teacher.name}
                             </Link>
@@ -211,7 +211,7 @@ export default function FieldSessionsIndex({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600 dark:hover:text-blue-400 dark:text-neutral-400"
                                     asChild
                                 >
                                     <Link
@@ -237,7 +237,7 @@ export default function FieldSessionsIndex({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 dark:text-red-400"
                                     onClick={() => handleDelete(session.id)}
                                 >
                                     <Trash2 className="h-4 w-4" />

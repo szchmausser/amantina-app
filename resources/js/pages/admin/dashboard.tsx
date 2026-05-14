@@ -280,7 +280,7 @@ export default function AdminDashboard({
                         <CardContent className="space-y-2">
                             {alerts.zeroHourStudents > 0 && (
                                 <div className="flex items-center gap-2">
-                                    <XCircle className="h-4 w-4 text-red-600" />
+                                    <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                                     <StudentListBadge
                                         count={alerts.zeroHourStudents}
                                         label="estudiantes sin horas registradas"
@@ -465,7 +465,7 @@ export default function AdminDashboard({
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                                <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 dark:text-emerald-300">
                                     <Star className="h-5 w-5" />
                                     Estudiantes Sobresalientes
                                 </CardTitle>
@@ -549,7 +549,7 @@ export default function AdminDashboard({
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                                <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400 dark:text-blue-300">
                                     <Trophy className="h-5 w-5" />
                                     Alumnos con más horas acumuladas
                                 </CardTitle>
@@ -627,7 +627,7 @@ export default function AdminDashboard({
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
+                                <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-400 dark:text-red-300">
                                     <AlertTriangle className="h-5 w-5" />
                                     Estudiantes que Necesitan Apoyo
                                 </CardTitle>
@@ -925,7 +925,7 @@ export default function AdminDashboard({
                         {/* Top Sections */}
                         {topSections.length > 0 && (
                             <div>
-                                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400 dark:text-emerald-300">
                                     <Star className="h-4 w-4" />
                                     Secciones con Mejor Rendimiento
                                 </h3>
@@ -947,7 +947,7 @@ export default function AdminDashboard({
                         {/* Concerning Sections */}
                         {concerningSections.length > 0 && (
                             <div>
-                                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+                                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400 dark:text-red-300">
                                     <AlertTriangle className="h-4 w-4" />
                                     Secciones que Requieren Más Atención
                                 </h3>
@@ -980,7 +980,7 @@ export default function AdminDashboard({
             <Dialog open={showSessionsModal} onOpenChange={setShowSessionsModal}>
                 <DialogContent className="max-h-[80vh] max-w-2xl overflow-hidden">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
+                        <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-400 dark:text-red-300">
                             <AlertTriangle className="h-5 w-5" />
                             Jornadas Realizadas sin Registro de Asistencia
                         </DialogTitle>
@@ -1034,7 +1034,7 @@ export default function AdminDashboard({
             <Dialog open={showSessionsNoActivitiesModal} onOpenChange={setShowSessionsNoActivitiesModal}>
                 <DialogContent className="max-h-[80vh] max-w-2xl overflow-hidden">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
+                        <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-400 dark:text-red-300">
                             <AlertTriangle className="h-5 w-5" />
                             Jornadas con Asistencia pero sin Actividades
                         </DialogTitle>
@@ -1092,7 +1092,7 @@ export default function AdminDashboard({
             <Dialog open={showZeroHoursModal} onOpenChange={setShowZeroHoursModal}>
                 <DialogContent className="max-h-[80vh] max-w-2xl overflow-hidden">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
+                        <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-400 dark:text-red-300">
                             <AlertTriangle className="h-5 w-5" />
                             Asistencias Marcadas como Presentes con 0 Horas
                         </DialogTitle>

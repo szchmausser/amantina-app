@@ -179,7 +179,7 @@ export default function FieldSessionEdit({
                 <form id="edit-field-session-form" onSubmit={handleSubmit} className="space-y-4">
                     {/* Basic Info */}
                     <div className="space-y-3 rounded-lg border p-4">
-                        <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase">
+                        <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                             Información Básica
                         </h3>
                         <div className="grid gap-4 sm:grid-cols-2">
@@ -217,7 +217,7 @@ export default function FieldSessionEdit({
 
                     {/* Academic Context */}
                     <div className="space-y-3 rounded-lg border p-4">
-                        <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase">
+                        <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                             Contexto Académico
                         </h3>
                         <div className="grid gap-4 sm:grid-cols-3">
@@ -226,7 +226,7 @@ export default function FieldSessionEdit({
                                 <div className="flex h-10 items-center rounded-md border border-input bg-transparent px-3 text-sm text-neutral-700 dark:text-neutral-300">
                                     {fieldSession.academic_year_name}
                                 </div>
-                                <p className="text-xs text-neutral-500">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                     Año escolar activo
                                 </p>
                             </div>
@@ -290,7 +290,7 @@ export default function FieldSessionEdit({
 
                     {/* Schedule */}
                     <div className="space-y-3 rounded-lg border p-4">
-                        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-wider text-neutral-500 uppercase">
+                        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                             <Clock className="h-4 w-4" />
                             Horario
                         </h3>
@@ -337,7 +337,7 @@ export default function FieldSessionEdit({
                                 <div className="flex h-10 items-center rounded-md border border-input bg-transparent px-3 font-mono text-sm">
                                     {baseHours} horas
                                 </div>
-                                <p className="text-xs text-neutral-500">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                     Calculado automáticamente
                                 </p>
                             </div>
@@ -346,7 +346,7 @@ export default function FieldSessionEdit({
 
                     {/* Activity & Location */}
                     <div className="space-y-3 rounded-lg border p-4">
-                        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-wider text-neutral-500 uppercase">
+                        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                             <Tag className="h-4 w-4" />
                             Actividad y Ubicación
                         </h3>
@@ -390,8 +390,8 @@ export default function FieldSessionEdit({
 
                     {/* Cancellation Reason */}
                     {data.status_id === cancelledStatusId && (
-                        <div className="space-y-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900/30 dark:bg-red-950/20">
-                            <h3 className="text-sm font-semibold tracking-wider text-red-600 uppercase">
+                        <div className="space-y-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900/30 dark:bg-red-950/20 dark:border-red-800">
+                            <h3 className="text-sm font-semibold tracking-wider text-red-600 uppercase dark:text-red-400">
                                 Motivo de Cancelación
                             </h3>
                             <div className="space-y-2">

@@ -141,7 +141,7 @@ export default function GradesIndex({
             <DataTableBody>
                 {grades.data.map((grade, index) => (
                     <DataTableTR key={grade.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(grades.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
                         <DataTableTD>
@@ -159,7 +159,7 @@ export default function GradesIndex({
                                             </Link>
                                         ))
                                     ) : (
-                                        <span className="text-xs italic text-neutral-400">Sin secciones</span>
+                                        <span className="text-xs italic text-neutral-400 dark:text-neutral-500">Sin secciones</span>
                                     )}
                                     <Link href={`/admin/academic-years/${grade.academic_year_id}`}>
                                         <Badge variant="outline" className="cursor-pointer text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800">
@@ -182,7 +182,7 @@ export default function GradesIndex({
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                                         asChild
                                         title="Añadir sección"
                                     >
@@ -200,7 +200,7 @@ export default function GradesIndex({
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                                         asChild
                                         title="Editar"
                                     >
@@ -216,7 +216,7 @@ export default function GradesIndex({
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400"
                                         onClick={() => handleDelete(grade.id)}
                                         data-testid="delete-btn"
                                     >

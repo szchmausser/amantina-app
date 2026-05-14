@@ -341,19 +341,19 @@ export default function AttendanceIndex({
                                 />
                             )}
                         </DataTableTD>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(students.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
                         <DataTableTD>
                             <Link
                                 href={userShow(student.id).url}
-                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100"
+                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100 dark:hover:text-blue-400"
                                 data-testid={`student-link-${student.id}`}
                             >
                                 {student.name}
                             </Link>
                         </DataTableTD>
-                        <DataTableTD className="font-mono text-neutral-500">
+                        <DataTableTD className="font-mono text-neutral-500 dark:text-neutral-400">
                             {student.cedula}
                         </DataTableTD>
                         <DataTableTD className="text-neutral-600 dark:text-neutral-400">
@@ -385,7 +385,7 @@ export default function AttendanceIndex({
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                    className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/30"
                                     onClick={() =>
                                         router.post(
                                             `/admin/field-sessions/${fieldSession.id}/attendance`,
@@ -406,7 +406,7 @@ export default function AttendanceIndex({
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-red-600"
+                                    className="text-red-600 dark:text-red-400"
                                     onClick={() => handleUnregister(student)}
                                     data-testid={`unregister-button-${student.id}`}
                                 >
@@ -420,7 +420,7 @@ export default function AttendanceIndex({
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="text-red-400 border-red-200 pointer-events-none"
+                                                className="text-red-400 border-red-200 pointer-events-none dark:border-red-800"
                                                 disabled
                                                 data-testid={`unregister-button-${student.id}`}
                                             >
@@ -546,10 +546,10 @@ export default function AttendanceIndex({
                             variant="outline"
                             className={
                                 fieldSession.status.name === 'planned'
-                                    ? 'bg-blue-100 text-blue-800'
+                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                                     : fieldSession.status.name === 'realized'
-                                      ? 'bg-green-100 text-green-800'
-                                      : 'bg-red-100 text-red-800'
+                                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                             }
                         >
                             {fieldSession.status.name === 'planned'

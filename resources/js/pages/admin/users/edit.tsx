@@ -123,7 +123,7 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                     {/* Profile Card */}
                     <div className="overflow-hidden rounded-xl border">
                         <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                            <UserIcon className="h-4 w-4 text-neutral-500" />
+                            <UserIcon className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                             <h2 className="text-sm font-semibold">
                                 Información del Perfil
                             </h2>
@@ -230,7 +230,7 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                     {isAlumno && (
                         <div className="overflow-hidden rounded-xl border">
                             <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                                <BookOpen className="h-4 w-4 text-neutral-500" />
+                                <BookOpen className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                 <h2 className="text-sm font-semibold">
                                     Información Académica
                                 </h2>
@@ -276,7 +276,7 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                                         />
                                     </div>
                                 )}
-                                <div className="rounded-lg bg-neutral-50 p-3 text-xs text-neutral-500 italic dark:bg-neutral-800/30">
+                                <div className="rounded-lg bg-neutral-50 p-3 text-xs text-neutral-500 italic dark:bg-neutral-800/30 dark:text-neutral-400">
                                     Los datos de grado y sección se asignan al
                                     momento de realizar la inscripción.
                                 </div>
@@ -287,11 +287,11 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                     {/* Security Card */}
                     <div className="overflow-hidden rounded-xl border">
                         <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                            <Key className="h-4 w-4 text-neutral-500" />
+                            <Key className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                             <h2 className="text-sm font-semibold">Seguridad</h2>
                         </div>
                         <div className="grid gap-6 p-6 sm:grid-cols-2">
-                            <div className="col-span-full text-xs text-neutral-500 italic">
+                            <div className="col-span-full text-xs text-neutral-500 italic dark:text-neutral-400">
                                 Dejar en blanco si no desea cambiar la
                                 contraseña actual.
                             </div>
@@ -336,19 +336,19 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                     {/* Direct Permissions Card */}
                     <div className="overflow-hidden rounded-xl border">
                         <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                            <ShieldCheck className="h-4 w-4 text-neutral-500" />
+                            <ShieldCheck className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                             <h2 className="text-sm font-semibold">
                                 Permisos Directos
                             </h2>
                         </div>
                         <div className="space-y-4 p-6">
                             <div className="flex items-start gap-3 rounded-lg border bg-neutral-50 px-4 py-3 dark:bg-neutral-900/30 dark:border-neutral-700">
-                                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400" />
+                                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400 dark:text-neutral-500" />
                                 <div className="text-xs text-neutral-600 dark:text-neutral-400">
                                     <p className="font-medium text-neutral-700 dark:text-neutral-300">¿Qué son los permisos directos?</p>
                                     <p className="mt-0.5">
                                         Son capacidades que se asignan <strong>adicionalmente</strong> a un usuario, fuera de las que ya tiene por su rol.
-                                        Los que ya están cubiertos por el rol aparecen <strong>deshabilitados</strong> con la etiqueta <Badge variant="outline" className="mx-0.5 px-1 py-0 text-[8px] font-normal uppercase align-middle border-amber-200 text-amber-600 bg-amber-50 dark:border-amber-800 dark:text-amber-500 dark:bg-amber-950/30">rol</Badge>.
+                                        Los que ya están cubiertos por el rol aparecen <strong>deshabilitados</strong> con la etiqueta <Badge variant="outline" className="mx-0.5 px-1 py-0 text-[8px] font-normal uppercase align-middle border-amber-200 text-amber-600 bg-amber-50 dark:border-amber-800 dark:text-amber-500 dark:bg-amber-950/30 dark:text-amber-400">rol</Badge>.
                                     </p>
                                 </div>
                             </div>
@@ -356,7 +356,7 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                                 {Object.entries(groupedPermissions).map(
                                     ([module, perms]) => (
                                         <div key={module} className="space-y-3 px-3">
-                                            <h3 className="border-b border-neutral-100 pb-1.5 text-[11px] font-bold tracking-wider text-neutral-500 uppercase dark:border-neutral-800">
+                                            <h3 className="border-b border-neutral-100 pb-1.5 text-[11px] font-bold tracking-wider text-neutral-500 uppercase dark:border-neutral-800 dark:text-neutral-400">
                                                 {module}
                                             </h3>
                                             <div className="space-y-2.5">
@@ -402,7 +402,7 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                                                                 {isInherited && (
                                                                     <Badge
                                                                         variant="outline"
-                                                                        className="ml-1 px-1.5 py-0.5 text-[10px] font-medium uppercase align-middle border-amber-300 text-amber-700 bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:bg-amber-950/30"
+                                                                        className="ml-1 px-1.5 py-0.5 text-[10px] font-medium uppercase align-middle border-amber-300 text-amber-700 bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:bg-amber-950/30 dark:text-amber-300"
                                                                     >
                                                                 heredado
                                                                     </Badge>
@@ -410,7 +410,7 @@ export default function Edit({ user, roles, allPermissions }: Props) {
                                                                 {isDirectlyAssigned && !isInherited && (
                                                                     <Badge
                                                                         variant="outline"
-                                                                        className="ml-1 px-1.5 py-0.5 text-[10px] font-medium uppercase align-middle border-blue-300 text-blue-700 bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:bg-blue-950/30"
+                                                                        className="ml-1 px-1.5 py-0.5 text-[10px] font-medium uppercase align-middle border-blue-300 text-blue-700 bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:bg-blue-950/30 dark:text-blue-300"
                                                                     >
                                                                 asignado
                                                                     </Badge>

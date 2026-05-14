@@ -109,7 +109,7 @@ export default function AcademicYearEdit({ academicYear }: Props) {
                         {/* Card */}
                         <div className="overflow-hidden rounded-xl border">
                             <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                                <Calendar className="h-4 w-4 text-neutral-500" />
+                                <Calendar className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                 <h2 className="text-sm font-semibold">
                                     Datos del Periodo
                                 </h2>
@@ -192,7 +192,7 @@ export default function AcademicYearEdit({ academicYear }: Props) {
                                         placeholder="Ej: 120"
                                         required
                                     />
-                                    <p className="text-xs text-neutral-500">
+                                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                         Cantidad de horas que cada estudiante
                                         debe cumplir en este periodo.
                                     </p>
@@ -209,7 +209,7 @@ export default function AcademicYearEdit({ academicYear }: Props) {
                                         >
                                             Estado del Año Escolar
                                         </Label>
-                                        <p className="text-xs text-neutral-500">
+                                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                             Activar este año marcará
                                             automáticamente los demás como
                                             inactivos.

@@ -384,7 +384,7 @@ export default function Show({
                                 </Avatar>
                             ) : (
                                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                    <UserIcon className="h-6 w-6 text-neutral-500" />
+                                    <UserIcon className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
                                 </div>
                             )}
                             <div>
@@ -437,7 +437,7 @@ export default function Show({
                         )}
                         {(hasPermission('users.edit') ||
                             (auth.user && auth.user.id === user.id)) && (
-                            <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" asChild>
+                            <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/30" asChild>
                                 <Link href={userEdit(user.id).url}>
                                     <Pencil className="mr-2 h-4 w-4" />
                                     Editar Perfil
@@ -483,8 +483,8 @@ export default function Show({
                         {/* Información Personal */}
                         <div className="overflow-hidden rounded-xl border">
                             <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                <UserIcon className="h-4 w-4 text-neutral-500" />
-                                <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                <UserIcon className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                     Información Personal
                                 </h2>
                             </div>
@@ -529,8 +529,8 @@ export default function Show({
                             <>
                                 <div className="overflow-hidden rounded-xl border">
                                     <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                        <BookOpen className="h-4 w-4 text-neutral-500" />
-                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        <BookOpen className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                             Información Académica
                                         </h2>
                                     </div>
@@ -614,7 +614,7 @@ export default function Show({
                                             </div>
                                         ) : (
                                             <div className="col-span-full rounded-lg bg-neutral-50 p-3 dark:bg-neutral-800/50">
-                                                <p className="text-xs text-neutral-500 italic">
+                                                <p className="text-xs text-neutral-500 italic dark:text-neutral-400">
                                                     * El grado y sección se
                                                     gestionan en el módulo de
                                                     Inscripciones.
@@ -628,8 +628,8 @@ export default function Show({
                                 <div className="overflow-hidden rounded-xl border">
                                     <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                         <div className="flex items-center gap-2">
-                                            <Users className="h-4 w-4 text-neutral-500" />
-                                            <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                            <Users className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                            <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                                 Representantes Legales
                                             </h2>
                                         </div>
@@ -659,7 +659,7 @@ export default function Show({
                                                         >
                                                             <div className="flex items-center gap-3">
                                                                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                                                    <UserIcon className="h-4 w-4 text-neutral-500" />
+                                                                    <UserIcon className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                                                 </div>
                                                                 <div>
                                                                     <Link
@@ -682,7 +682,7 @@ export default function Show({
                                                                                 ?.relationship_type_name ||
                                                                                 'Vínculo'}
                                                                         </Badge>
-                                                                        <span className="text-[11px] text-neutral-500">
+                                                                        <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
                                                                             {
                                                                                 rep.cedula
                                                                             }
@@ -692,7 +692,7 @@ export default function Show({
                                                             </div>
                                                             <div className="flex items-center gap-4">
                                                                 {rep.phone && (
-                                                                    <div className="hidden items-center gap-1 text-neutral-500 sm:flex">
+                                                                    <div className="hidden items-center gap-1 text-neutral-500 sm:flex dark:text-neutral-400">
                                                                         <Phone className="h-3 w-3" />
                                                                         <span className="text-xs">
                                                                             {
@@ -725,7 +725,7 @@ export default function Show({
                                                 )}
                                             </div>
                                         ) : (
-                                            <div className="py-8 text-center text-neutral-400">
+                                            <div className="py-8 text-center text-neutral-400 dark:text-neutral-500">
                                                 <p className="text-sm italic">
                                                     No tiene representantes
                                                     vinculados.
@@ -742,8 +742,8 @@ export default function Show({
                             <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <div className="flex items-center gap-2">
-                                        <Users className="h-4 w-4 text-neutral-500" />
-                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        <Users className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                             Estudiantes a Cargo
                                         </h2>
                                     </div>
@@ -773,7 +773,7 @@ export default function Show({
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                                                <UserIcon className="h-4 w-4 text-neutral-500" />
+                                                                <UserIcon className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                                             </div>
                                                             <div>
                                                                 <Link
@@ -799,7 +799,7 @@ export default function Show({
                                                                             ?.name ||
                                                                             'Vínculo'}
                                                                     </Badge>
-                                                                    <span className="text-[11px] text-neutral-500">
+                                                                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
                                                                         {
                                                                             student.cedula
                                                                         }
@@ -812,7 +812,7 @@ export default function Show({
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="py-8 text-center text-neutral-400">
+                                        <div className="py-8 text-center text-neutral-400 dark:text-neutral-500">
                                             <p className="text-sm italic">
                                                 No tiene estudiantes a cargo
                                                 vinculados.
@@ -831,8 +831,8 @@ export default function Show({
                             <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <div className="flex items-center gap-2">
-                                        <Heart className="h-4 w-4 text-red-500" />
-                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        <Heart className="h-4 w-4 text-red-500 dark:text-red-400" />
+                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                             Registros de Salud
                                         </h2>
                                     </div>
@@ -861,14 +861,14 @@ export default function Show({
                                                 >
                                                     <div className="flex items-start justify-between">
                                                         <div className="flex items-start gap-3">
-                                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
-                                                                <Heart className="h-4 w-4 text-red-500" />
+                                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 dark:bg-red-950/30">
+                                                                <Heart className="h-4 w-4 text-red-500 dark:text-red-400" />
                                                             </div>
                                                             <div>
                                                                 <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                                                                     {record.condition?.name || 'Sin condición'}
                                                                 </p>
-                                                                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                                                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">
                                                                     <span className="flex items-center gap-1">
                                                                         <Calendar className="h-3 w-3" />
                                                                         {new Date(record.received_at).toLocaleDateString('es-ES')}
@@ -882,13 +882,13 @@ export default function Show({
                                                                     <span>Recibido por: {record.received_by?.name || '—'}</span>
                                                                 </div>
                                                                 {record.observations && (
-                                                                    <p className="mt-1 text-xs text-neutral-400 italic">{record.observations}</p>
+                                                                    <p className="mt-1 text-xs text-neutral-400 italic dark:text-neutral-500">{record.observations}</p>
                                                                 )}
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-1">
                                                             {hasPermission('student_health.edit') && (
-                                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500 hover:text-blue-600">
+                                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500 hover:text-blue-600 dark:hover:text-blue-400 dark:text-neutral-400">
                                                                     <Pencil className="h-3.5 w-3.5" />
                                                                 </Button>
                                                             )}
@@ -896,7 +896,7 @@ export default function Show({
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                                                    className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 dark:text-red-400"
                                                                     onClick={() => handleDeleteHealthRecord(record.id)}
                                                                 >
                                                                     <Trash2 className="h-3.5 w-3.5" />
@@ -949,7 +949,7 @@ export default function Show({
                                     {/* Año Actual */}
                                     <div className="overflow-hidden rounded-xl border">
                                         <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                            <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300">
+                                            <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                                 {
                                                     hourStats.current_year
                                                         .year_name
@@ -965,7 +965,7 @@ export default function Show({
                                                         )}
                                                         h
                                                     </p>
-                                                    <p className="text-sm text-neutral-500">
+                                                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                                         de{' '}
                                                         {
                                                             hourStats
@@ -982,18 +982,18 @@ export default function Show({
                                                                 .current_year
                                                                 .percentage >=
                                                             100
-                                                                ? 'text-green-600'
-                                                                : hourStats
-                                                                        .current_year
-                                                                        .percentage >=
-                                                                    75
-                                                                  ? 'text-blue-600'
-                                                                  : hourStats
-                                                                          .current_year
-                                                                          .percentage >=
-                                                                      50
-                                                                    ? 'text-amber-600'
-                                                                    : 'text-red-600'
+? 'text-green-600 dark:text-green-400'
+                                                                 : hourStats
+                                                                         .current_year
+                                                                         .percentage >=
+                                                                     75
+                                                                   ? 'text-blue-600 dark:text-blue-400'
+                                                                   : hourStats
+                                                                           .current_year
+                                                                           .percentage >=
+                                                                       50
+                                                                     ? 'text-amber-600 dark:text-amber-400'
+                                                                     : 'text-red-600 dark:text-red-400'
                                                         }`}
                                                     >
                                                         {hourStats.current_year.percentage.toFixed(
@@ -1033,7 +1033,7 @@ export default function Show({
                                     {/* Acumulado Total */}
                                     <div className="overflow-hidden rounded-xl border">
                                         <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                            <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300">
+                                            <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                                 Acumulado General
                                             </h3>
                                         </div>
@@ -1046,7 +1046,7 @@ export default function Show({
                                                         )}
                                                         h
                                                     </p>
-                                                    <p className="text-sm text-neutral-500">
+                                                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                                         de{' '}
                                                         {
                                                             hourStats.total
@@ -1061,18 +1061,18 @@ export default function Show({
                                                             hourStats.total
                                                                 .percentage >=
                                                             100
-                                                                ? 'text-green-600'
-                                                                : hourStats
-                                                                        .total
-                                                                        .percentage >=
-                                                                    75
-                                                                  ? 'text-blue-600'
-                                                                  : hourStats
-                                                                          .total
-                                                                          .percentage >=
-                                                                      50
-                                                                    ? 'text-amber-600'
-                                                                    : 'text-red-600'
+? 'text-green-600 dark:text-green-400'
+                                                                 : hourStats
+                                                                         .total
+                                                                         .percentage >=
+                                                                     75
+                                                                   ? 'text-blue-600 dark:text-blue-400'
+                                                                   : hourStats
+                                                                           .total
+                                                                           .percentage >=
+                                                                       50
+                                                                     ? 'text-amber-600 dark:text-amber-400'
+                                                                     : 'text-red-600 dark:text-red-400'
                                                         }`}
                                                     >
                                                         {hourStats.total.percentage.toFixed(
@@ -1113,7 +1113,7 @@ export default function Show({
                             {hourStats && hourStats.breakdown_by_term && hourStats.breakdown_by_term.length > 0 && (
                                 <div className="overflow-hidden rounded-xl border">
                                     <div className="bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                        <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300">
+                                        <h3 className="text-sm font-semibold text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                             Desglose por Lapso ({hourStats.current_year.year_name})
                                         </h3>
                                     </div>
@@ -1151,8 +1151,8 @@ export default function Show({
                             <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <div className="flex items-center gap-2">
-                                        <Building2 className="h-4 w-4 text-indigo-500" />
-                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        <Building2 className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                             Horas Externas Acreditadas
                                         </h2>
                                     </div>
@@ -1183,8 +1183,8 @@ export default function Show({
                                                 >
                                                     <div className="flex items-start justify-between gap-4">
                                                         <div className="flex flex-1 items-start gap-3">
-                                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/20">
-                                                                <Building2 className="h-4 w-4 text-indigo-500" />
+                                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/20 dark:bg-indigo-950/30">
+                                                                <Building2 className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
                                                             </div>
                                                             <div className="min-w-0 flex-1">
                                                                 <div className="flex flex-wrap items-center gap-2">
@@ -1211,13 +1211,13 @@ export default function Show({
                                                                     </Badge>
                                                                 </div>
                                                                 {item.description && (
-                                                                    <p className="mt-1 text-xs text-neutral-400 italic">
+                                                                    <p className="mt-1 text-xs text-neutral-400 italic dark:text-neutral-500">
                                                                         {
                                                                             item.description
                                                                         }
                                                                     </p>
                                                                 )}
-                                                                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                                                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">
                                                                     {item.admin && (
                                                                         <span>
                                                                             Cargado
@@ -1256,7 +1256,7 @@ export default function Show({
                                                                                         }
                                                                                         target="_blank"
                                                                                         rel="noopener noreferrer"
-                                                                                        className="inline-flex items-center gap-1 rounded border bg-neutral-50 px-2 py-1 text-xs text-neutral-600 transition-colors hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                                                                                        className="inline-flex items-center gap-1 rounded border bg-neutral-50 px-2 py-1 text-xs text-neutral-600 transition-colors hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:bg-neutral-800"
                                                                                     >
                                                                                         <Paperclip className="h-3 w-3" />
                                                                                         {
@@ -1277,7 +1277,7 @@ export default function Show({
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="h-7 w-7 text-neutral-500 hover:text-blue-600"
+                                                                    className="h-7 w-7 text-neutral-500 hover:text-blue-600 dark:hover:text-blue-400 dark:text-neutral-400"
                                                                     onClick={() => {
                                                                         setEditingExternalHour(
                                                                             item,
@@ -1296,7 +1296,7 @@ export default function Show({
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                                                    className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 dark:text-red-400"
                                                                     onClick={() =>
                                                                         handleDeleteExternalHour(
                                                                             item.id,
@@ -1313,7 +1313,7 @@ export default function Show({
                                         </div>
                                     ) : (
                                         <div className="px-6 py-4 text-center">
-                                            <p className="text-xs text-neutral-400 italic">
+                                            <p className="text-xs text-neutral-400 italic dark:text-neutral-500">
                                                 Sin horas externas acreditadas.
                                             </p>
                                         </div>
@@ -1324,8 +1324,8 @@ export default function Show({
                             {/* Historial de Horas */}
                             <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center gap-2 bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
-                                    <Clock className="h-4 w-4 text-green-600" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                    <Clock className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                         Historial de Horas Socioproductivas
                                     </h2>
                                 </div>
@@ -1336,7 +1336,7 @@ export default function Show({
                                                  <div key={yearName}>
                                                      {/* Year Header */}
                                                      <div className="bg-neutral-100/50 px-6 py-2 dark:bg-neutral-800/30">
-                                                          <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                                                          <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                                               {yearName}
                                                          </span>
                                                      </div>
@@ -1356,9 +1356,9 @@ export default function Show({
                                                                          }`}
                                                                      >
                                                                          {item.attended ? (
-                                                                             <Clock className="h-4 w-4 text-green-600" />
+                                                                             <Clock className="h-4 w-4 text-green-600 dark:text-green-400" />
                                                                          ) : (
-                                                                             <UserIcon className="h-4 w-4 text-red-600" />
+                                                                             <UserIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
                                                                          )}
                                                                      </div>
                                                                      <div className="min-w-0 flex-1">
@@ -1367,11 +1367,11 @@ export default function Show({
                                                                                  item.fieldSession
                                                                                      ?.name ||
                                                                                      'Jornada'}
-                                                                             <span className="ml-2 text-[10px] font-normal text-neutral-400">
+                                                                             <span className="ml-2 text-[10px] font-normal text-neutral-400 dark:text-neutral-500">
                                                                                  ({item.fieldSession?.academic_year_name || 'Sin año'})
                                                                              </span>
                                                                          </p>
-                                          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">
                                               {item.fieldSession && (
                                                   <span className="flex items-center gap-1">
                                                       <Calendar className="h-3 w-3" />
@@ -1385,11 +1385,11 @@ export default function Show({
                                                   </span>
                                               )}
                                               <span
-                                                                                 className={`flex items-center gap-1 ${
-                                                                                     item.attended
-                                                                                         ? 'text-green-600'
-                                                                                         : 'text-red-600'
-                                                                                 }`}
+className={`flex items-center gap-1 ${
+                                                                                      item.attended
+                                                                                          ? 'text-green-600 dark:text-green-400'
+                                                                                          : 'text-red-600 dark:text-red-400'
+                                                                                  }`}
                                                                              >
                                                                                  {item.attended
                                                                                      ? 'Asistió'
@@ -1456,7 +1456,7 @@ export default function Show({
                                                                                                       {activity.activity_category ||
                                                                                                           ''}
                                                                                                       {hasPhotos && (
-                                                                                                          <span className="ml-1 inline-flex items-center gap-0.5 text-[10px] text-blue-600 font-semibold">
+                                                                                                          <span className="ml-1 inline-flex items-center gap-0.5 text-[10px] text-blue-600 font-semibold dark:text-blue-400">
                                                                                                               <svg
                                                                                                                   xmlns="http://www.w3.org/2000/svg"
                                                                                                                   width="12"
@@ -1485,7 +1485,7 @@ export default function Show({
                                                                                  </div>
                                                                              )}
                                                                          {item.notes && (
-                                                                             <p className="mt-1 text-xs text-neutral-400 italic">
+                                                                             <p className="mt-1 text-xs text-neutral-400 italic dark:text-neutral-500">
                                                                                  {
                                                                                      item.notes
                                                                                  }
@@ -1511,7 +1511,7 @@ export default function Show({
                                                                                  : item.total_hours <
                                                                                      0
                                                                                  ? 'bg-red-500 text-white hover:bg-red-600'
-                                                                                 : 'bg-neutral-300 text-neutral-700 hover:bg-neutral-400'
+                                                                                 : 'bg-neutral-300 text-neutral-700 hover:bg-neutral-400 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600'
                                                                          }`}
                                                                      >
                                                                          {item.total_hours >
@@ -1528,7 +1528,7 @@ export default function Show({
                                              ))}
                                          </div>
                                      ) : (
-                                         <div className="py-12 text-center text-neutral-400">
+                                         <div className="py-12 text-center text-neutral-400 dark:text-neutral-500">
                                              <Clock className="mx-auto mb-2 h-10 w-10 opacity-20" />
                                              <p className="text-sm italic">
                                                  Este estudiante no tiene horas
@@ -1546,22 +1546,22 @@ export default function Show({
                             <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center justify-between bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <div className="flex items-center gap-2">
-                                        <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                        <ShieldCheck className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                        <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                             Capacidades y Permisos
-                                            <span className="ml-2 font-normal text-neutral-400">— {assignedStandardPerms}/{totalStandardPerms}</span>
+                                            <span className="ml-2 font-normal text-neutral-400 dark:text-neutral-500">— {assignedStandardPerms}/{totalStandardPerms}</span>
                                         </h2>
                                     </div>
                                     <div className="flex gap-3">
                                         <div className="flex items-center gap-1.5">
                                             <div className="h-2 w-2 rounded-full border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"></div>
-                                            <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                                            <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                                 Heredado
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1.5">
                                             <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                                            <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                                            <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                                 Directo
                                             </span>
                                         </div>
@@ -1583,7 +1583,7 @@ export default function Show({
                                                     >
                                                         <h3 className="mb-3 text-xs font-bold tracking-wider uppercase">
                                                             {label}
-                                                            <span className="ml-1.5 font-normal text-neutral-400">— {assignedCount}/{totalActions}</span>
+                                                            <span className="ml-1.5 font-normal text-neutral-400 dark:text-neutral-500">— {assignedCount}/{totalActions}</span>
                                                         </h3>
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {actions.map((action) => {
@@ -1672,7 +1672,7 @@ export default function Show({
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <ShieldCheck className="h-5 w-5 text-neutral-500" />
+                            <ShieldCheck className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
                             Capacidad del Usuario
                         </DialogTitle>
                         <DialogDescription>
@@ -1719,14 +1719,14 @@ export default function Show({
                                         {isDirect || isInherited ? (
                                             <>Este usuario <strong className="text-neutral-900 dark:text-neutral-100">puede {actionDesc}</strong> <strong className="text-neutral-900 dark:text-neutral-100">{moduleLabel.toLowerCase()}</strong> en el sistema.</>
                                         ) : (
-                                            <>Este usuario <span className="text-neutral-400">no tiene asignada</span> la capacidad de <strong className="text-neutral-400">{actionDesc}</strong> <strong className="text-neutral-400">{moduleLabel.toLowerCase()}</strong>.</>
+                                            <>Este usuario <span className="text-neutral-400 dark:text-neutral-500">no tiene asignada</span> la capacidad de <strong className="text-neutral-400 dark:text-neutral-500">{actionDesc}</strong> <strong className="text-neutral-400 dark:text-neutral-500">{moduleLabel.toLowerCase()}</strong>.</>
                                         )}
                                     </p>
                                 </div>
 
                                 {/* How they got it */}
                                 <div className="space-y-3">
-                                    <h4 className="text-xs font-semibold tracking-wider text-neutral-500 uppercase">
+                                    <h4 className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                         ¿Cómo obtuvo esta capacidad?
                                     </h4>
                                     <div className="flex flex-wrap items-center gap-2">
@@ -1735,7 +1735,7 @@ export default function Show({
                                         </span>
                                     </div>
                                     {rolesForPerm.length > 0 && (
-                                        <p className="text-xs text-neutral-500">
+                                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                             A través del rol{rolesForPerm.length > 1 ? 'es' : ''}:{' '}
                                             {rolesForPerm.map((r) => (
                                                 <Badge key={r} variant="secondary" className="ml-1 text-xs capitalize">
@@ -1746,7 +1746,7 @@ export default function Show({
                                     )}
                                 </div>
 
-                                <div className="text-xs text-neutral-400 italic">
+                                <div className="text-xs text-neutral-400 italic dark:text-neutral-500">
                                     Presiona ESC o haz clic fuera para cerrar.
                                 </div>
                             </div>

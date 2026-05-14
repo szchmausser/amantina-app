@@ -157,7 +157,7 @@ export default function AssignStudentModal({
                                 <p className="text-sm font-medium">{selectedUser.name}</p>
                                 <p className="text-xs text-muted-foreground">{selectedUser.cedula}</p>
                             </div>
-                            <Check className="h-5 w-5 text-emerald-500" />
+                            <Check className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
                             <Button
                                 type="button"
                                 variant="ghost"
@@ -202,7 +202,7 @@ export default function AssignStudentModal({
                             </SelectContent>
                         </Select>
                         {errors.relationship_type_id && (
-                            <p className="text-xs text-red-500">{errors.relationship_type_id}</p>
+                            <p className="text-xs text-red-500 dark:text-red-400">{errors.relationship_type_id}</p>
                         )}
                     </div>
 

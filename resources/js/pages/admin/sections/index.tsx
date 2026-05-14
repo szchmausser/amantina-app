@@ -150,7 +150,7 @@ export default function SectionsIndex({
             <DataTableBody>
                 {sections.data.map((section, index) => (
                     <DataTableTR key={section.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(sections.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
                         <DataTableTD>
@@ -182,7 +182,7 @@ export default function SectionsIndex({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                                     asChild
                                     title="Ver detalles"
                                 >
@@ -197,7 +197,7 @@ export default function SectionsIndex({
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                                         asChild
                                         title="Editar"
                                     >
@@ -213,7 +213,7 @@ export default function SectionsIndex({
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400"
                                         onClick={() => handleDelete(section.id)}
                                         title="Eliminar"
                                         data-testid="delete-btn"

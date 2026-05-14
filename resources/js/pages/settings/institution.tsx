@@ -74,7 +74,7 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
                     <Card className="overflow-hidden p-0">
                         {/* Header estilo tabla */}
                         <div className="flex items-center gap-2 rounded-t-xl border-b bg-neutral-50/50 px-6 py-3 dark:bg-neutral-800/30">
-                            <Building2 className="h-4 w-4 text-neutral-500" />
+                            <Building2 className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                             <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                 Información de la Institución
                             </span>
@@ -109,7 +109,7 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
                                                     htmlFor="name"
                                                     className="flex items-center gap-2"
                                                 >
-                                                    <Building2 className="h-4 w-4 text-neutral-400" />
+                                                    <Building2 className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                                                     Nombre de la Institución
                                                 </Label>
                                                 <Input
@@ -131,7 +131,7 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
                                                     htmlFor="code"
                                                     className="flex items-center gap-2"
                                                 >
-                                                    <Fingerprint className="h-4 w-4 text-neutral-400" />
+                                                    <Fingerprint className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                                                     Código Institucional
                                                 </Label>
                                                 <Input
@@ -152,7 +152,7 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
                                                     htmlFor="email"
                                                     className="flex items-center gap-2"
                                                 >
-                                                    <Mail className="h-4 w-4 text-neutral-400" />
+                                                    <Mail className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                                                     Correo Electrónico
                                                 </Label>
                                                 <Input
@@ -174,7 +174,7 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
                                                     htmlFor="phone"
                                                     className="flex items-center gap-2"
                                                 >
-                                                    <Phone className="h-4 w-4 text-neutral-400" />
+                                                    <Phone className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                                                     Teléfono de Contacto
                                                 </Label>
                                                 <Input
@@ -195,7 +195,7 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
                                                     htmlFor="address"
                                                     className="flex items-center gap-2"
                                                 >
-                                                    <MapPin className="h-4 w-4 text-neutral-400" />
+                                                    <MapPin className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                                                     Dirección
                                                 </Label>
                                                 <Input
@@ -221,7 +221,7 @@ export default function InstitutionSettings({ institution }: InstitutionProps) {
                     {/* Logo Upload Section */}
                     <Card className="overflow-hidden p-0">
                         <div className="flex items-center gap-2 rounded-t-xl border-b bg-neutral-50/50 px-6 py-3 dark:bg-neutral-800/30">
-                            <Upload className="h-4 w-4 text-neutral-500" />
+                            <Upload className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                             <span className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                 Logo de la Institución
                             </span>

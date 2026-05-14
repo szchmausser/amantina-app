@@ -185,7 +185,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                     className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-neutral-50/50 px-3 py-2 dark:border-neutral-700/50 dark:bg-neutral-800/30"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <Layout className="h-4 w-4 text-neutral-400" />
+                                        <Layout className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                                         <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 uppercase">
                                             {definition.name}
                                         </span>
@@ -197,7 +197,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-neutral-500"
+                                                    className="h-8 w-8 text-neutral-500 dark:text-neutral-400"
                                                     onClick={() => startEdit(definition)}
                                                     data-test={`edit-section-definition-${definition.id}`}
                                                 >
@@ -208,7 +208,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400"
                                                     onClick={() =>
                                                         handleDelete(definition.id)
                                                     }
@@ -222,7 +222,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                 </div>
                             ))
                         ) : (
-                            <div className="rounded-lg border border-dashed p-8 text-center text-neutral-500">
+                            <div className="rounded-lg border border-dashed p-8 text-center text-neutral-500 dark:text-neutral-400">
                                 No hay definiciones de secciones configuradas.
                             </div>
                         )}

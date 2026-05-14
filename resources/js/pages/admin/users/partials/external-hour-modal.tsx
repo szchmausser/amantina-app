@@ -165,7 +165,7 @@ export default function ExternalHourModal({
                 >
                     {/* Estudiante (solo lectura) */}
                     <div className="space-y-1">
-                        <Label className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">
+                        <Label className="text-xs font-semibold tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
                             Estudiante
                         </Label>
                         <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -185,7 +185,7 @@ export default function ExternalHourModal({
                                 maxLength={50}
                                 required
                             />
-                            <p className="text-xs text-neutral-400">
+                            <p className="text-xs text-neutral-400 dark:text-neutral-500">
                                 Rango de años del período externo
                             </p>
                             <InputError message={errors.period} />
@@ -225,7 +225,7 @@ export default function ExternalHourModal({
                     <div className="space-y-2">
                         <Label htmlFor="description">
                             Descripción / Observaciones{' '}
-                            <span className="text-neutral-400">(opcional)</span>
+                            <span className="text-neutral-400 dark:text-neutral-500">(opcional)</span>
                         </Label>
                         <textarea
                             id="description"
@@ -244,11 +244,11 @@ export default function ExternalHourModal({
                             className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-200 p-6 transition-colors hover:border-neutral-300 dark:border-neutral-800 dark:hover:border-neutral-700"
                             onClick={() => fileInputRef.current?.click()}
                         >
-                            <Upload className="h-8 w-8 text-neutral-400" />
-                            <p className="mt-2 text-sm text-neutral-500">
+                            <Upload className="h-8 w-8 text-neutral-400 dark:text-neutral-500" />
+                            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                                 Clic para seleccionar archivos
                             </p>
-                            <p className="text-xs text-neutral-400">
+                            <p className="text-xs text-neutral-400 dark:text-neutral-500">
                                 PDF, JPG, JPEG, PNG, WebP
                             </p>
                             <input
@@ -271,12 +271,12 @@ export default function ExternalHourModal({
                                         key={index}
                                         className="flex items-center gap-2 rounded-lg border bg-neutral-50 p-3 dark:bg-neutral-800"
                                     >
-                                        <FileText className="h-4 w-4 shrink-0 text-neutral-400" />
+                                        <FileText className="h-4 w-4 shrink-0 text-neutral-400 dark:text-neutral-500" />
                                         <div className="min-w-0 flex-1">
                                             <p className="truncate text-sm font-medium">
                                                 {file.name}
                                             </p>
-                                            <p className="text-xs text-neutral-400">
+                                            <p className="text-xs text-neutral-400 dark:text-neutral-500">
                                                 {(
                                                     file.size /
                                                     1024 /
@@ -289,7 +289,7 @@ export default function ExternalHourModal({
                                             type="button"
                                             variant="ghost"
                                             size="icon"
-                                            className="h-6 w-6 shrink-0 text-red-500"
+                                            className="h-6 w-6 shrink-0 text-red-500 dark:text-red-400"
                                             onClick={() => removeFile(index)}
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
@@ -304,7 +304,7 @@ export default function ExternalHourModal({
                             existingRecord?.media &&
                             existingRecord.media.length > 0 && (
                                 <div className="space-y-2">
-                                    <p className="text-xs font-medium text-neutral-500">
+                                    <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                                         Documentos existentes:
                                     </p>
                                     {existingRecord.media
@@ -317,7 +317,7 @@ export default function ExternalHourModal({
                                                 key={media.id}
                                                 className="flex items-center gap-2 rounded-lg border bg-neutral-50 p-2 dark:bg-neutral-800"
                                             >
-                                                <Paperclip className="h-4 w-4 text-neutral-400" />
+                                                <Paperclip className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                                                 <span className="flex-1 truncate text-sm">
                                                     {media.name}
                                                 </span>
@@ -325,7 +325,7 @@ export default function ExternalHourModal({
                                                     type="button"
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-6 w-6 shrink-0 text-red-500"
+                                                    className="h-6 w-6 shrink-0 text-red-500 dark:text-red-400"
                                                     onClick={() =>
                                                         removeExistingMedia(
                                                             media.id,

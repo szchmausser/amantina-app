@@ -101,7 +101,7 @@ export default function Create({ roles }: Props) {
                     {/* Roles Card */}
                     <div className="overflow-hidden rounded-xl border">
                         <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                            <User className="h-4 w-4 text-neutral-500" />
+                            <User className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                             <h2 className="text-sm font-semibold">
                                 Roles y Datos Básicos
                             </h2>
@@ -187,12 +187,12 @@ export default function Create({ roles }: Props) {
                                     <Label htmlFor="phone">
                                         Teléfono{' '}
                                         {!isAlumno && (
-                                            <span className="text-red-500">
+                                            <span className="text-red-500 dark:text-red-400">
                                                 *
                                             </span>
                                         )}
                                         {isAlumno && (
-                                            <span className="text-xs font-normal text-neutral-400">
+                                            <span className="text-xs font-normal text-neutral-400 dark:text-neutral-500">
                                                 {' '}
                                                 (Opcional)
                                             </span>
@@ -214,12 +214,12 @@ export default function Create({ roles }: Props) {
                                     <Label htmlFor="address">
                                         Dirección{' '}
                                         {!isAlumno && (
-                                            <span className="text-red-500">
+                                            <span className="text-red-500 dark:text-red-400">
                                                 *
                                             </span>
                                         )}
                                         {isAlumno && (
-                                            <span className="text-xs font-normal text-neutral-400">
+                                            <span className="text-xs font-normal text-neutral-400 dark:text-neutral-500">
                                                 {' '}
                                                 (Opcional)
                                             </span>
@@ -291,7 +291,7 @@ export default function Create({ roles }: Props) {
                     {/* Password Card */}
                     <div className="overflow-hidden rounded-xl border">
                         <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                            <Lock className="h-4 w-4 text-neutral-500" />
+                            <Lock className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                             <h2 className="text-sm font-semibold">
                                 Contraseña
                             </h2>

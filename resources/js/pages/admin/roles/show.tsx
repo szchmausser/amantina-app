@@ -182,21 +182,21 @@ export default function Show({ role, users, filters }: Props) {
             <DataTableBody>
                 {users.data.map((user, index) => (
                     <DataTableTR key={user.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(users.current_page - 1) * (users.per_page || perPage) + index + 1}
                         </DataTableTD>
-                        <DataTableTD className="font-mono text-neutral-500">
+                        <DataTableTD className="font-mono text-neutral-500 dark:text-neutral-400">
                             {user.cedula}
                         </DataTableTD>
                         <DataTableTD>
                             <Link
                                 href={userShow(user.id).url}
-                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100"
+                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100 dark:hover:text-blue-400"
                             >
                                 {user.name}
                             </Link>
                         </DataTableTD>
-                        <DataTableTD className="text-neutral-500">
+                        <DataTableTD className="text-neutral-500 dark:text-neutral-400">
                             {user.email}
                         </DataTableTD>
                         <DataTableTD>
@@ -239,10 +239,10 @@ export default function Show({ role, users, filters }: Props) {
                                         Rol Personalizado
                                     </Badge>
                                 )}
-                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200">
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200 dark:text-neutral-400 dark:border-neutral-700">
                                     {role.permissions.length} Permisos
                                 </Badge>
-                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200">
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200 dark:text-neutral-400 dark:border-neutral-700">
                                     {users.total} Usuarios
                                 </Badge>
                             </div>
@@ -266,8 +266,8 @@ export default function Show({ role, users, filters }: Props) {
                         <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
                             <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                 <div className="flex items-center gap-2">
-                                    <Info className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                    <Info className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                         Información del Rol
                                     </h2>
                                 </div>
@@ -276,7 +276,7 @@ export default function Show({ role, users, filters }: Props) {
                                 <div className="space-y-6">
                                     <div className="flex items-start gap-5">
                                         <div className={`rounded-xl p-3 ${isProtected ? 'bg-primary/10' : 'bg-neutral-100'} dark:bg-neutral-800`}>
-                                            <Shield className={`h-8 w-8 ${isProtected ? 'text-primary' : 'text-neutral-500'}`} />
+                                            <Shield className={`h-8 w-8 ${isProtected ? 'text-primary' : 'text-neutral-500'} dark:text-neutral-400`} />
                                         </div>
                                         <div className="space-y-1.5 pt-1">
                                             <h4 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
@@ -289,7 +289,7 @@ export default function Show({ role, users, filters }: Props) {
                                     </div>
 
                                     <div className={`rounded-xl border p-6 transition-all ${isProtected ? 'border-blue-100 bg-blue-50/30 dark:border-blue-900/20 dark:bg-blue-950/10' : 'border-neutral-100 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-800/30'}`}>
-                                        <p className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
+                                        <p className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300 dark:text-neutral-400">
                                             {isProtected 
                                                 ? `Este es un rol fundamental del sistema. Su propósito está protegido para garantizar la integridad operativa, permitiendo una gestión precisa de las capacidades de ${role.name.toLowerCase()}.`
                                                 : `Este es un rol personalizado creado para extender las capacidades del sistema, permitiendo definir un conjunto específico de permisos para los usuarios asignados.`
@@ -298,7 +298,7 @@ export default function Show({ role, users, filters }: Props) {
                                     </div>
 
                                     <div className="space-y-4">
-                                        <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 pl-1">
+                                        <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 pl-1 dark:text-neutral-500">
                                             Identificador del Sistema
                                         </p>
                                         <div className="flex items-center justify-between rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
@@ -318,8 +318,8 @@ export default function Show({ role, users, filters }: Props) {
                         <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
                             <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                 <div className="flex items-center gap-2">
-                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                    <ShieldCheck className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                         Permisos de este Rol
                                     </h2>
                                 </div>
@@ -367,7 +367,7 @@ export default function Show({ role, users, filters }: Props) {
                                          )}
                                      </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-12 text-center text-neutral-500">
+                                    <div className="flex flex-col items-center justify-center py-12 text-center text-neutral-500 dark:text-neutral-400">
                                         <div className="bg-neutral-100 rounded-full p-4 mb-4 dark:bg-neutral-800">
                                             <ShieldCheck className="h-12 w-12 opacity-20" />
                                         </div>
@@ -382,8 +382,8 @@ export default function Show({ role, users, filters }: Props) {
                         <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
                             <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                 <div className="flex items-center gap-2">
-                                    <Users className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                    <Users className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                         Usuarios con este rol
                                     </h2>
                                 </div>
@@ -448,7 +448,7 @@ export default function Show({ role, users, filters }: Props) {
                                 <div className="flex flex-col">
                                     {/* Modal Header with Primary Gradient */}
                                     <div className="relative h-32 bg-gradient-to-br from-primary via-primary/90 to-indigo-800 p-8 flex items-end">
-                                        <div className="absolute top-6 right-6 rounded-full bg-white/10 p-2.5 backdrop-blur-md">
+                                        <div className="absolute top-6 right-6 rounded-full bg-white/10 p-2.5 backdrop-blur-md dark:bg-neutral-900">
                                             <ShieldCheck className="h-6 w-6 text-white/90" />
                                         </div>
                                         <div className="space-y-1">
@@ -477,13 +477,13 @@ export default function Show({ role, users, filters }: Props) {
                                         </div>
 
                                         <div className="rounded-2xl border border-neutral-100 bg-neutral-50/50 p-6 dark:border-neutral-800 dark:bg-neutral-800/30">
-                                            <p className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
+                                            <p className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300 dark:text-neutral-400">
                                                 Este permiso garantiza que el usuario pueda <span className="font-bold text-neutral-950 dark:text-neutral-50 underline decoration-primary/40 underline-offset-4 decoration-2">{data.desc.toLowerCase()}</span> dentro de este componente. Es una capacidad clave para la gestión de datos en el sistema.
                                             </p>
                                         </div>
 
                                         <div className="space-y-4">
-                                            <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 pl-1">
+                                            <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 pl-1 dark:text-neutral-500">
                                                 Identificador del Sistema
                                             </p>
                                             <div className="flex items-center justify-between rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
@@ -498,8 +498,8 @@ export default function Show({ role, users, filters }: Props) {
                                         </div>
 
                                         <div className="pt-2 text-center">
-                                            <p className="text-xs font-medium text-neutral-400">
-                                                Presiona <kbd className="rounded bg-neutral-100 px-1.5 py-0.5 font-sans text-xs font-bold text-neutral-500 dark:bg-neutral-800">ESC</kbd> para cerrar
+                                            <p className="text-xs font-medium text-neutral-400 dark:text-neutral-500">
+                                                Presiona <kbd className="rounded bg-neutral-100 px-1.5 py-0.5 font-sans text-xs font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">ESC</kbd> para cerrar
                                             </p>
                                         </div>
                                     </div>

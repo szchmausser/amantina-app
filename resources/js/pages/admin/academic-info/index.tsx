@@ -113,7 +113,7 @@ export default function AcademicInfo({
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="Información Académica" />
                 <div className="flex h-[450px] flex-col items-center justify-center space-y-4 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-800">
-                    <Calendar className="h-12 w-12 text-neutral-400" />
+                    <Calendar className="h-12 w-12 text-neutral-400 dark:text-neutral-500" />
                     <div className="text-center">
                         <h3 className="text-lg font-semibold">
                             No hay Año Escolar activo
@@ -233,7 +233,7 @@ export default function AcademicInfo({
                                     className="overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-200"
                                 >
                                     <CollapsibleTrigger asChild>
-                                        <div className="flex cursor-pointer items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900">
+                                        <div className="flex cursor-pointer items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 dark:hover:bg-neutral-800/30">
                                             <div className="flex items-center space-x-3">
                                                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-100 font-bold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
                                                     {
@@ -259,9 +259,9 @@ export default function AcademicInfo({
                                                 {openGrades.includes(
                                                     grade.id,
                                                 ) ? (
-                                                    <ChevronDown className="h-5 w-5 text-neutral-400" />
+                                                    <ChevronDown className="h-5 w-5 text-neutral-400 dark:text-neutral-500" />
                                                 ) : (
-                                                    <ChevronRight className="h-5 w-5 text-neutral-400" />
+                                                    <ChevronRight className="h-5 w-5 text-neutral-400 dark:text-neutral-500" />
                                                 )}
                                             </div>
                                         </div>
@@ -297,7 +297,7 @@ export default function AcademicInfo({
                                                                             }
                                                                         </Link>
                                                                     </Badge>
-                                                                    <Users className="h-4 w-4 text-neutral-400 transition-colors group-hover:text-indigo-500" />
+                                                                    <Users className="h-4 w-4 text-neutral-400 transition-colors group-hover:text-indigo-500 dark:text-neutral-500" />
                                                                 </div>
                                                             </CardHeader>
                                                             <CardContent className="space-y-4">
@@ -444,7 +444,7 @@ export default function AcademicInfo({
                                                                                                         key={
                                                                                                             student.id
                                                                                                         }
-                                                                                                        className="border-b text-sm transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900/50"
+                                                                                                        className="border-b text-sm transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900/50 dark:hover:bg-neutral-800/30"
                                                                                                     >
                                                                                                         <td className="px-4 py-3 font-mono text-xs">
                                                                                                             {idx +

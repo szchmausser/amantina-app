@@ -68,10 +68,10 @@ export default function RolesIndex({ roles }: Props) {
                                 >
                                     <div className="flex w-full items-center justify-between bg-neutral-50/50 px-4 py-3 dark:bg-neutral-800/30">
                                         <div className="flex items-center gap-3 pl-1">
-                                            <Shield className="h-4 w-4 text-neutral-500" />
+                                            <Shield className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                             <Link
                                                 href={roleShow({ role: role.id }).url}
-                                                className="text-sm font-semibold tracking-wider text-neutral-600 hover:text-blue-600 dark:text-neutral-300 dark:hover:text-blue-400 transition-colors"
+                                                className="text-sm font-semibold tracking-wider text-neutral-600 hover:text-blue-600 dark:text-neutral-300 dark:hover:text-blue-400 transition-colors dark:text-neutral-400"
                                             >
                                                 {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
                                             </Link>
@@ -89,7 +89,7 @@ export default function RolesIndex({ roles }: Props) {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                                                     asChild
                                                     title="Ver detalles"
                                                 >
@@ -102,7 +102,7 @@ export default function RolesIndex({ roles }: Props) {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                                                     asChild
                                                     title="Editar permisos"
                                                 >

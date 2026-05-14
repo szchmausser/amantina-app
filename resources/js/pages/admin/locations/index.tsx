@@ -145,7 +145,7 @@ export default function LocationsIndex({ locations }: Props) {
             <DataTableBody>
                 {locations.data.map((location, index) => (
                     <DataTableTR key={location.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(locations.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
                         <DataTableTD>
@@ -155,7 +155,7 @@ export default function LocationsIndex({ locations }: Props) {
                         </DataTableTD>
                         <DataTableTD className="text-neutral-600 dark:text-neutral-400">
                             {location.description || (
-                                <span className="text-xs text-neutral-400 italic">
+                                <span className="text-xs text-neutral-400 italic dark:text-neutral-500">
                                     Sin descripción
                                 </span>
                             )}
@@ -165,7 +165,7 @@ export default function LocationsIndex({ locations }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-neutral-500"
+                                    className="h-8 w-8 text-neutral-500 dark:text-neutral-400"
                                     onClick={() => startEdit(location)}
                                 >
                                     <Pencil className="h-4 w-4" />
@@ -174,7 +174,7 @@ export default function LocationsIndex({ locations }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400"
                                     onClick={() => handleDelete(location.id)}
                                 >
                                     <Trash2 className="h-4 w-4" />

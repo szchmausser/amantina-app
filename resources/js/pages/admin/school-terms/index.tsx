@@ -138,14 +138,14 @@ export default function SchoolTermsIndex({
             <DataTableBody>
                 {schoolTerms.data.map((term, index) => (
                     <DataTableTR key={term.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(schoolTerms.current_page - 1) * perPage +
                                 index +
                                 1}
                         </DataTableTD>
                         <DataTableTD>
                             <div className="flex items-center gap-3">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 dark:bg-blue-950/30">
                                     <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <span className="font-semibold text-neutral-900 dark:text-neutral-100">
@@ -159,7 +159,7 @@ export default function SchoolTermsIndex({
                         <DataTableTD className="font-mono text-neutral-600 dark:text-neutral-400">
                             {formatDate(term.end_date)}
                         </DataTableTD>
-                        <DataTableTD className="text-neutral-500">
+                        <DataTableTD className="text-neutral-500 dark:text-neutral-400">
                             {academicYears.find(
                                 (y) => y.id === term.academic_year_id,
                             )?.name || 'N/A'}
@@ -170,7 +170,7 @@ export default function SchoolTermsIndex({
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                        className="h-8 w-8 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                                         asChild
                                     >
                                         <Link
@@ -185,7 +185,7 @@ export default function SchoolTermsIndex({
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400"
                                         onClick={() => handleDelete(term.id)}
                                         data-testid="delete-btn"
                                     >

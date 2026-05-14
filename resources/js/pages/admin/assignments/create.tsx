@@ -339,7 +339,7 @@ export default function TeacherAssignmentsCreate({
 
                             <CardContent className="flex-1 overflow-auto px-2 pt-0 pb-2">
                                 <div className="relative mt-0 mb-3">
-                                    <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                                    <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
                                     <Input
                                         className="pl-9 focus-visible:border-neutral-300 focus-visible:ring-0"
                                         placeholder="Buscar por cédula o nombre..."
@@ -388,25 +388,25 @@ export default function TeacherAssignmentsCreate({
                                                             >
                                                                 {t.name}
                                                             </div>
-                                                            <div className="font-mono text-xs text-neutral-500">
+                                                            <div className="font-mono text-xs text-neutral-500 dark:text-neutral-400">
                                                                 {t.cedula}
                                                             </div>
                                                         </div>
                                                         {isSelected && (
-                                                            <Check className="h-4 w-4 shrink-0 text-neutral-500" />
+                                                            <Check className="h-4 w-4 shrink-0 text-neutral-500 dark:text-neutral-400" />
                                                         )}
                                                     </button>
                                                 );
                                             })
                                         ) : (
-                                            <div className="py-8 text-center text-sm text-neutral-500">
+                                            <div className="py-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
                                                 No hay resultados para "
                                                 {searchQuery}"
                                             </div>
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="flex h-full flex-col items-center justify-center p-8 text-center text-sm text-neutral-500">
+                                    <div className="flex h-full flex-col items-center justify-center p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
                                         <BookUser className="mb-2 h-10 w-10 opacity-20" />
                                         No hay profesores registrados en el
                                         sistema.
@@ -427,16 +427,16 @@ export default function TeacherAssignmentsCreate({
                                 {!selectedTeacherId ? (
                                     <div className="flex h-full flex-col items-center justify-center space-y-3">
                                         <BookUser
-                                            className="h-16 w-16 text-neutral-200 dark:text-neutral-700"
+                                            className="h-16 w-16 text-neutral-200 dark:text-neutral-700 dark:text-neutral-500"
                                             strokeWidth={1}
                                         />
-                                        <p className="font-medium text-neutral-500">
+                                        <p className="font-medium text-neutral-500 dark:text-neutral-400">
                                             Selecciona un profesor para
                                             comenzar.
                                         </p>
                                     </div>
                                 ) : grades.length === 0 ? (
-                                    <div className="flex h-full items-center justify-center text-neutral-500">
+                                    <div className="flex h-full items-center justify-center text-neutral-500 dark:text-neutral-400">
                                         No hay grados ni secciones configuradas
                                         en el año escolar activo.
                                     </div>
@@ -447,7 +447,7 @@ export default function TeacherAssignmentsCreate({
                                                 key={grade.id}
                                                 className="space-y-3"
                                             >
-                                                <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase">
+                                                <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                                     {grade.name}
                                                 </h3>
 
@@ -509,7 +509,7 @@ export default function TeacherAssignmentsCreate({
                                                                                     )}
                                                                             </div>
                                                                             <div className="flex items-center gap-2">
-                                                                                <div className="flex items-center gap-1 text-xs text-neutral-500">
+                                                                                <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
                                                                                     <Users className="h-3.5 w-3.5" />
                                                                                     {section.enrollments_count ??
                                                                                         0}
@@ -529,7 +529,7 @@ export default function TeacherAssignmentsCreate({
                                                                         </div>
 
                                                                         <div className="mt-auto">
-                                                                            <div className="mt-1.5 border-t border-neutral-100 pt-1.5 text-xs text-neutral-400 dark:border-neutral-800">
+                                                                            <div className="mt-1.5 border-t border-neutral-100 pt-1.5 text-xs text-neutral-400 dark:border-neutral-800 dark:text-neutral-500">
                                                                                 <span className="font-medium text-neutral-500 dark:text-neutral-400">
                                                                                     Profesores:{' '}
                                                                                 </span>
@@ -543,7 +543,7 @@ export default function TeacherAssignmentsCreate({
                                                             },
                                                         )
                                                     ) : (
-                                                        <div className="py-2 text-sm text-neutral-400">
+                                                        <div className="py-2 text-sm text-neutral-400 dark:text-neutral-500">
                                                             Sin secciones para
                                                             este grado.
                                                         </div>
@@ -625,7 +625,7 @@ export default function TeacherAssignmentsCreate({
                                 Estás a punto de <strong>desasignar</strong> al
                                 profesor de esta sección.
                             </p>
-                            <p className="text-amber-600 dark:text-amber-500">
+                            <p className="text-amber-600 dark:text-amber-500 dark:text-amber-400">
                                 <strong>Nota:</strong> El cambio se aplicará
                                 cuando hagas click en "Guardar Cambios".
                             </p>

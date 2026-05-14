@@ -197,7 +197,7 @@ export default function Profile({
                         {/* Personal Info Form + Additional Data merged */}
                         <div className="overflow-hidden rounded-xl border">
                             <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                                <UserIcon className="h-4 w-4 text-neutral-500" />
+                                <UserIcon className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                 <h2 className="text-sm font-semibold">
                                     Datos Personales
                                 </h2>
@@ -346,7 +346,7 @@ export default function Profile({
 
                                                         {status ===
                                                             'verification-link-sent' && (
-                                                            <div className="mt-2 text-sm font-medium text-green-600">
+                                                            <div className="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
                                                                 A new
                                                                 verification
                                                                 link has been
@@ -364,7 +364,7 @@ export default function Profile({
                                                 leave="transition ease-in-out"
                                                 leaveTo="opacity-0"
                                             >
-                                                <p className="text-sm text-neutral-600">
+                                                <p className="text-sm text-neutral-600 dark:text-neutral-400">
                                                     Guardado correctamente
                                                 </p>
                                             </Transition>
@@ -377,7 +377,7 @@ export default function Profile({
                         {/* Avatar — moved to end */}
                         <div className="overflow-hidden rounded-xl border">
                             <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                                <UserIcon className="h-4 w-4 text-neutral-500" />
+                                <UserIcon className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                 <h2 className="text-sm font-semibold">
                                     Foto de Perfil
                                 </h2>
@@ -401,7 +401,7 @@ export default function Profile({
                             {/* Roles */}
                             <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
+                                    <ShieldCheck className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                     <h2 className="text-sm font-semibold">
                                         Mis Roles
                                     </h2>
@@ -424,7 +424,7 @@ export default function Profile({
                             {/* Permissions */}
                             <div className="overflow-hidden rounded-xl border">
                                 <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
+                                    <ShieldCheck className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                     <h2 className="text-sm font-semibold">
                                         Mis Permisos
                                     </h2>
@@ -463,7 +463,7 @@ export default function Profile({
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-neutral-400 italic">
+                                        <p className="text-sm text-neutral-400 italic dark:text-neutral-500">
                                             Sin permisos asignados.
                                         </p>
                                     )}
@@ -481,7 +481,7 @@ export default function Profile({
                             <Card>
                                 <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <div className="flex items-center gap-2">
-                                        <Users className="h-4 w-4 text-neutral-500" />
+                                        <Users className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                         <CardTitle className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                             Mis Representantes Legales
                                         </CardTitle>
@@ -497,7 +497,7 @@ export default function Profile({
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                                            <UserIcon className="h-5 w-5 text-neutral-500" />
+                                                            <UserIcon className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
                                                         </div>
                                                         <div>
                                                             <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
@@ -512,14 +512,14 @@ export default function Profile({
                                                                         rep.relationship_type_name
                                                                     }
                                                                 </Badge>
-                                                                <span className="text-xs text-neutral-500">
+                                                                <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                                                     {rep.cedula}
                                                                 </span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     {rep.phone && (
-                                                        <div className="flex items-center gap-1 text-neutral-500">
+                                                        <div className="flex items-center gap-1 text-neutral-500 dark:text-neutral-400">
                                                             <Phone className="h-3.5 w-3.5" />
                                                             <span className="text-xs">
                                                                 {rep.phone}
@@ -530,7 +530,7 @@ export default function Profile({
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="py-12 text-center text-neutral-400">
+                                        <div className="py-12 text-center text-neutral-400 dark:text-neutral-500">
                                             <Users className="mx-auto mb-2 h-10 w-10 opacity-20" />
                                             <p className="text-sm italic">
                                                 No tienes representantes
@@ -552,7 +552,7 @@ export default function Profile({
                             <Card>
                                 <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <div className="flex items-center gap-2">
-                                        <Users className="h-4 w-4 text-neutral-500" />
+                                        <Users className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                         <CardTitle className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                             Estudiantes a Mi Cargo
                                         </CardTitle>
@@ -569,12 +569,12 @@ export default function Profile({
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                                                <UserIcon className="h-5 w-5 text-neutral-500" />
+                                                                <UserIcon className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
                                                             </div>
                                                             <div>
                                                                 <Link
                                                                     href={`/admin/users/${student.id}`}
-                                                                    className="text-sm font-semibold text-neutral-900 hover:text-blue-600 hover:underline dark:text-neutral-100"
+                                                                    className="text-sm font-semibold text-neutral-900 hover:text-blue-600 hover:underline dark:text-neutral-100 dark:hover:text-blue-400"
                                                                 >
                                                                     {
                                                                         student.name
@@ -589,7 +589,7 @@ export default function Profile({
                                                                             student.relationship_type_name
                                                                         }
                                                                     </Badge>
-                                                                    <span className="text-xs text-neutral-500">
+                                                                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                                                         {
                                                                             student.cedula
                                                                         }
@@ -602,7 +602,7 @@ export default function Profile({
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="py-12 text-center text-neutral-400">
+                                        <div className="py-12 text-center text-neutral-400 dark:text-neutral-500">
                                             <Users className="mx-auto mb-2 h-10 w-10 opacity-20" />
                                             <p className="text-sm italic">
                                                 No tienes estudiantes a cargo
@@ -621,7 +621,7 @@ export default function Profile({
                             <Card>
                                 <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                     <div className="flex items-center gap-2">
-                                        <Heart className="h-4 w-4 text-red-500" />
+                                        <Heart className="h-4 w-4 text-red-500 dark:text-red-400" />
                                         <CardTitle className="text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
                                             Mis Registros de Salud
                                         </CardTitle>
@@ -636,15 +636,15 @@ export default function Profile({
                                                     className="p-4 px-6"
                                                 >
                                                     <div className="flex items-start gap-3">
-                                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
-                                                            <Heart className="h-4 w-4 text-red-500" />
+                                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 dark:bg-red-950/30">
+                                                            <Heart className="h-4 w-4 text-red-500 dark:text-red-400" />
                                                         </div>
                                                         <div className="min-w-0 flex-1">
                                                             <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                                                                 {record.condition ||
                                                                     'Sin condición'}
                                                             </p>
-                                                            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                                                            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400">
                                                                 {record.received_at && (
                                                                     <span className="flex items-center gap-1">
                                                                         <Calendar className="h-3 w-3" />
@@ -663,7 +663,7 @@ export default function Profile({
                                                                 )}
                                                             </div>
                                                             {record.observations && (
-                                                                <p className="mt-1 text-xs text-neutral-400 italic">
+                                                                <p className="mt-1 text-xs text-neutral-400 italic dark:text-neutral-500">
                                                                     {
                                                                         record.observations
                                                                     }
@@ -683,7 +683,7 @@ export default function Profile({
                                                                                 }
                                                                                 target="_blank"
                                                                                 rel="noopener noreferrer"
-                                                                                className="inline-flex items-center gap-1 rounded border bg-neutral-50 px-2 py-1 text-xs text-neutral-600 transition-colors hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                                                                                className="inline-flex items-center gap-1 rounded border bg-neutral-50 px-2 py-1 text-xs text-neutral-600 transition-colors hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:bg-neutral-800"
                                                                             >
                                                                                 <Paperclip className="h-3 w-3" />
                                                                                 {m.description ||
@@ -700,7 +700,7 @@ export default function Profile({
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="py-12 text-center text-neutral-400">
+                                        <div className="py-12 text-center text-neutral-400 dark:text-neutral-500">
                                             <Heart className="mx-auto mb-2 h-10 w-10 opacity-20" />
                                             <p className="text-sm italic">
                                                 No tienes registros de salud

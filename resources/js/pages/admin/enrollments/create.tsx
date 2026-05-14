@@ -185,7 +185,7 @@ export default function EnrollmentsCreate({
                                     Alumnos Disponibles
                                 </CardTitle>
                                 <div className="relative mt-2">
-                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
                                     <Input
                                         className="pl-9"
                                         placeholder="Buscar por cédula o nombre..."
@@ -245,7 +245,7 @@ export default function EnrollmentsCreate({
                                                                         : 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                                                                 }`}
                                                             >
-                                                                <span className="w-5 shrink-0 text-right font-mono text-[10px] text-neutral-400">
+                                                                <span className="w-5 shrink-0 text-right font-mono text-[10px] text-neutral-400 dark:text-neutral-500">
                                                                     {index + 1}
                                                                 </span>
                                                                 <div
@@ -263,7 +263,7 @@ export default function EnrollmentsCreate({
                                                                     <div className="truncate text-sm font-medium">
                                                                         {s.name}
                                                                     </div>
-                                                                    <div className="font-mono text-xs text-neutral-500">
+                                                                    <div className="font-mono text-xs text-neutral-500 dark:text-neutral-400">
                                                                         {
                                                                             s.cedula
                                                                         }
@@ -285,7 +285,7 @@ export default function EnrollmentsCreate({
                                                     },
                                                 )
                                             ) : (
-                                                <div className="py-8 text-center text-sm text-neutral-500">
+                                                <div className="py-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
                                                     No hay resultados para "
                                                     {searchQuery}"
                                                 </div>
@@ -293,7 +293,7 @@ export default function EnrollmentsCreate({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex h-full flex-col items-center justify-center p-8 text-center text-sm text-neutral-500">
+                                    <div className="flex h-full flex-col items-center justify-center p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
                                         <UserSearch className="mb-2 h-10 w-10 opacity-20" />
                                         No hay alumnos pendientes por
                                         inscripción.
@@ -337,16 +337,16 @@ export default function EnrollmentsCreate({
                                 {selectedStudents.length === 0 ? (
                                     <div className="flex h-48 flex-col items-center justify-center space-y-3">
                                         <ArrowRight
-                                            className="h-12 w-12 text-neutral-200 dark:text-neutral-700"
+                                            className="h-12 w-12 text-neutral-200 dark:text-neutral-700 dark:text-neutral-500"
                                             strokeWidth={1}
                                         />
-                                        <p className="text-sm text-neutral-500">
+                                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                             Selecciona alumnos en el panel
                                             izquierdo.
                                         </p>
                                     </div>
                                 ) : !destGradeId ? (
-                                    <div className="flex h-48 items-center justify-center text-sm text-amber-600 dark:text-amber-500">
+                                    <div className="flex h-48 items-center justify-center text-sm text-amber-600 dark:text-amber-500 dark:text-amber-400">
                                         Selecciona un grado destino arriba.
                                     </div>
                                 ) : (
@@ -385,7 +385,7 @@ export default function EnrollmentsCreate({
                                                     </Button>
                                                 ))
                                             ) : (
-                                                <div className="col-span-full rounded-lg border border-dashed border-red-200 bg-red-50 p-6 text-center text-red-600 dark:border-red-900 dark:bg-red-950/30">
+                                                <div className="col-span-full rounded-lg border border-dashed border-red-200 bg-red-50 p-6 text-center text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800">
                                                     No hay secciones
                                                     configuradas para este
                                                     grado.

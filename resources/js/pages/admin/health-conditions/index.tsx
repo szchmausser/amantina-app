@@ -145,7 +145,7 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
             <DataTableBody>
                 {healthConditions.data.map((condition, index) => (
                     <DataTableTR key={condition.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(healthConditions.current_page - 1) * perPage +
                                 index +
                                 1}
@@ -160,7 +160,7 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-neutral-500"
+                                    className="h-8 w-8 text-neutral-500 dark:text-neutral-400"
                                     onClick={() => startEdit(condition)}
                                 >
                                     <Pencil className="h-4 w-4" />
@@ -169,7 +169,7 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400"
                                     onClick={() => handleDelete(condition.id)}
                                 >
                                     <Trash2 className="h-4 w-4" />

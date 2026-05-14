@@ -134,14 +134,14 @@ export default function AcademicYearIndex({ academicYears }: Props) {
             <DataTableBody>
                 {academicYears.data.map((year, index) => (
                     <DataTableTR key={year.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(academicYears.current_page - 1) * perPage +
                                 index +
                                 1}
                         </DataTableTD>
                         <DataTableTD>
                             <div className="flex items-center gap-3">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 dark:bg-blue-950/30">
                                     <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <span className="font-semibold text-neutral-900 dark:text-neutral-100">
@@ -160,12 +160,12 @@ export default function AcademicYearIndex({ academicYears }: Props) {
                         </DataTableTD>
                         <DataTableTD>
                             {year.is_active ? (
-                                <Badge className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400">
+                                <Badge className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:text-green-300">
                                     <CheckCircle2 className="mr-1 h-3 w-3" />
                                     Activo
                                 </Badge>
                             ) : (
-                                <span className="text-xs text-neutral-400">
+                                <span className="text-xs text-neutral-400 dark:text-neutral-500">
                                     Inactivo
                                 </span>
                             )}
@@ -175,7 +175,7 @@ export default function AcademicYearIndex({ academicYears }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                                     asChild
                                     title="Ver detalles"
                                 >
@@ -210,7 +210,7 @@ export default function AcademicYearIndex({ academicYears }: Props) {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400"
                                         onClick={() => handleDelete(year.id)}
                                         title="Eliminar"
                                         data-testid="delete-btn"

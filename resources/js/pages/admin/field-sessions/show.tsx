@@ -535,7 +535,7 @@ export default function FieldSessionShow({
         return (
             <div
                 key={activity.id}
-                className="rounded-lg border bg-white shadow-sm overflow-hidden"
+                className="rounded-lg border bg-white shadow-sm overflow-hidden dark:bg-neutral-900"
             >
                 {/* Card Header */}
                 <div className="bg-slate-100 dark:bg-slate-800 px-4 py-3 border-b">
@@ -557,7 +557,7 @@ export default function FieldSessionShow({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                                    className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"
                                     onClick={() => startEditingActivity(activity.id)}
                                     title="Editar actividad"
                                 >
@@ -566,7 +566,7 @@ export default function FieldSessionShow({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50"
+                                    className="h-8 w-8 text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
                                     onClick={() => deleteActivity(activity.id)}
                                     title="Eliminar actividad"
                                 >
@@ -578,7 +578,7 @@ export default function FieldSessionShow({
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-red-500 hover:bg-red-50"
+                                className="h-8 w-8 text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
                                 onClick={() => removeActivity(activity.id)}
                             >
                                 <Trash2 className="h-4 w-4" />
@@ -593,7 +593,7 @@ export default function FieldSessionShow({
                         // READ-ONLY mode
                         <div className="space-y-3">
                             {activity.notes && (
-                                <p className="text-sm text-neutral-600 italic">{activity.notes}</p>
+                                <p className="text-sm text-neutral-600 italic dark:text-neutral-400">{activity.notes}</p>
                             )}
                             {activity.photos.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
@@ -614,7 +614,7 @@ export default function FieldSessionShow({
                         <div className="space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <Label className="text-xs font-semibold text-neutral-700">Categoría</Label>
+                                    <Label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Categoría</Label>
                                     <Select
                                         value={activity.activity_category_id.toString()}
                                         onValueChange={(value) =>
@@ -638,7 +638,7 @@ export default function FieldSessionShow({
                                     </Select>
                                 </div>
                                 <div>
-                                    <Label className="text-xs font-semibold text-neutral-700">Horas</Label>
+                                    <Label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Horas</Label>
                                     <Input
                                         type="number"
                                         min="0"
@@ -657,7 +657,7 @@ export default function FieldSessionShow({
                                 </div>
                             </div>
                             <div>
-                                <Label className="text-xs font-semibold text-neutral-700">Notas</Label>
+                                <Label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Notas</Label>
                                 <Input
                                     type="text"
                                     className="h-9 text-xs mt-1"
@@ -674,7 +674,7 @@ export default function FieldSessionShow({
                             </div>
                             {/* Photos section */}
                             <div className="space-y-2">
-                                <Label className="text-xs font-semibold text-neutral-700">Evidencias</Label>
+                                <Label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Evidencias</Label>
                                 {/* Existing photos with remove button */}
                                 {activity.photos.length > 0 && (
                                     <div className="flex flex-wrap gap-2">
@@ -792,7 +792,7 @@ export default function FieldSessionShow({
             <DataTableBody>
                 {attendances.data.map((row, index) => (
                     <DataTableTR key={row.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(attendances.current_page - 1) * perPage +
                                 index +
                                 1}
@@ -801,11 +801,11 @@ export default function FieldSessionShow({
                             <div>
                                 <Link
                                     href={`/admin/users/${row.user_id}`}
-                                    className="font-medium hover:text-blue-600 hover:underline transition-colors"
+                                    className="font-medium hover:text-blue-600 hover:underline transition-colors dark:hover:text-blue-400"
                                 >
                                     {row.student_name}
                                 </Link>
-                                <p className="text-xs text-neutral-500">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                     {row.student_cedula}
                                 </p>
                             </div>
@@ -816,7 +816,7 @@ export default function FieldSessionShow({
                                 {row.section_id ? (
                                     <Link
                                         href={`/admin/sections/${row.section_id}`}
-                                        className="font-medium hover:text-blue-600 hover:underline transition-colors"
+                                        className="font-medium hover:text-blue-600 hover:underline transition-colors dark:hover:text-blue-400"
                                     >
                                         Sección {row.section_name}
                                     </Link>
@@ -874,7 +874,7 @@ export default function FieldSessionShow({
                                             {act.hours}h{' '}
                                             {act.activity_category || ''}
                                             {act.photos.length > 0 && (
-                                                <span className="ml-1 inline-flex items-center gap-0.5 text-[10px] text-blue-600 font-semibold">
+                                                <span className="ml-1 inline-flex items-center gap-0.5 text-[10px] text-blue-600 font-semibold dark:text-blue-400">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                                     {act.photos.length}
                                                 </span>
@@ -882,13 +882,13 @@ export default function FieldSessionShow({
                                         </Badge>
                                     ))
                                 ) : (
-                                    <span className="text-xs text-neutral-400">
+                                    <span className="text-xs text-neutral-400 dark:text-neutral-500">
                                         Sin detalle
                                     </span>
                                 )}
                             </div>
                         </DataTableTD>
-                        <DataTableTD className="text-xs text-neutral-500">
+                        <DataTableTD className="text-xs text-neutral-500 dark:text-neutral-400">
                             {row.created_at}
                         </DataTableTD>
                         <DataTableTD className="text-right">
@@ -896,7 +896,7 @@ export default function FieldSessionShow({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                                    className="h-8 w-8 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400"
                                     title="Detalle de actividades"
                                     data-testid={`btn-activities-${row.user_id}`}
                                     onClick={() => openActivitiesModal(row)}
@@ -988,7 +988,7 @@ export default function FieldSessionShow({
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Volver
                         </Button>
-                        <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50" asChild>
+                        <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800" asChild>
                             <Link href={`${baseUrl}/edit`}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Editar
@@ -997,7 +997,7 @@ export default function FieldSessionShow({
                         <Button
                             variant="outline"
                             size="sm"
-                            className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                            className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400"
                             onClick={handleDelete}
                         >
                             Eliminar
@@ -1009,41 +1009,41 @@ export default function FieldSessionShow({
                 <div className="grid gap-3 sm:grid-cols-3">
                     <div className="rounded-lg border p-3 text-sm space-y-2">
                         <div className="flex justify-between">
-                            <span className="text-neutral-500">Profesor</span>
+                            <span className="text-neutral-500 dark:text-neutral-400">Profesor</span>
                             <span className="font-medium">{fieldSession.teacher.name}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-neutral-500">Año Escolar</span>
+                            <span className="text-neutral-500 dark:text-neutral-400">Año Escolar</span>
                             <span className="font-medium">{fieldSession.academic_year.name}</span>
                         </div>
                         {fieldSession.school_term && (
                             <div className="flex justify-between">
-                                <span className="text-neutral-500">Lapso</span>
+                                <span className="text-neutral-500 dark:text-neutral-400">Lapso</span>
                                 <span className="font-medium">{fieldSession.school_term.name}</span>
                             </div>
                         )}
                     </div>
                     <div className="rounded-lg border p-3 text-sm space-y-2">
                         <div className="flex justify-between">
-                            <span className="text-neutral-500">Inicio</span>
+                            <span className="text-neutral-500 dark:text-neutral-400">Inicio</span>
                             <span className="font-medium">{new Date(fieldSession.start_datetime).toLocaleString('es-ES')}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-neutral-500">Fin</span>
+                            <span className="text-neutral-500 dark:text-neutral-400">Fin</span>
                             <span className="font-medium">{new Date(fieldSession.end_datetime).toLocaleString('es-ES')}</span>
                         </div>
                         <div className="flex justify-between border-t pt-1">
-                            <span className="font-medium text-neutral-500">Horas Base</span>
+                            <span className="font-medium text-neutral-500 dark:text-neutral-400">Horas Base</span>
                             <span className="font-mono font-bold">{fieldSession.base_hours}h</span>
                         </div>
                     </div>
                     <div className="rounded-lg border p-3 text-sm space-y-2">
                         <div className="flex justify-between">
-                            <span className="text-neutral-500">Actividad</span>
+                            <span className="text-neutral-500 dark:text-neutral-400">Actividad</span>
                             <span className="font-medium">{fieldSession.activity_name || '—'}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-neutral-500">Ubicación</span>
+                            <span className="text-neutral-500 dark:text-neutral-400">Ubicación</span>
                             <span className="font-medium">{fieldSession.location_name || '—'}</span>
                         </div>
                     </div>
@@ -1132,7 +1132,7 @@ export default function FieldSessionShow({
                         </DialogHeader>
                         <div className="max-h-[60vh] space-y-3 overflow-y-auto py-4">
                             {activities.length === 0 ? (
-                                <p className="py-4 text-center text-sm text-neutral-500">
+                                <p className="py-4 text-center text-sm text-neutral-500 dark:text-neutral-400">
                                     No hay actividades registradas. Agrega una
                                     nueva.
                                 </p>
@@ -1156,7 +1156,7 @@ export default function FieldSessionShow({
                                             <>
                                                 {existingActivities.length > 0 && (
                                                     <div data-testid="existing-activities-section">
-                                                        <h4 className="text-sm font-semibold text-neutral-700 mb-2">
+                                                        <h4 className="text-sm font-semibold text-neutral-700 mb-2 dark:text-neutral-300">
                                                             Actividades registradas
                                                         </h4>
                                                         <div className="space-y-3">
@@ -1169,7 +1169,7 @@ export default function FieldSessionShow({
                                                 )}
                                                 {newActivities.length > 0 && (
                                                     <div data-testid="new-activities-section">
-                                                        <h4 className="text-sm font-semibold text-neutral-700 mb-2">
+                                                        <h4 className="text-sm font-semibold text-neutral-700 mb-2 dark:text-neutral-300">
                                                             Nuevas actividades
                                                         </h4>
                                                         <div className="space-y-3">
@@ -1194,9 +1194,9 @@ export default function FieldSessionShow({
                         </div>
                         <DialogFooter>
                             <div className="flex w-full items-center justify-between">
-                                <span className="text-sm text-neutral-500">
+                                <span className="text-sm text-neutral-500 dark:text-neutral-400">
                                     Total:{' '}
-                                    <span className="font-medium text-green-600">
+                                    <span className="font-medium text-green-600 dark:text-green-400">
                                         {activities.reduce(
                                             (sum, a) => sum + a.hours,
                                             0,

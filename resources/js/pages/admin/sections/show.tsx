@@ -113,7 +113,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                         {section.grade.name}
                                     </Badge>
                                 </div>
-                                <p className="text-sm text-neutral-500">
+                                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                     Perteneciente al Año Escolar:{' '}
                                     {academicYear.name}
                                 </p>
@@ -125,7 +125,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                 Volver
                             </Button>
                             {hasPermission('assignments.create') && (
-                                <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
+                                <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400">
                                     <Link href={`/admin/teacher-assignments/create?grade_id=${section.grade.id}&section_id=${section.id}`}>
                                         <UserPlus className="mr-2 h-4 w-4" />
                                         Asignación Docentes
@@ -133,7 +133,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                 </Button>
                             )}
                             {hasPermission('enrollments.create') && (
-                                <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
+                                <Button variant="outline" size="sm" asChild className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400">
                                     <Link href={`/admin/enrollments/create?grade_id=${section.grade.id}&section_id=${section.id}`}>
                                         <UserPlus className="mr-2 h-4 w-4" />
                                         Inscripción Alumnos
@@ -141,7 +141,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                 </Button>
                             )}
                             {hasPermission('sections.edit') && (
-                                <Button variant="outline" size="sm" asChild className="text-blue-600 border-blue-200 hover:bg-blue-50">
+                                <Button variant="outline" size="sm" asChild className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800">
                                     <Link
                                         href={`/admin/sections/${section.id}/edit`}
                                     >
@@ -154,7 +154,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                                    className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400"
                                     onClick={handleDelete}
                                 >
                                     <Trash2 className="mr-2 h-4 w-4" />
@@ -171,7 +171,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                 <CardHeader className="border-b bg-neutral-50/50 pb-4 dark:bg-neutral-800/30">
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="flex items-center gap-2 text-lg">
-                                            <Users className="h-5 w-5 text-blue-500" />
+                                            <Users className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                                             Docentes
                                         </CardTitle>
 
@@ -196,7 +196,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                                         key={assignment.id}
                                                         className="flex items-center gap-3 p-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                                                     >
-                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700 dark:bg-blue-900/50 dark:text-blue-400">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700 dark:bg-blue-900/50 dark:text-blue-400 dark:text-blue-300">
                                                             {assignment.teacher.name.charAt(
                                                                 0,
                                                             )}
@@ -209,7 +209,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                                                         .name
                                                                 }
                                                             </p>
-                                                            <p className="truncate text-xs text-neutral-500">
+                                                            <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
                                                                 {
                                                                     assignment
                                                                         .teacher
@@ -222,7 +222,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="p-6 text-center text-sm text-neutral-500">
+                                        <div className="p-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
                                             No hay profesores asignados.
                                         </div>
                                     )}
@@ -236,7 +236,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                 <CardHeader className="border-b bg-neutral-50/50 pb-4 dark:bg-neutral-800/30">
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="flex items-center gap-2 text-lg">
-                                            <Users className="h-5 w-5 text-blue-500" />
+                                            <Users className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                                             Alumnos Inscritos
                                         </CardTitle>
 
@@ -285,10 +285,10 @@ export default function SectionShow({ section, academicYear }: Props) {
                                                                 }
                                                                 className="transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
                                                             >
-                                                                <td className="px-6 py-3 text-center font-medium text-neutral-500">
+                                                                <td className="px-6 py-3 text-center font-medium text-neutral-500 dark:text-neutral-400">
                                                                     {index + 1}
                                                                 </td>
-                                                                <td className="px-6 py-3 font-mono text-xs text-neutral-500">
+                                                                <td className="px-6 py-3 font-mono text-xs text-neutral-500 dark:text-neutral-400">
                                                                     {
                                                                         enrollment
                                                                             .student
@@ -302,7 +302,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                                                             .name
                                                                     }
                                                                 </td>
-                                                                <td className="px-6 py-3 font-mono text-xs text-neutral-500">
+                                                                <td className="px-6 py-3 font-mono text-xs text-neutral-500 dark:text-neutral-400">
                                                                     {
                                                                         enrollment
                                                                             .student
@@ -312,7 +312,7 @@ export default function SectionShow({ section, academicYear }: Props) {
                                                                 <td className="px-6 py-3 text-center">
                                                                     <Link
                                                                         href={`/admin/users/${enrollment.student.id}`}
-                                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-blue-600 dark:hover:bg-neutral-800"
+                                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-blue-600 dark:hover:bg-neutral-800 dark:text-neutral-400 dark:hover:text-blue-400"
                                                                     >
                                                                         <Eye className="h-4 w-4" />
                                                                     </Link>
@@ -325,11 +325,11 @@ export default function SectionShow({ section, academicYear }: Props) {
                                         </div>
                                     ) : (
                                         <div className="m-6 flex h-48 flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-200 sm:h-64 dark:border-neutral-800">
-                                            <Users className="mb-3 h-8 w-8 text-neutral-300" />
+                                            <Users className="mb-3 h-8 w-8 text-neutral-300 dark:text-neutral-600" />
                                             <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                                                 Sección vacía
                                             </p>
-                                            <p className="mt-1 text-xs text-neutral-500">
+                                            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                                                 Aún no hay alumnos inscritos
                                                 aquí.
                                             </p>

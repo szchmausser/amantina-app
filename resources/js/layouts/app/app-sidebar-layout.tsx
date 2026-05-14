@@ -22,7 +22,7 @@ export default function AppSidebarLayout({
                 
                 {flash.success && (
                     <div className="px-4 pt-4 sm:px-6">
-                        <Alert variant="default" className="border-green-500/50 bg-green-50 text-green-900 dark:border-green-500/30 dark:bg-green-900/20 dark:text-green-200">
+                        <Alert variant="default" className="border-green-500/50 bg-green-50 text-green-900 dark:border-green-500/30 dark:bg-green-900/20 dark:text-green-200 dark:bg-green-950/30">
                             <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                             <AlertTitle>Éxito</AlertTitle>
                             <AlertDescription>{flash.success}</AlertDescription>
@@ -32,7 +32,7 @@ export default function AppSidebarLayout({
 
                 {flash.warning && (
                     <div className="px-4 pt-4 sm:px-6">
-                        <Alert variant="default" className="border-amber-500/50 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-200">
+                        <Alert variant="default" className="border-amber-500/50 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-200 dark:bg-amber-950/30">
                             <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                             <AlertTitle>Advertencia</AlertTitle>
                             <AlertDescription className="whitespace-pre-line">{flash.warning}</AlertDescription>

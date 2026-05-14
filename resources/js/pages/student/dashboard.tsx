@@ -446,7 +446,7 @@ export default function StudentDashboard({
 							<Card>
 								<CardHeader>
 									<CardTitle className="flex items-center gap-2">
-										<CheckCircle2 className="h-4 w-4 text-emerald-500" />
+										<CheckCircle2 className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
 										Última Sesión
 									</CardTitle>
 								</CardHeader>
@@ -602,7 +602,7 @@ export default function StudentDashboard({
 										return (
 											<div
 												key={`${session.sessionName}-${session.date}-${idx}`}
-												className="flex items-center justify-between rounded-lg border border-l-4 border-l-blue-400 bg-neutral-50 p-3 transition-colors hover:bg-neutral-200/50 dark:border-l-blue-500 dark:bg-neutral-900/20 dark:hover:bg-neutral-800/50"
+												className="flex items-center justify-between rounded-lg border border-l-4 border-l-blue-400 bg-neutral-50 p-3 transition-colors hover:bg-neutral-200/50 dark:border-l-blue-500 dark:bg-neutral-900/20 dark:hover:bg-neutral-800/50 dark:hover:bg-neutral-700/50"
 											>
 												<div className="min-w-0 flex-1">
 													<p className="font-medium truncate">
@@ -620,7 +620,7 @@ export default function StudentDashboard({
 																		variant="outline"
 																		className={`text-xs ${
 																			hasPhotos
-																				? "cursor-pointer hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-950/30"
+																				? "cursor-pointer hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-950/30 dark:hover:border-blue-800"
 																				: ""
 																		}`}
 																		onClick={() => {
@@ -642,7 +642,7 @@ export default function StudentDashboard({
 																		{act.categoryName}:{" "}
 																		{act.hours.toFixed(1)}h
 																		{hasPhotos && (
-																			<span className="ml-1 inline-flex items-center gap-0.5 text-[10px] text-blue-600 font-semibold">
+																			<span className="ml-1 inline-flex items-center gap-0.5 text-[10px] text-blue-600 font-semibold dark:text-blue-400">
 																				<svg
 																					xmlns="http://www.w3.org/2000/svg"
 																					width="12"

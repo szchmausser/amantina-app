@@ -107,21 +107,21 @@ export default function AdminDashboard({
                         title="En Meta"
                         value={globalCompliance.metQuota}
                         icon={
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                            <CheckCircle2 className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                         }
                         description={`${globalCompliance.percentage.toFixed(1)}% del total`}
                     />
                     <StatCard
                         title="En Progreso"
                         value={globalCompliance.onTrack}
-                        icon={<TrendingUp className="h-4 w-4 text-amber-500" />}
+                        icon={<TrendingUp className="h-4 w-4 text-amber-500 dark:text-amber-400" />}
                         description="40-79% completado"
                     />
                     <StatCard
                         title="En Riesgo"
                         value={globalCompliance.atRisk}
                         icon={
-                            <AlertTriangle className="h-4 w-4 text-red-500" />
+                            <AlertTriangle className="h-4 w-4 text-red-500 dark:text-red-400" />
                         }
                         description="Menos del 40%"
                     />
@@ -186,14 +186,14 @@ export default function AdminDashboard({
                         title="Sesiones Completadas"
                         value={sessionStats.completed}
                         icon={
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                            <CheckCircle2 className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                         }
                         description="Este período"
                     />
                     <StatCard
                         title="Sesiones Canceladas"
                         value={sessionStats.cancelled}
-                        icon={<Clock className="h-4 w-4 text-red-500" />}
+                        icon={<Clock className="h-4 w-4 text-red-500 dark:text-red-400" />}
                         description="Este período"
                     />
                     <StatCard
@@ -203,7 +203,7 @@ export default function AdminDashboard({
                                 yearOverYear.length - 1
                             ]?.totalHours.toFixed(0) ?? 0
                         }
-                        icon={<Activity className="h-4 w-4 text-blue-500" />}
+                        icon={<Activity className="h-4 w-4 text-blue-500 dark:text-blue-400" />}
                         description="Acumuladas en el año"
                     />
                 </div>

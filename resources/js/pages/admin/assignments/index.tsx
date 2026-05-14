@@ -65,10 +65,10 @@ export default function TeacherAssignmentsIndex({ activeYear, assignments }: Pro
                 <div className="flex h-full flex-1 flex-col items-center justify-center p-8">
                     <div className="flex max-w-md flex-col items-center text-center">
                         <div className="mb-4 rounded-full bg-neutral-100 p-4 dark:bg-neutral-800">
-                            <BookUser className="h-8 w-8 text-neutral-400" />
+                            <BookUser className="h-8 w-8 text-neutral-400 dark:text-neutral-500" />
                         </div>
                         <h2 className="text-xl font-bold tracking-tight">No hay un año escolar activo</h2>
-                        <p className="mt-2 text-neutral-500">
+                        <p className="mt-2 text-neutral-500 dark:text-neutral-400">
                             Para gestionar asignaciones, primero debes activar un año escolar.
                         </p>
                         <Button className="mt-6" asChild>
@@ -106,10 +106,10 @@ export default function TeacherAssignmentsIndex({ activeYear, assignments }: Pro
                     <div className="grid gap-4 md:grid-cols-2">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-neutral-500">
+                                <CardTitle className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                                     Total Asignaciones
                                 </CardTitle>
-                                <BookUser className="h-4 w-4 text-neutral-400" />
+                                <BookUser className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{assignments.length}</div>
@@ -121,12 +121,12 @@ export default function TeacherAssignmentsIndex({ activeYear, assignments }: Pro
                         {assignments.length === 0 ? (
                             <div className="flex flex-col items-center justify-center px-4 py-16 text-center sm:px-6 lg:px-8">
                                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                    <Search className="h-6 w-6 text-neutral-500" />
+                                    <Search className="h-6 w-6 text-neutral-500 dark:text-neutral-400" />
                                 </div>
                                 <h3 className="mt-4 text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                                     No hay asignaciones registradas
                                 </h3>
-                                <p className="mt-1 text-sm text-neutral-500">
+                                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
                                     No se encontraron profesores asignados a secciones en este año escolar.
                                 </p>
                             </div>
@@ -134,11 +134,11 @@ export default function TeacherAssignmentsIndex({ activeYear, assignments }: Pro
                             <table className="w-full text-left text-sm">
                                 <thead className="bg-neutral-50 dark:bg-neutral-800/50">
                                     <tr>
-                                        <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300">Profesor</th>
-                                        <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300">Cédula</th>
-                                        <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300">Grado</th>
-                                        <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300">Sección</th>
-                                        <th className="px-6 py-3 text-right font-semibold text-neutral-600 dark:text-neutral-300">Acciones</th>
+                                        <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300 dark:text-neutral-400">Profesor</th>
+                                        <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300 dark:text-neutral-400">Cédula</th>
+                                        <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300 dark:text-neutral-400">Grado</th>
+                                        <th className="px-6 py-3 font-semibold text-neutral-600 dark:text-neutral-300 dark:text-neutral-400">Sección</th>
+                                        <th className="px-6 py-3 text-right font-semibold text-neutral-600 dark:text-neutral-300 dark:text-neutral-400">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-sidebar-border/70">
@@ -160,7 +160,7 @@ export default function TeacherAssignmentsIndex({ activeYear, assignments }: Pro
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="text-red-500 hover:bg-red-50 hover:text-red-600"
+                                                    className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400"
                                                     onClick={() => handleDelete(assignment.id)}
                                                 >
                                                     <Trash2 className="h-4 w-4" />

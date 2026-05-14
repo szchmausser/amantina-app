@@ -105,7 +105,7 @@ export default function GradeEdit({ grade, academicYears, gradeDefinitions }: Pr
                         {/* Card */}
                         <div className="overflow-hidden rounded-xl border">
                             <div className="flex items-center gap-2 border-b bg-neutral-50 px-6 py-4 dark:bg-neutral-800/50">
-                                <GraduationCap className="h-4 w-4 text-neutral-500" />
+                                <GraduationCap className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                                 <h2 className="text-sm font-semibold">
                                     Datos del Grado
                                 </h2>
@@ -199,7 +199,7 @@ export default function GradeEdit({ grade, academicYears, gradeDefinitions }: Pr
                                         required
                                         data-test="grade-order-input"
                                     />
-                                    <p className="text-xs text-neutral-500">
+                                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                         Define la secuencia en la que aparecerán
                                         los grados.
                                     </p>

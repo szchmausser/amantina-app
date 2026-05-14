@@ -103,8 +103,8 @@ export default function PermissionsIndex({ permissions }: any) {
                                 >
                                     <div className="flex w-full items-center justify-between bg-neutral-50/50 px-4 py-3 dark:bg-neutral-800/30">
                                         <div className="flex items-center gap-3 pl-1">
-                                            <Shield className="h-4 w-4 text-neutral-500" />
-                                            <span className="text-sm font-semibold tracking-wider text-neutral-600 dark:text-neutral-300">
+                                            <Shield className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                            <span className="text-sm font-semibold tracking-wider text-neutral-600 dark:text-neutral-300 dark:text-neutral-400">
                                                 {formatModuleName(module)}
                                             </span>
 

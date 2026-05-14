@@ -353,7 +353,7 @@ export default function PromoteEnrollments({
                                                                 : 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                                                         }`}
                                                     >
-                                                        <span className="w-5 shrink-0 text-right font-mono text-[10px] text-neutral-400">
+                                                        <span className="w-5 shrink-0 text-right font-mono text-[10px] text-neutral-400 dark:text-neutral-500">
                                                             {index + 1}
                                                         </span>
                                                         <Checkbox
@@ -371,7 +371,7 @@ export default function PromoteEnrollments({
                                                         />
                                                         <div className="min-w-0 flex-1">
                                                             <div
-                                                                className={`truncate text-sm font-medium ${enr.already_enrolled ? 'text-neutral-400 line-through' : ''}`}
+                                                                className={`truncate text-sm font-medium ${enr.already_enrolled ? 'text-neutral-400 line-through' : ''} dark:text-neutral-500`}
                                                             >
                                                                 {
                                                                     enr.student
@@ -379,7 +379,7 @@ export default function PromoteEnrollments({
                                                                 }
                                                             </div>
                                                             <div
-                                                                className={`font-mono text-xs ${enr.already_enrolled ? 'text-neutral-400' : 'text-neutral-500'}`}
+                                                                className={`font-mono text-xs ${enr.already_enrolled ? 'text-neutral-400' : 'text-neutral-500'} dark:text-neutral-400`}
                                                             >
                                                                 {
                                                                     enr.student
@@ -390,7 +390,7 @@ export default function PromoteEnrollments({
                                                         {enr.already_enrolled && (
                                                             <Badge
                                                                 variant="outline"
-                                                                className="border-green-200 bg-green-50 text-xs text-green-600 dark:border-green-900 dark:bg-green-900/20"
+                                                                className="border-green-200 bg-green-50 text-xs text-green-600 dark:border-green-900 dark:bg-green-900/20 dark:text-green-400 dark:bg-green-950/30 dark:border-green-800"
                                                             >
                                                                 <CheckCircle2 className="mr-1 h-3 w-3" />{' '}
                                                                 Inscrito
@@ -402,7 +402,7 @@ export default function PromoteEnrollments({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex h-full flex-col items-center justify-center p-8 text-center text-sm text-neutral-500">
+                                    <div className="flex h-full flex-col items-center justify-center p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
                                         <GraduationCap className="mb-2 h-10 w-10 opacity-20" />
                                         Selecciona un año, grado y sección de
                                         origen.
@@ -460,16 +460,16 @@ export default function PromoteEnrollments({
                                 {selectedStudents.length === 0 ? (
                                     <div className="flex h-48 flex-col items-center justify-center space-y-3">
                                         <ArrowRight
-                                            className="h-12 w-12 text-neutral-200 dark:text-neutral-700"
+                                            className="h-12 w-12 text-neutral-200 dark:text-neutral-700 dark:text-neutral-500"
                                             strokeWidth={1}
                                         />
-                                        <p className="text-sm text-neutral-500">
+                                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                             Selecciona alumnos en el panel
                                             izquierdo.
                                         </p>
                                     </div>
                                 ) : !manualDestGradeId ? (
-                                    <div className="flex h-48 items-center justify-center text-sm text-amber-600 dark:text-amber-500">
+                                    <div className="flex h-48 items-center justify-center text-sm text-amber-600 dark:text-amber-500 dark:text-amber-400">
                                         Selecciona un grado destino arriba.
                                     </div>
                                 ) : (
@@ -510,7 +510,7 @@ export default function PromoteEnrollments({
                                                     </Button>
                                                 ))
                                             ) : (
-                                                <div className="col-span-full rounded-lg border border-dashed border-red-200 bg-red-50 p-6 text-center text-red-600 dark:border-red-900 dark:bg-red-950/30">
+                                                <div className="col-span-full rounded-lg border border-dashed border-red-200 bg-red-50 p-6 text-center text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800">
                                                     No hay secciones
                                                     configuradas para este
                                                     grado.

@@ -233,7 +233,7 @@ export default function TeacherDashboard({
                             title="Completadas"
                             value={ownSessions.completed}
                             icon={
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                <CheckCircle2 className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                             }
                             description="Este período"
                             tooltip="Jornadas finalizadas exitosamente."
@@ -242,7 +242,7 @@ export default function TeacherDashboard({
                         <StatCard
                             title="Canceladas"
                             value={ownSessions.cancelled}
-                            icon={<Clock className="h-4 w-4 text-red-500" />}
+                            icon={<Clock className="h-4 w-4 text-red-500 dark:text-red-400" />}
                             description="Este período"
                             tooltip="Jornadas que fueron canceladas."
                             data-testid="teacher-stat-cancelled"
@@ -251,7 +251,7 @@ export default function TeacherDashboard({
                             title="Pendientes de Asistencia"
                             value={pendingAttendance}
                             icon={
-                                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                <AlertTriangle className="h-4 w-4 text-amber-500 dark:text-amber-400" />
                             }
                             description="Sin registro"
                             tooltip="Jornadas donde aún no se ha registrado la asistencia de los estudiantes."
@@ -1049,7 +1049,7 @@ function OutstandingCard({
         <Card data-testid="teacher-outstanding-card">
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                    <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 dark:text-emerald-300">
                         <Star className="h-5 w-5" />
                         Estudiantes Sobresalientes
                     </CardTitle>
@@ -1135,7 +1135,7 @@ function TopHoursCard({
         <Card data-testid="teacher-top-hours-card">
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                    <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400 dark:text-blue-300">
                         <Trophy className="h-5 w-5" />
                         Alumnos con más horas acumuladas
                     </CardTitle>
@@ -1222,7 +1222,7 @@ function AtRiskCard({
         <Card data-testid="teacher-at-risk-card">
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
+                    <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-400 dark:text-red-300">
                         <AlertTriangle className="h-5 w-5" />
                         Estudiantes que Necesitan Apoyo
                     </CardTitle>

@@ -175,21 +175,21 @@ export default function Index({ users, filters, availableRoles }: Props) {
             <DataTableBody>
                 {users.data.map((user, index) => (
                     <DataTableTR key={user.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(users.current_page - 1) * perPage + index + 1}
                         </DataTableTD>
-                        <DataTableTD className="font-mono text-neutral-500">
+                        <DataTableTD className="font-mono text-neutral-500 dark:text-neutral-400">
                             {user.cedula}
                         </DataTableTD>
                         <DataTableTD>
                             <Link
                                 href={userShow(user.id).url}
-                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100"
+                                className="font-medium text-neutral-900 hover:text-blue-600 dark:text-neutral-100 dark:hover:text-blue-400"
                             >
                                 {user.name}
                             </Link>
                         </DataTableTD>
-                        <DataTableTD className="text-neutral-500">
+                        <DataTableTD className="text-neutral-500 dark:text-neutral-400">
                             {user.email}
                         </DataTableTD>
                         <DataTableTD>
@@ -209,7 +209,7 @@ export default function Index({ users, filters, availableRoles }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600"
+                                    className="h-8 w-8 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
                                     asChild
                                 >
                                     <Link href={userShow(user.id).url}>
@@ -237,7 +237,7 @@ export default function Index({ users, filters, availableRoles }: Props) {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400"
                                         onClick={() => handleDelete(user.id)}
                                         data-testid="delete-btn"
                                     >

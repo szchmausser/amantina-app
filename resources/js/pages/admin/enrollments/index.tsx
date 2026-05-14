@@ -177,12 +177,12 @@ export default function EnrollmentsIndex({
                     <div className="flex h-full flex-1 flex-col items-center justify-center p-8">
                         <div className="flex max-w-md flex-col items-center text-center">
                             <div className="mb-4 rounded-full bg-neutral-100 p-4 dark:bg-neutral-800">
-                                <BookOpen className="h-8 w-8 text-neutral-400" />
+                                <BookOpen className="h-8 w-8 text-neutral-400 dark:text-neutral-500" />
                             </div>
                             <h2 className="text-xl font-bold tracking-tight">
                                 No hay un año escolar activo
                             </h2>
-                            <p className="mt-2 text-neutral-500">
+                            <p className="mt-2 text-neutral-500 dark:text-neutral-400">
                                 Para gestionar inscripciones, primero debes
                                 activar un año escolar.
                             </p>
@@ -269,7 +269,7 @@ export default function EnrollmentsIndex({
             <DataTableBody>
                 {enrollments.data.map((enr, index) => (
                     <DataTableTR key={enr.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(enrollments.current_page - 1) * perPage +
                                 index +
                                 1}
@@ -292,7 +292,7 @@ export default function EnrollmentsIndex({
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+                                className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400"
                                 onClick={() => handleDelete(enr.id)}
                                 data-testid="delete-btn"
                             >
@@ -393,16 +393,16 @@ export default function EnrollmentsIndex({
                     <div className="grid gap-4 md:grid-cols-2">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-neutral-500">
+                                <CardTitle className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                                     Pendientes por Inscribir
                                 </CardTitle>
-                                <Users className="h-4 w-4 text-neutral-400" />
+                                <Users className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-500">
                                     {pendingStudents}
                                 </div>
-                                <p className="text-xs text-neutral-500">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                     alumnos registrados en el sistema sin
                                     inscripción activa.
                                 </p>
@@ -410,16 +410,16 @@ export default function EnrollmentsIndex({
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-neutral-500">
+                                <CardTitle className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                                     Total Inscritos en el Año Activo
                                 </CardTitle>
-                                <Users className="h-4 w-4 text-neutral-400" />
+                                <Users className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
                                     {totalEnrolled}
                                 </div>
-                                <p className="text-xs text-neutral-500">
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                                     alumnos con inscripción vigente en este
                                     periodo.
                                 </p>
@@ -436,7 +436,7 @@ export default function EnrollmentsIndex({
                                 variant="secondary"
                                 size="sm"
                                 onClick={handleClearFilters}
-                                className="text-neutral-600 hover:text-neutral-800"
+                                className="text-neutral-600 hover:text-neutral-800 dark:text-neutral-400"
                             >
                                 Limpiar filtros
                             </Button>

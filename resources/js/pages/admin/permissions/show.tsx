@@ -163,10 +163,10 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
             <DataTableBody>
                 {users.data.map((user, index) => (
                     <DataTableTR key={user.id}>
-                        <DataTableTD className="font-mono text-xs text-neutral-400">
+                        <DataTableTD className="font-mono text-xs text-neutral-400 dark:text-neutral-500">
                             {(users.current_page - 1) * (users.per_page || perPage) + index + 1}
                         </DataTableTD>
-                        <DataTableTD className="font-mono text-neutral-500">
+                        <DataTableTD className="font-mono text-neutral-500 dark:text-neutral-400">
                             {user.cedula}
                         </DataTableTD>
                         <DataTableTD>
@@ -177,7 +177,7 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                                 {user.name}
                             </Link>
                         </DataTableTD>
-                        <DataTableTD className="text-neutral-500">
+                        <DataTableTD className="text-neutral-500 dark:text-neutral-400">
                             {user.email}
                         </DataTableTD>
                         <DataTableTD className="text-right">
@@ -227,13 +227,13 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                                 {moduleLabel}: {actionKey.charAt(0).toUpperCase() + actionKey.slice(1)}
                             </h1>
                             <div className="flex items-center gap-2 mt-1">
-                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200">
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200 dark:text-neutral-400 dark:border-neutral-700">
                                     {moduleLabel}
                                 </Badge>
-                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200">
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200 dark:text-neutral-400 dark:border-neutral-700">
                                     {permission.roles.length} Roles
                                 </Badge>
-                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200">
+                                <Badge variant="outline" className="text-[10px] text-neutral-500 border-neutral-200 dark:text-neutral-400 dark:border-neutral-700">
                                     {users.total} Usuarios
                                 </Badge>
                             </div>
@@ -251,8 +251,8 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                         <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
                             <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                 <div className="flex items-center gap-2">
-                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                    <ShieldCheck className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                         Información del Permiso
                                     </h2>
                                 </div>
@@ -274,13 +274,13 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                                     </div>
 
                                     <div className="rounded-xl border border-neutral-100 bg-neutral-50/50 p-6 dark:border-neutral-800 dark:bg-neutral-800/30">
-                                        <p className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
+                                        <p className="text-base leading-relaxed text-neutral-600 dark:text-neutral-300 dark:text-neutral-400">
                                             Este permiso garantiza que los usuarios asignados puedan <span className="font-bold text-neutral-950 dark:text-neutral-50 underline decoration-primary/40 underline-offset-4 decoration-2">{currentAction.desc.toLowerCase()}</span> dentro de este componente. Es una capacidad clave para la gestión de datos en el sistema.
                                         </p>
                                     </div>
 
                                     <div className="space-y-4">
-                                        <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 pl-1">
+                                        <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 pl-1 dark:text-neutral-500">
                                             Identificador del Sistema
                                         </p>
                                         <div className="flex items-center justify-between rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
@@ -301,8 +301,8 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                         <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
                             <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                 <div className="flex items-center gap-2">
-                                    <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                    <ShieldCheck className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                         Roles con este permiso
                                     </h2>
                                 </div>
@@ -318,9 +318,9 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-800">
-                                                        <ShieldCheck className="h-5 w-5 text-neutral-400" />
+                                                        <ShieldCheck className="h-5 w-5 text-neutral-400 dark:text-neutral-500" />
                                                     </div>
-                                                    <p className="text-sm font-bold capitalize text-neutral-700 dark:text-neutral-200">
+                                                    <p className="text-sm font-bold capitalize text-neutral-700 dark:text-neutral-200 dark:text-neutral-300">
                                                         {role.name}
                                                     </p>
                                                 </div>
@@ -329,7 +329,7 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-12 text-center text-neutral-400">
+                                    <div className="flex flex-col items-center justify-center py-12 text-center text-neutral-400 dark:text-neutral-500">
                                         <ShieldCheck className="mb-3 h-12 w-12 opacity-10" />
                                         <p className="text-xs font-medium italic px-6">
                                             Ningún rol tiene este permiso asignado.
@@ -343,8 +343,8 @@ export default function Show({ permission, users, filters, availableRoles }: Pro
                         <Card className="overflow-hidden rounded-xl border shadow-none p-0 gap-0">
                             <CardHeader className="border-b bg-neutral-50 px-6 py-3 dark:bg-neutral-800/50">
                                 <div className="flex items-center gap-2">
-                                    <Users className="h-4 w-4 text-neutral-500" />
-                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300">
+                                    <Users className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
+                                    <h2 className="text-sm font-semibold tracking-wide text-neutral-600 uppercase dark:text-neutral-300 dark:text-neutral-400">
                                         Usuarios con este permiso
                                     </h2>
                                 </div>

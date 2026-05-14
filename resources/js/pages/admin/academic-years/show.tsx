@@ -102,7 +102,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                    className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800"
                                     asChild
                                 >
                                     <Link
@@ -120,7 +120,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                                    className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400"
                                     onClick={handleDelete}
                                 >
                                     <Trash2 className="mr-2 h-4 w-4" />
@@ -134,18 +134,18 @@ export default function AcademicYearShow({ academicYear }: Props) {
                     <div className="grid gap-4 md:grid-cols-3">
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-neutral-500">
+                                <CardTitle className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                                     Estado
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {academicYear.is_active ? (
-                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400">
+                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:text-green-300">
                                         <CheckCircle2 className="mr-1 h-3 w-3" />
                                         Activo
                                     </Badge>
                                 ) : (
-                                    <span className="text-sm text-neutral-400">
+                                    <span className="text-sm text-neutral-400 dark:text-neutral-500">
                                         Inactivo
                                     </span>
                                 )}
@@ -153,7 +153,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-neutral-500">
+                                <CardTitle className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                                     Cupo de Horas
                                 </CardTitle>
                             </CardHeader>
@@ -161,20 +161,20 @@ export default function AcademicYearShow({ academicYear }: Props) {
                                 <span className="text-2xl font-bold">
                                     {academicYear.required_hours}
                                 </span>
-                                <span className="ml-1 text-sm text-neutral-500">
+                                <span className="ml-1 text-sm text-neutral-500 dark:text-neutral-400">
                                     horas
                                 </span>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-neutral-500">
+                                <CardTitle className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                                     Nombre
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center gap-2">
-                                    <Calendar className="h-4 w-4 text-neutral-400" />
+                                    <Calendar className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                                     <span className="font-semibold">
                                         {academicYear.name}
                                     </span>
@@ -198,7 +198,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                             <Card className="cursor-pointer transition-shadow hover:shadow-md">
                                 <CardHeader>
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 dark:bg-blue-950/30">
                                             <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                         </div>
                                         <div>
@@ -229,7 +229,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                             <Card className="cursor-pointer transition-shadow hover:shadow-md">
                                 <CardHeader>
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20 dark:bg-green-950/30">
                                             <GraduationCap className="h-5 w-5 text-green-600 dark:text-green-400" />
                                         </div>
                                         <div>
@@ -259,7 +259,7 @@ export default function AcademicYearShow({ academicYear }: Props) {
                             <Card className="cursor-pointer transition-shadow hover:shadow-md">
                                 <CardHeader>
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/20 dark:bg-purple-950/30">
                                             <Layers className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                                         </div>
                                         <div>
