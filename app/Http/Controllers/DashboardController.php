@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\StudentRepresentative;
 use App\Models\AcademicYear;
 use App\Models\Grade;
 use App\Models\Section;
@@ -249,6 +250,45 @@ class DashboardController extends Controller
                 'requiredHours' => (float) $year->required_hours,
             ] : null,
             'students' => $data['students'] ?? [],
+        ]);
+    }
+
+    /**
+     * Student detail dashboard for a representative.
+     * Renders the same student dashboard the student would see,
+     * but only if the authenticated representative is linked to this student.
+     */
+    public function studentDetail(User $student): Response
+    {
+        // Verify the authenticated user is a representante linked to this student
+        $linked = StudentRepresentative::where('representative_id', auth()->id())
+            ->where('student_id', $student->id)
+            ->exists();
+
+        if (! $linked) {
+            abort(403);
+        }
+
+        $year = AcademicYear::where('is_active', true)->first();
+        $data = $this->hourAccumulator->getStudentDashboard($student->id, $year?->id);
+
+        return Inertia::render('student/dashboard', [
+            'activeYear' => $year ? [
+                'id' => $year->id,
+                'name' => $year->name,
+                'requiredHours' => (float) $year->required_hours,
+            ] : null,
+            'progress' => $data['progress'] ?? [],
+            'breakdownByYear' => $data['breakdownByYear'] ?? [],
+            'breakdownByTerm' => $data['breakdownByTerm'] ?? [],
+            'sessionHistory' => $data['sessionHistory'] ?? [],
+            'closureProjection' => $data['closureProjection'] ?? [],
+            'categoryParticipation' => $data['categoryParticipation'] ?? [],
+            'mostRecentSession' => $data['mostRecentSession'] ?? null,
+            'sectionAverage' => $data['sectionAverage'] ?? 0,
+            'evidenceCount' => $data['evidenceCount'] ?? 0,
+            'backUrl' => '/representative/dashboard',
+            'viewingAs' => $student->name,
         ]);
     }
 }

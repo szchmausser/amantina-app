@@ -83,7 +83,7 @@ export default function RepresentativeDashboard({
                         {students.map((student) => (
                             <Link
                                 key={student.id}
-                                href={`/admin/users/${student.id}`}
+                                href={`/representative/student/${student.id}/dashboard`}
                                 className="block"
                             >
                                 <Card className="rounded-xl border transition-colors hover:bg-accent">

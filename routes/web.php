@@ -36,6 +36,7 @@ Route::get('/favicon', FaviconController::class);
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
+    Route::get('/representative/student/{student}/dashboard', [DashboardController::class, 'studentDetail'])->name('representative.student.dashboard');
 
     // Admin Routes
     Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {

@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
 import {
+    ArrowLeft,
     Calendar,
     Clock,
     Target,
@@ -39,6 +40,8 @@ interface Props {
     mostRecentSession: StudentDashboardData['mostRecentSession'];
     sectionAverage: StudentDashboardData['sectionAverage'];
     evidenceCount: StudentDashboardData['evidenceCount'];
+    backUrl?: string;
+    viewingAs?: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -63,6 +66,8 @@ export default function StudentDashboard({
     mostRecentSession,
     sectionAverage,
     evidenceCount,
+    backUrl,
+    viewingAs,
 }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -74,13 +79,23 @@ export default function StudentDashboard({
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                            Mi Progreso
+                            {viewingAs ? `Progreso de ${viewingAs}` : 'Mi Progreso'}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Seguimiento de horas en Socioproductiva
+                            {viewingAs ? 'Vista como representante' : 'Seguimiento de horas en Socioproductiva'}
                         </p>
                     </div>
-                    {activeYear && (
+                    <div className="flex items-center gap-2">
+                        {backUrl && (
+                            <button
+                                onClick={() => window.history.back()}
+                                className="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-sm transition-colors hover:bg-accent"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                                Volver
+                            </button>
+                        )}
+                        {activeYear && (
                         <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium">
@@ -88,6 +103,7 @@ export default function StudentDashboard({
                             </span>
                         </div>
                     )}
+                    </div>
                 </div>
 
                 {/* Histórico por Año — primera tarjeta */}
