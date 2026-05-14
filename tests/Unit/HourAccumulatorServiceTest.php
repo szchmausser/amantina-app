@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\ActivityCategory;
 use App\Models\Attendance;
 use App\Models\AttendanceActivity;
+use App\Models\Enrollment;
 use App\Models\FieldSession;
 use App\Models\FieldSessionStatus;
 use App\Models\Grade;
@@ -14,6 +15,7 @@ use App\Models\User;
 use App\Services\HourAccumulatorService;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -441,5 +443,101 @@ class HourAccumulatorServiceTest extends TestCase
 
         $this->assertEquals(33.33, $result['jornada_hours']);
         $this->assertEquals(33.33, $result['total_hours']);
+    }
+
+    // ============================================
+    // getStudentDashboard Tests - Photo Evidence
+    // ============================================
+
+    public function test_get_student_dashboard_includes_photos_in_session_history(): void
+    {
+        // Need enrollment for section average calculation
+        Enrollment::create([
+            'user_id' => $this->student->id,
+            'section_id' => $this->section->id,
+            'grade_id' => $this->grade->id,
+            'academic_year_id' => $this->activeYear->id,
+        ]);
+
+        $profesor = User::factory()->create();
+        $profesor->assignRole('profesor');
+
+        $session = FieldSession::factory()->create([
+            'academic_year_id' => $this->activeYear->id,
+            'user_id' => $profesor->id,
+            'status_id' => $this->completedStatus->id,
+            'start_datetime' => now(),
+            'base_hours' => 4,
+        ]);
+
+        $attendance = Attendance::create([
+            'field_session_id' => $session->id,
+            'user_id' => $this->student->id,
+            'academic_year_id' => $this->activeYear->id,
+            'attended' => true,
+        ]);
+
+        $category = ActivityCategory::factory()->create();
+        $activity = AttendanceActivity::create([
+            'attendance_id' => $attendance->id,
+            'activity_category_id' => $category->id,
+            'hours' => 4,
+        ]);
+
+        // Add photo evidence via Spatie Media Library
+        $activity->addMedia(UploadedFile::fake()->image('test-photo.jpg'))
+            ->toMediaCollection('evidence_photos');
+
+        $result = $this->service->getStudentDashboard($this->student->id);
+
+        $this->assertNotEmpty($result['sessionHistory']);
+        $this->assertNotEmpty($result['sessionHistory'][0]['activities']);
+        $this->assertArrayHasKey('photos', $result['sessionHistory'][0]['activities'][0]);
+        $this->assertCount(1, $result['sessionHistory'][0]['activities'][0]['photos']);
+        $this->assertEquals('test-photo', $result['sessionHistory'][0]['activities'][0]['photos'][0]['name']);
+        $this->assertStringContainsString('/storage/', $result['sessionHistory'][0]['activities'][0]['photos'][0]['url']);
+    }
+
+    public function test_get_student_dashboard_returns_empty_photos_when_no_evidence(): void
+    {
+        // Need enrollment for section average calculation
+        Enrollment::create([
+            'user_id' => $this->student->id,
+            'section_id' => $this->section->id,
+            'grade_id' => $this->grade->id,
+            'academic_year_id' => $this->activeYear->id,
+        ]);
+
+        $profesor = User::factory()->create();
+        $profesor->assignRole('profesor');
+
+        $session = FieldSession::factory()->create([
+            'academic_year_id' => $this->activeYear->id,
+            'user_id' => $profesor->id,
+            'status_id' => $this->completedStatus->id,
+            'start_datetime' => now(),
+            'base_hours' => 4,
+        ]);
+
+        $attendance = Attendance::create([
+            'field_session_id' => $session->id,
+            'user_id' => $this->student->id,
+            'academic_year_id' => $this->activeYear->id,
+            'attended' => true,
+        ]);
+
+        $category = ActivityCategory::factory()->create();
+        AttendanceActivity::create([
+            'attendance_id' => $attendance->id,
+            'activity_category_id' => $category->id,
+            'hours' => 4,
+        ]);
+
+        $result = $this->service->getStudentDashboard($this->student->id);
+
+        $this->assertNotEmpty($result['sessionHistory']);
+        $this->assertNotEmpty($result['sessionHistory'][0]['activities']);
+        $this->assertArrayHasKey('photos', $result['sessionHistory'][0]['activities'][0]);
+        $this->assertCount(0, $result['sessionHistory'][0]['activities'][0]['photos']);
     }
 }

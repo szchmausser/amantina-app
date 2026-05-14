@@ -60,6 +60,7 @@ import HealthRecordModal from './partials/health-record-modal';
 import ExternalHourModal, {
     ExternalHourItem,
 } from './partials/external-hour-modal';
+import { MediaGallery } from '@/components/media-gallery';
 
 interface CurrentEnrollment {
     id: number;
@@ -116,6 +117,7 @@ interface HourHistoryActivity {
     id: number;
     hours: number;
     activity_category: string | null;
+    photos?: { id: number; url: string; name: string }[];
 }
 
 interface HourHistoryFieldSession {
@@ -176,6 +178,11 @@ export default function Show({
     const [deleteExternalHourDialogOpen, setDeleteExternalHourDialogOpen] = useState(false);
     const [pendingDeleteExternalHourId, setPendingDeleteExternalHourId] = useState<number | null>(null);
     const [permissionDetail, setPermissionDetail] = useState<string | null>(null);
+
+    // Media gallery state
+    const [galleryOpen, setGalleryOpen] = useState(false);
+    const [galleryItems, setGalleryItems] = useState<{ id: number; url: string; name: string }[]>([]);
+    const [galleryIndex, setGalleryIndex] = useState(0);
 
     const hasPermission = (p: string) => auth.permissions?.includes(p);
     const authRoles = auth.user?.roles?.map((r: any) => r.name) ?? [];
@@ -1393,24 +1400,88 @@ export default function Show({
                                                                              item.activities.length >
                                                                                  0 && (
                                                                                  <div className="mt-2 flex flex-wrap gap-2">
-                                                                                     {item.activities.map(
-                                                                                         (
-                                                                                             activity,
-                                                                                         ) => (
-                                                                                             <Badge
-                                                                                                 key={
-                                                                                                     activity.id
-                                                                                                 }
-                                                                                                 className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                                                                             >
-                                                                                                 {
-                                                                                                     activity.hours
-                                                                                                 }{' '}
-                                                                                                 {activity.activity_category ||
-                                                                                                     ''}
-                                                                                             </Badge>
-                                                                                         ),
-                                                                                     )}
+                                                                      {item.activities.map(
+                                                                                          (
+                                                                                              activity,
+                                                                                          ) => {
+                                                                                              const hasPhotos =
+                                                                                                  activity.photos &&
+                                                                                                  activity.photos
+                                                                                                      .length >
+                                                                                                      0;
+                                                                                              return (
+                                                                                                  <Badge
+                                                                                                      key={
+                                                                                                          activity.id
+                                                                                                      }
+                                                                                                      variant={
+                                                                                                          hasPhotos
+                                                                                                              ? 'outline'
+                                                                                                              : 'default'
+                                                                                                      }
+                                                                                                      className={`text-xs ${
+                                                                                                          hasPhotos
+                                                                                                              ? 'cursor-pointer hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-950/30'
+                                                                                                              : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                                                                                      }`}
+                                                                                                      onClick={() => {
+                                                                                                          if (
+                                                                                                              hasPhotos
+                                                                                                          ) {
+                                                                                                              setGalleryItems(
+                                                                                                                  activity.photos!,
+                                                                                                              );
+                                                                                                              setGalleryIndex(
+                                                                                                                  0,
+                                                                                                              );
+                                                                                                              setGalleryOpen(
+                                                                                                                  true,
+                                                                                                              );
+                                                                                                          }
+                                                                                                      }}
+                                                                                                      title={
+                                                                                                          hasPhotos
+                                                                                                              ? 'Ver evidencias'
+                                                                                                              : ''
+                                                                                                      }
+                                                                                                      data-testid={
+                                                                                                          hasPhotos
+                                                                                                              ? `activity-badge-evidence-${activity.id}`
+                                                                                                              : undefined
+                                                                                                      }
+                                                                                                  >
+                                                                                                      {
+                                                                                                          activity.hours
+                                                                                                      }{' '}
+                                                                                                      {activity.activity_category ||
+                                                                                                          ''}
+                                                                                                      {hasPhotos && (
+                                                                                                          <span className="ml-1 inline-flex items-center gap-0.5 text-[10px] text-blue-600 font-semibold">
+                                                                                                              <svg
+                                                                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                                                                  width="12"
+                                                                                                                  height="12"
+                                                                                                                  viewBox="0 0 24 24"
+                                                                                                                  fill="none"
+                                                                                                                  stroke="currentColor"
+                                                                                                                  strokeWidth="2"
+                                                                                                                  strokeLinecap="round"
+                                                                                                                  strokeLinejoin="round"
+                                                                                                              >
+                                                                                                                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                                                                                                                  <circle cx="12" cy="13" r="3" />
+                                                                                                              </svg>
+                                                                                                              {
+                                                                                                                  activity
+                                                                                                                      .photos!
+                                                                                                                      .length
+                                                                                                              }
+                                                                                                          </span>
+                                                                                                      )}
+                                                                                                  </Badge>
+                                                                                              );
+                                                                                          },
+                                                                                      )}
                                                                                  </div>
                                                                              )}
                                                                          {item.notes && (
@@ -1749,6 +1820,13 @@ export default function Show({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            {/* Media Gallery Lightbox */}
+            <MediaGallery
+                open={galleryOpen}
+                onOpenChange={setGalleryOpen}
+                items={galleryItems}
+                initialIndex={galleryIndex}
+            />
         </AppLayout>
     );
 }

@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\StudentRepresentative;
 use App\Models\User;
 
 class UserPolicy
@@ -19,7 +20,22 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->id === $model->id || $user->hasPermissionTo('users.view');
+        if ($user->id === $model->id) {
+            return true;
+        }
+
+        if ($user->hasPermissionTo('users.view')) {
+            return true;
+        }
+
+        // A representative can view the students linked to them
+        if ($model->hasRole('alumno') && StudentRepresentative::where('representative_id', $user->id)
+            ->where('student_id', $model->id)
+            ->exists()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

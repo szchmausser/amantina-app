@@ -2,8 +2,15 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\AcademicYear;
+use App\Models\ActivityCategory;
+use App\Models\Attendance;
+use App\Models\AttendanceActivity;
+use App\Models\FieldSession;
+use App\Models\FieldSessionStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -92,6 +99,53 @@ class UserShowTest extends TestCase
         $response->assertInertia(fn ($page) => $page
             ->where('user.roles.0.permissions.0.name', 'test.permission1')
             ->where('user.permissions.0.name', 'test.permission2')
+        );
+    }
+
+    public function test_user_show_includes_photos_in_hour_history_for_alumno(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $alumno = User::factory()->create();
+        $alumno->assignRole('alumno');
+
+        // FieldSessionFactory needs 'profesor' role for default definition
+        Role::create(['name' => 'profesor']);
+
+        FieldSessionStatus::create(['name' => 'completed', 'description' => 'Completada']);
+
+        $session = FieldSession::factory()->create([
+            'user_id' => $admin->id,
+            'status_id' => FieldSessionStatus::where('name', 'completed')->first()->id,
+            'start_datetime' => now(),
+        ]);
+
+        $attendance = Attendance::create([
+            'field_session_id' => $session->id,
+            'user_id' => $alumno->id,
+            'academic_year_id' => AcademicYear::factory()->create(['is_active' => true])->id,
+            'attended' => true,
+        ]);
+
+        $category = ActivityCategory::factory()->create();
+        $activity = AttendanceActivity::create([
+            'attendance_id' => $attendance->id,
+            'activity_category_id' => $category->id,
+            'hours' => 4,
+        ]);
+
+        $activity->addMedia(UploadedFile::fake()->image('evidence.jpg'))
+            ->toMediaCollection('evidence_photos');
+
+        $response = $this->actingAs($admin)->get(route('admin.users.show', $alumno));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->has('hourHistory.0.activities.0.photos', 1)
+            ->where('hourHistory.0.activities.0.photos.0.id', fn ($id) => is_int($id) && $id > 0)
+            ->where('hourHistory.0.activities.0.photos.0.url', fn ($url) => str_contains($url, '/storage/'))
+            ->where('hourHistory.0.activities.0.photos.0.name', 'evidence')
         );
     }
 }

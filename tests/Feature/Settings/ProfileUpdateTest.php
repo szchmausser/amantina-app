@@ -2,10 +2,18 @@
 
 namespace Tests\Feature\Settings;
 
+use App\Models\AcademicYear;
+use App\Models\ActivityCategory;
+use App\Models\Attendance;
+use App\Models\AttendanceActivity;
+use App\Models\FieldSession;
+use App\Models\FieldSessionStatus;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 class ProfileUpdateTest extends TestCase
@@ -127,4 +135,6 @@ class ProfileUpdateTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+
 }

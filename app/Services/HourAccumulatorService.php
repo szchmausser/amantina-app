@@ -8,6 +8,7 @@ use App\Models\ExternalHour;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Centralized service for calculating and aggregating student hours.
@@ -1190,12 +1191,35 @@ class HourAccumulatorService
             ->whereIn('attendance_activities.attendance_id', $attendanceIds)
             ->whereNull('attendance_activities.deleted_at')
             ->select(
+                'attendance_activities.id',
                 'attendance_activities.attendance_id',
                 'activity_categories.name as category_name',
                 'attendance_activities.hours'
             )
             ->get()
             ->groupBy('attendance_id');
+
+        // Query photos for all activities, grouped by activity id
+        $allActivityIds = $activities->flatten()->pluck('id')->unique()->toArray();
+        $photoRows = [];
+        if (! empty($allActivityIds)) {
+            $photoRows = DB::table('media')
+                ->whereIn('model_id', $allActivityIds)
+                ->where('model_type', 'App\\Models\\AttendanceActivity')
+                ->select('id', 'model_id', 'name', 'file_name', 'disk')
+                ->get()
+                ->groupBy('model_id');
+        }
+
+        $photosByActivityId = $photoRows->map(function ($photos) {
+            return $photos->map(function ($media) {
+                return [
+                    'id' => $media->id,
+                    'url' => Storage::disk($media->disk ?? 'public')->url($media->id.'/'.$media->file_name),
+                    'name' => $media->name,
+                ];
+            })->values();
+        });
 
         $sessionHistory = $sessions
             ->map(fn ($r) => [
@@ -1207,6 +1231,7 @@ class HourAccumulatorService
                     ->map(fn ($a) => [
                         'categoryName' => $a->category_name,
                         'hours' => round((float) $a->hours, 2),
+                        'photos' => ($photosByActivityId->get($a->id) ?? collect())->toArray(),
                     ])
                     ->values()
                     ->toArray(),

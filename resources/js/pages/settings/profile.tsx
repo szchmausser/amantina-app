@@ -70,6 +70,7 @@ interface HourHistoryActivity {
     id: number;
     hours: number;
     activity_category: string | null;
+    photos?: { id: number; url: string; name: string }[];
 }
 
 interface HourHistoryFieldSession {

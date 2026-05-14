@@ -5,7 +5,9 @@ namespace Tests\Feature\Admin;
 use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\Grade;
+use App\Models\RelationshipType;
 use App\Models\Section;
+use App\Models\StudentRepresentative;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -101,5 +103,42 @@ class StudentPdfControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_representative_can_download_pdf_for_linked_student(): void
+    {
+        $student = User::factory()->create();
+        $student->assignRole('alumno');
+
+        $representative = User::factory()->create();
+        $representative->assignRole('representante');
+
+        $relationshipType = RelationshipType::create(['name' => 'Madre']);
+
+        StudentRepresentative::create([
+            'representative_id' => $representative->id,
+            'student_id' => $student->id,
+            'relationship_type_id' => $relationshipType->id,
+        ]);
+
+        $response = $this->actingAs($representative)
+            ->get(route('admin.users.pdf', $student));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_representative_cannot_download_pdf_for_unlinked_student(): void
+    {
+        $student = User::factory()->create();
+        $student->assignRole('alumno');
+
+        $representative = User::factory()->create();
+        $representative->assignRole('representante');
+
+        $response = $this->actingAs($representative)
+            ->get(route('admin.users.pdf', $student));
+
+        $response->assertForbidden();
     }
 }

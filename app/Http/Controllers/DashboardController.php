@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StudentRepresentative;
 use App\Models\AcademicYear;
 use App\Models\Grade;
 use App\Models\Section;
+use App\Models\StudentRepresentative;
 use App\Models\TeacherAssignment;
 use App\Models\User;
 use App\Services\HourAccumulatorService;
@@ -232,6 +232,7 @@ class DashboardController extends Controller
             'mostRecentSession' => $data['mostRecentSession'] ?? null,
             'sectionAverage' => $data['sectionAverage'] ?? 0,
             'evidenceCount' => $data['evidenceCount'] ?? 0,
+            'studentId' => $user->id,
         ]);
     }
 
@@ -289,6 +290,7 @@ class DashboardController extends Controller
             'evidenceCount' => $data['evidenceCount'] ?? 0,
             'backUrl' => '/representative/dashboard',
             'viewingAs' => $student->name,
+            'studentId' => $student->id,
         ]);
     }
 }

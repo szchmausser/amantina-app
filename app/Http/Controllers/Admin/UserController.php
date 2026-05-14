@@ -287,7 +287,7 @@ class UserController extends Controller
                 ? Attendance::where('user_id', $user->id)
                     ->with(['fieldSession' => function ($query) {
                         $query->with(['status', 'academicYear', 'teacher']);
-                    }, 'attendanceActivities.activityCategory'])
+                    }, 'attendanceActivities.activityCategory', 'attendanceActivities.media'])
                     ->get()
                     ->sortByDesc(fn ($a) => $a->fieldSession?->start_datetime ?? $a->created_at)
                     ->values()
@@ -316,6 +316,11 @@ class UserController extends Controller
                                 'id' => $act->id,
                                 'hours' => (float) $act->hours,
                                 'activity_category' => $act->activityCategory?->name,
+                                'photos' => $act->getMedia('evidence_photos')->map(fn ($media) => [
+                                    'id' => $media->id,
+                                    'url' => $media->getUrl(),
+                                    'name' => $media->name,
+                                ])->values(),
                             ])->values(),
                         ];
                     })

@@ -219,6 +219,7 @@ export interface StudentDashboardData {
         activities: {
             categoryName: string;
             hours: number;
+            photos?: { id: number; url: string; name: string }[];
         }[];
     }[];
     closureProjection: {
