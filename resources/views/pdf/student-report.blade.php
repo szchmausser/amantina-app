@@ -68,7 +68,7 @@
 
         .report-header {
             width: 100%;
-            padding-bottom: 14pt;
+            padding-bottom: 5pt;
             margin-bottom: 0;
             /* Se eliminó el borde inferior para evitar la doble línea con el divisor de sección */
         }
@@ -78,23 +78,23 @@
         }
 
         .logo-cell {
-            width: 58pt;
+            width: 90pt;
             vertical-align: middle;
         }
 
         .logo-img {
-            width: 50pt;
+            width: 80pt;
             height: auto;
         }
 
         .logo-placeholder {
-            width: 46pt;
-            height: 46pt;
+            width: 70pt;
+            height: 70pt;
             border: 1pt dashed #000000;
             border-radius: 4pt;
-            line-height: 46pt;
+            line-height: 70pt;
             text-align: center;
-            font-size: 7pt;
+            font-size: 8pt;
             color: #000000;
             font-weight: 700;
         }
@@ -143,7 +143,7 @@
 
         .section-divider {
             text-align: center;
-            margin: 20pt 0 12pt 0;
+            margin: 8pt 0 10pt 0;
             border-top: 1pt solid #1e4e8c;
             border-bottom: 1pt solid #1e4e8c;
             padding: 4pt 0;
@@ -295,16 +295,16 @@
             background: #eff6ff;
             border: 1pt solid #bfdbfe;
             border-radius: 6pt;
-            padding: 12pt 14pt;
+            padding: 8pt 12pt;
         }
 
         .hour-card-title {
-            font-size: 7pt;
+            font-size: 6.5pt;
             text-transform: uppercase;
-            color: #000000;
+            color: #1e4e8c;
             font-weight: 700;
-            margin-bottom: 10pt;
-            letter-spacing: 0.4pt;
+            margin-bottom: 6pt;
+            letter-spacing: 0.5pt;
         }
 
         .hour-value {
@@ -321,16 +321,17 @@
 
         .hour-pct {
             text-align: right;
-            font-size: 16pt;
+            font-size: 18pt;
             font-weight: 700;
+            color: #1e4e8c;
         }
 
         .progress-track {
             width: 100%;
-            height: 5pt;
-            border-radius: 3pt;
-            background: #e5e7eb;
-            margin-top: 10pt;
+            height: 4pt;
+            border-radius: 2pt;
+            background: #e2e8f0;
+            margin-top: 8pt;
             overflow: hidden;
         }
 
@@ -614,17 +615,17 @@
                     <div class="hour-card-title">{{ $cy['year_name'] }}</div>
                     <table class="w100">
                         <tr>
-                            <td style="width:65%;">
-                                <div class="hour-value c-{{ $cyColor }}">{{ number_format($cy['hours'], 1) }}h</div>
-                                <div class="hour-target">de {{ number_format($cy['required'], 0) }}h requeridas</div>
+                            <td style="vertical-align: middle;">
+                                <div class="hour-value c-brand">{{ number_format($cy['hours'], 1) }}h</div>
                             </td>
-                            <td style="width:35%; vertical-align:bottom;">
-                                <div class="hour-pct c-{{ $cyColor }}">{{ number_format($cy['percentage'], 0) }}%</div>
+                            <td style="vertical-align: middle; text-align: right;">
+                                <div class="hour-pct">{{ number_format($cy['percentage'], 0) }}%</div>
                             </td>
                         </tr>
                     </table>
+                    <div class="hour-target">de {{ number_format($cy['required'], 0) }}h requeridas</div>
                     <div class="progress-track">
-                        <div class="progress-fill bg-{{ $cyColor }}" style="width:{{ $cyPct }}%;"></div>
+                        <div class="progress-fill bg-brand" style="width:{{ $cyPct }}%;"></div>
                     </div>
                 </div>
             </td>
@@ -636,18 +637,17 @@
                     <div class="hour-card-title">Acumulado General</div>
                     <table class="w100">
                         <tr>
-                            <td style="width:65%;">
-                                <div class="hour-value c-{{ $totColor }}">{{ number_format($tot['hours'], 1) }}h</div>
-                                <div class="hour-target">de {{ number_format($tot['required'], 0) }}h totales</div>
+                            <td style="vertical-align: middle;">
+                                <div class="hour-value c-brand">{{ number_format($tot['hours'], 1) }}h</div>
                             </td>
-                            <td style="width:35%; vertical-align:bottom;">
-                                <div class="hour-pct c-{{ $totColor }}">{{ number_format($tot['percentage'], 0) }}%
-                                </div>
+                            <td style="vertical-align: middle; text-align: right;">
+                                <div class="hour-pct">{{ number_format($tot['percentage'], 0) }}%</div>
                             </td>
                         </tr>
                     </table>
+                    <div class="hour-target">de {{ number_format($tot['required'], 0) }}h totales</div>
                     <div class="progress-track">
-                        <div class="progress-fill bg-{{ $totColor }}" style="width:{{ $totPct }}%;"></div>
+                        <div class="progress-fill bg-brand" style="width:{{ $totPct }}%;"></div>
                     </div>
                 </div>
             </td>
@@ -680,10 +680,10 @@
                     @endif
 
                     <td class="hour-card-container">
-                        <div class="hour-card" style="padding:10pt;">
+                        <div class="hour-card" style="padding: 8pt 10pt;">
                             <div class="hour-card-title">{{ $term['termName'] }}</div>
 
-                            <div class="hour-value c-{{ $termColor }}" style="font-size:18pt;">
+                            <div class="hour-value c-brand" style="font-size:16pt; margin-bottom: 2pt;">
                                 {{ number_format($term['totalHours'], 1) }}h
                             </div>
 
@@ -691,8 +691,8 @@
                                 {{ number_format($termPct, 0) }}% de {{ number_format($term['quota'], 0) }}h
                             </div>
 
-                            <div class="progress-track">
-                                <div class="progress-fill bg-{{ $termColor }}" style="width:{{ $termFill }}%;"></div>
+                            <div class="progress-track" style="margin-top: 6pt;">
+                                <div class="progress-fill bg-brand" style="width:{{ $termFill }}%;"></div>
                             </div>
                         </div>
                     </td>
