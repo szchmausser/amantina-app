@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { KeyRound } from 'lucide-react';
 import AuthLayout from '@/layouts/auth-layout';
 import { update } from '@/routes/password';
 
@@ -82,6 +83,7 @@ export default function ResetPassword({ token, email }: Props) {
                             data-test="reset-password-button"
                         >
                             {processing && <Spinner />}
+                            <KeyRound className="mr-2 h-4 w-4" />
                             Reset password
                         </Button>
                     </div>

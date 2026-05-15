@@ -1,5 +1,6 @@
 import { Form } from '@inertiajs/react';
 import { useRef } from 'react';
+import { Trash2, X } from 'lucide-react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -40,6 +41,7 @@ export default function DeleteUser() {
                             variant="destructive"
                             data-test="delete-user-button"
                         >
+                            <Trash2 className="mr-2 h-4 w-4" />
                             Delete account
                         </Button>
                     </DialogTrigger>
@@ -86,14 +88,15 @@ export default function DeleteUser() {
 
                                     <DialogFooter className="gap-2">
                                         <DialogClose asChild>
-                                            <Button
-                                                variant="secondary"
-                                                onClick={() =>
-                                                    resetAndClearErrors()
-                                                }
-                                            >
-                                                Cancel
-                                            </Button>
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() =>
+                                                resetAndClearErrors()
+                                            }
+                                        >
+                                            <X className="mr-2 h-4 w-4" />
+                                            Cancel
+                                        </Button>
                                         </DialogClose>
 
                                         <Button
@@ -105,6 +108,7 @@ export default function DeleteUser() {
                                                 type="submit"
                                                 data-test="confirm-delete-user-button"
                                             >
+                                                <Trash2 className="mr-2 h-4 w-4" />
                                                 Delete account
                                             </button>
                                         </Button>

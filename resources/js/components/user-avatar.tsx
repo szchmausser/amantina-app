@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useForm } from '@inertiajs/react';
-import { Upload, X } from 'lucide-react';
+import { Save, Upload, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useInitials } from '@/hooks/use-initials';
@@ -113,6 +113,7 @@ export function UserAvatar({
                         onClick={handleUpload}
                         disabled={processing}
                     >
+                        <Save className="mr-2 h-4 w-4" />
                         Guardar
                     </Button>
                     <Button

@@ -366,14 +366,15 @@ export default function AcademicInfo({
                                                                         <DialogTrigger
                                                                             asChild
                                                                         >
-                                                                            <Button
-                                                                                variant="secondary"
-                                                                                size="sm"
-                                                                                className="w-full text-xs font-semibold shadow-sm transition-all hover:bg-indigo-600 hover:text-white"
-                                                                            >
-                                                                                Ver
-                                                                                Alumnos
-                                                                            </Button>
+                                                                             <Button
+                                                                                 variant="secondary"
+                                                                                 size="sm"
+                                                                                 className="w-full text-xs font-semibold shadow-sm transition-all hover:bg-indigo-600 hover:text-white"
+                                                                             >
+                                                                                 <Users className="mr-2 h-4 w-4" />
+                                                                                 Ver
+                                                                                 Alumnos
+                                                                             </Button>
                                                                         </DialogTrigger>
                                                                         <DialogContent className="max-w-2xl">
                                                                             <DialogHeader>

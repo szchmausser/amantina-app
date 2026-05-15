@@ -8,6 +8,7 @@ import {
     MapPin,
     Paperclip,
     Phone,
+    Save,
     ShieldCheck,
     User as UserIcon,
     Users,
@@ -188,6 +189,7 @@ export default function Profile({
                             form="profile-form"
                             data-test="update-profile-button"
                         >
+                            <Save className="mr-2 h-4 w-4" />
                             Guardar
                         </Button>
                     </div>

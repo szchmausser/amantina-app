@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Heart, Pencil, Plus, Save, Trash2 } from 'lucide-react';
+import { Heart, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -257,6 +257,7 @@ export default function HealthConditionsIndex({ healthConditions }: Props) {
                                     size="sm"
                                     onClick={cancelEdit}
                                 >
+                                    <X className="mr-2 h-4 w-4" />
                                     Cancelar
                                 </Button>
                                 <Button type="submit" disabled={processing} size="sm">

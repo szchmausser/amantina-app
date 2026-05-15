@@ -1,6 +1,6 @@
 import { Transition } from '@headlessui/react';
 import { Form, Head } from '@inertiajs/react';
-import { ShieldCheck } from 'lucide-react';
+import { Lock, Shield, ShieldCheck, ShieldOff } from 'lucide-react';
 import { useRef, useState } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
 import Heading from '@/components/heading';
@@ -147,6 +147,7 @@ export default function Security({
                                         disabled={processing}
                                         data-test="update-password-button"
                                     >
+                                        <Lock className="mr-2 h-4 w-4" />
                                         Save password
                                     </Button>
 
@@ -191,6 +192,7 @@ export default function Security({
                                                 type="submit"
                                                 disabled={processing}
                                             >
+                                                <ShieldOff className="mr-2 h-4 w-4" />
                                                 Disable 2FA
                                             </Button>
                                         )}
@@ -234,6 +236,7 @@ export default function Security({
                                                     type="submit"
                                                     disabled={processing}
                                                 >
+                                                    <Shield className="mr-2 h-4 w-4" />
                                                     Enable 2FA
                                                 </Button>
                                             )}

@@ -362,6 +362,7 @@ export function DataTable<T>({
                             onClick={onClearFilters}
                             className="text-neutral-500 hover:text-neutral-700"
                         >
+                            <X className="mr-2 h-4 w-4" />
                             Limpiar filtros
                         </Button>
                     )}

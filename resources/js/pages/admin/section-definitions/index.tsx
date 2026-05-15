@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Layout, Pencil, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Layout, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -154,6 +154,7 @@ export default function SectionDefinitionsIndex({ sectionDefinitions }: Props) {
                                     size="sm"
                                     onClick={cancelEdit}
                                 >
+                                    <X className="mr-2 h-4 w-4" />
                                     Cancelar
                                 </Button>
                                 <Button 

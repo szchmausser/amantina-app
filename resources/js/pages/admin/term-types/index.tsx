@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays, Pencil, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -169,14 +169,15 @@ export default function TermTypesIndex({ termTypes }: Props) {
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-end gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={cancelEdit}
-                                    >
-                                        Cancelar
-                                    </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={cancelEdit}
+                                >
+                                    <X className="mr-2 h-4 w-4" />
+                                    Cancelar
+                                </Button>
                                     <Button type="submit" disabled={processing} size="sm">
                                         <Plus className="mr-2 h-4 w-4" />
                                         {data.id ? 'Actualizar' : 'Crear'}

@@ -1,5 +1,5 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Layers, Plus, Save } from 'lucide-react';
+import { ArrowLeft, Layers, Plus, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -231,6 +231,7 @@ export default function SectionEdit({ section, grades, academicYears, sectionDef
                                 onClick={() => window.history.back()}
                                 disabled={processing}
                             >
+                                <X className="mr-2 h-4 w-4" />
                                 Cancelar
                             </Button>
                             <Button type="submit" size="sm" disabled={processing} data-test="submit-button">

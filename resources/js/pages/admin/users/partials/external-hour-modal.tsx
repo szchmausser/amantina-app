@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
-import { X, Upload, FileText, Trash2, Paperclip } from 'lucide-react';
+import { X, Upload, FileText, Trash2, Paperclip, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -348,9 +348,11 @@ export default function ExternalHourModal({
                             onClick={handleClose}
                             disabled={isSubmitting}
                         >
+                            <X className="mr-2 h-4 w-4" />
                             Cancelar
                         </Button>
                         <Button type="submit" disabled={isSubmitting}>
+                            <Clock className="mr-2 h-4 w-4" />
                             {isSubmitting
                                 ? 'Guardando...'
                                 : isEditing

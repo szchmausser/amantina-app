@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Eye, Pencil, Shield } from 'lucide-react';
+import { Eye, Pencil, Shield, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -52,6 +52,7 @@ export default function RolesIndex({ roles }: Props) {
                         {hasPermission('permissions.view') && (
                             <Button variant="outline" asChild>
                                 <Link href="/admin/permissions">
+                                    <ShieldCheck className="mr-2 h-4 w-4" />
                                     Ver Permisos
                                 </Link>
                             </Button>

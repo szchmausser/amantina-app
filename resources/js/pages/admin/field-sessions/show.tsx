@@ -12,6 +12,8 @@ import {
     Plus,
     ListChecks,
     Pencil,
+    Save,
+    X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -740,6 +742,7 @@ export default function FieldSessionShow({
                                         className="h-8 text-xs"
                                         onClick={cancelEditingActivity}
                                     >
+                                        <X className="mr-2 h-4 w-4" />
                                         Cancelar
                                     </Button>
                                     <Button
@@ -748,6 +751,7 @@ export default function FieldSessionShow({
                                         onClick={() => submitEditActivity(activity.id)}
                                         disabled={isSubmittingEdit}
                                     >
+                                        <Save className="mr-2 h-4 w-4" />
                                         {isSubmittingEdit ? 'Actualizando...' : 'Actualizar'}
                                     </Button>
                                 </div>
@@ -1000,6 +1004,7 @@ export default function FieldSessionShow({
                             className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400"
                             onClick={handleDelete}
                         >
+                            <Trash2 className="mr-2 h-4 w-4" />
                             Eliminar
                         </Button>
                     </div>
@@ -1215,6 +1220,7 @@ export default function FieldSessionShow({
                                             setActivities([]);
                                         }}
                                     >
+                                        <X className="mr-2 h-4 w-4" />
                                         Cancelar
                                     </Button>
                                     <Button
@@ -1232,6 +1238,7 @@ export default function FieldSessionShow({
                                         }
                                         data-testid="activities-save-btn"
                                     >
+                                        <Save className="mr-2 h-4 w-4" />
                                         {isSubmittingActivities
                                             ? 'Guardando...'
                                             : 'Guardar'}

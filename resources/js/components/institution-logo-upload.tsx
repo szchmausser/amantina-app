@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { Upload, X } from 'lucide-react';
+import { Save, Upload, X } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import InstitutionController from '@/actions/App/Http/Controllers/Settings/InstitutionController';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -117,6 +117,7 @@ export function InstitutionLogoUpload({
                         disabled={processing}
                         data-testid="logo-save-btn"
                     >
+                        <Save className="mr-2 h-4 w-4" />
                         Guardar
                     </Button>
                     <Button

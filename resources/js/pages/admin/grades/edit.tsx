@@ -1,5 +1,5 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, GraduationCap, Plus, Save } from 'lucide-react';
+import { ArrowLeft, GraduationCap, Plus, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -216,6 +216,7 @@ export default function GradeEdit({ grade, academicYears, gradeDefinitions }: Pr
                                 onClick={() => window.history.back()}
                                 disabled={processing}
                             >
+                                <X className="mr-2 h-4 w-4" />
                                 Cancelar
                             </Button>
                             <Button type="submit" size="sm" disabled={processing} data-test="submit-button">

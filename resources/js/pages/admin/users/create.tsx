@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Plus, User, Lock } from 'lucide-react';
+import { ArrowLeft, Plus, User, Lock, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -88,6 +88,7 @@ export default function Create({ roles }: Props) {
                             Volver
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => window.history.back()} disabled={processing}>
+                            <X className="mr-2 h-4 w-4" />
                             Cancelar
                         </Button>
                         <Button type="submit" size="sm" disabled={processing} form="create-user-form" data-test="submit-button">

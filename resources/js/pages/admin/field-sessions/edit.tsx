@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Clock, Plus, Tag } from 'lucide-react';
+import { ArrowLeft, Clock, Plus, Tag, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -166,6 +166,7 @@ export default function FieldSessionEdit({
                                 )
                             }
                         >
+                            <X className="mr-2 h-4 w-4" />
                             Cancelar
                         </Button>
                         <Button type="submit" size="sm" disabled={processing} form="edit-field-session-form">

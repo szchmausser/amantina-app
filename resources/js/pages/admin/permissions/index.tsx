@@ -88,7 +88,10 @@ export default function PermissionsIndex({ permissions }: any) {
                         </div>
                         {hasPermission('roles.view') && (
                             <Button variant="outline" asChild>
-                                <Link href="/admin/roles">Ver Roles</Link>
+                                <Link href="/admin/roles">
+                                    <Shield className="mr-2 h-4 w-4" />
+                                    Ver Roles
+                                </Link>
                             </Button>
                         )}
                     </div>

@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { AlertCircle, ArrowLeft, Check, Eye, Info, Pencil, PlusCircle, Shield, Trash2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Check, Eye, Info, Pencil, PlusCircle, Save, Shield, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -328,9 +328,14 @@ export default function RolesEdit({
                                 size="lg"
                                 className="px-8"
                             >
-                                {processing
-                                    ? 'Guardando...'
-                                    : 'Guardar Cambios'}
+                                {processing ? (
+                                    'Guardando...'
+                                ) : (
+                                    <>
+                                        <Save className="mr-2 h-4 w-4" />
+                                        Guardar Cambios
+                                    </>
+                                )}
                             </Button>
 
                             {recentlySuccessful && (
