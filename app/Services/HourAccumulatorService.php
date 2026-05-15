@@ -1323,7 +1323,7 @@ class HourAccumulatorService
     /**
      * Get representative dashboard with all linked students' progress.
      *
-     * @return array{students: list<array{id: int, name: string, gradeName: string, sectionName: string, hours: float, quota: float, percentage: float, status: string, nextSession: array{name: string, date: string, location: string}|null}>}
+     * @return array{students: list<array{id: int, name: string, cedula: string, email: string, gradeName: string, sectionName: string, hours: float, quota: float, percentage: float, status: string, nextSession: array{name: string, date: string, location: string}|null}>}
      */
     public function getRepresentativeDashboard(int $representativeId, ?int $academicYearId = null): array
     {
@@ -1335,7 +1335,7 @@ class HourAccumulatorService
             ->where('student_representatives.representative_id', $representativeId)
             ->whereNull('student_representatives.deleted_at')
             ->whereNull('users.deleted_at')
-            ->select('users.id as student_id', 'users.name as student_name')
+            ->select('users.id as student_id', 'users.name as student_name', 'users.cedula', 'users.email')
             ->orderBy('users.name')
             ->get();
 
@@ -1388,6 +1388,8 @@ class HourAccumulatorService
             $students[] = [
                 'id' => (int) $studentId,
                 'name' => $studentRecord->student_name,
+                'cedula' => $studentRecord->cedula ?? '',
+                'email' => $studentRecord->email ?? '',
                 'gradeName' => $gradeName,
                 'sectionName' => $sectionName,
                 'hours' => $progress['total_hours'],

@@ -202,19 +202,14 @@ export default function SectionShow({ section, academicYear }: Props) {
                                                             )}
                                                         </div>
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                                                {
-                                                                    assignment
-                                                                        .teacher
-                                                                        .name
-                                                                }
-                                                            </p>
+                                                            <Link
+                                                                href={`/admin/users/${assignment.teacher.id}`}
+                                                                className="truncate text-sm font-medium text-neutral-900 transition-colors hover:text-blue-600 dark:text-neutral-100 dark:hover:text-blue-400"
+                                                            >
+                                                                {assignment.teacher.name}
+                                                            </Link>
                                                             <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-                                                                {
-                                                                    assignment
-                                                                        .teacher
-                                                                        .email
-                                                                }
+                                                                {assignment.teacher.email}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -295,12 +290,17 @@ export default function SectionShow({ section, academicYear }: Props) {
                                                                             .cedula
                                                                     }
                                                                 </td>
-                                                                <td className="px-6 py-3 text-neutral-900 dark:text-neutral-100">
-                                                                    {
-                                                                        enrollment
-                                                                            .student
-                                                                            .name
-                                                                    }
+                                                                <td className="px-6 py-3">
+                                                                    <Link
+                                                                        href={`/admin/users/${enrollment.student.id}`}
+                                                                        className="font-medium text-neutral-900 transition-colors hover:text-blue-600 dark:text-neutral-100 dark:hover:text-blue-400"
+                                                                    >
+                                                                        {
+                                                                            enrollment
+                                                                                .student
+                                                                                .name
+                                                                        }
+                                                                    </Link>
                                                                 </td>
                                                                 <td className="px-6 py-3 font-mono text-xs text-neutral-500 dark:text-neutral-400">
                                                                     {

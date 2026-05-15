@@ -245,6 +245,8 @@ export interface StudentDashboardData {
 export interface RepresentativeStudentCard {
     id: number;
     name: string;
+    cedula: string;
+    email: string;
     gradeName: string;
     sectionName: string;
     hours: number;

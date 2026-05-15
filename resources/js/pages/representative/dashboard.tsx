@@ -95,16 +95,27 @@ export default function RepresentativeDashboard({
                                                     <span className="font-semibold">
                                                         {student.name}
                                                     </span>
-                                                    {(student.gradeName ||
-                                                        student.sectionName) && (
-                                                        <span className="text-sm text-muted-foreground">
-                                                            ·{' '}
-                                                            {student.gradeName}
-                                                            {student.sectionName &&
-                                                                ` ${student.sectionName}`}
-                                                        </span>
+                                                </div>
+
+                                                {/* Student details: cedula + email */}
+                                                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground">
+                                                    {student.cedula && (
+                                                        <span>C.I. {student.cedula}</span>
+                                                    )}
+                                                    {student.email && (
+                                                        <span className="truncate">{student.email}</span>
                                                     )}
                                                 </div>
+
+                                                {/* Grade and section for current year */}
+                                                {(student.gradeName ||
+                                                    student.sectionName) && (
+                                                    <div className="mt-1 text-sm text-muted-foreground">
+                                                        {student.gradeName}
+                                                        {student.sectionName &&
+                                                            ` — Sección ${student.sectionName}`}
+                                                    </div>
+                                                )}
 
                                                 {/* Progress bar */}
                                                 <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-muted">

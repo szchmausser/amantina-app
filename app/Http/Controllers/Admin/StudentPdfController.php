@@ -174,6 +174,22 @@ class StudentPdfController extends Controller
 
         $generatedAt = now()->format('d/m/Y H:i');
 
+        $logoPath = $institution?->getFirstMediaPath('logo');
+        $avatarPath = $user->getFirstMediaPath('avatar');
+
+        // Helper to embed images as base64
+        $encodeImage = function ($path) {
+            if ($path && file_exists($path)) {
+                $type = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                return 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+            return null;
+        };
+
+        $logoBase64 = $encodeImage($logoPath);
+        $avatarBase64 = $encodeImage($avatarPath);
+
         $html = View::make('pdf.student-report', compact(
             'user',
             'institution',
@@ -182,6 +198,8 @@ class StudentPdfController extends Controller
             'hourHistoryGrouped',
             'externalHours',
             'generatedAt',
+            'logoBase64',
+            'avatarBase64',
         ))->render();
 
         $options = new Options;
@@ -197,7 +215,7 @@ class StudentPdfController extends Controller
 
         return response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Content-Disposition' => "inline; filename=\"{$filename}\"",
         ]);
     }
 }

@@ -142,7 +142,7 @@ test('representante dashboard shows student progress data', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('representative/dashboard')
         ->has('activeYear')
-        ->has('progress')
+        ->has('students')
     );
 });
 

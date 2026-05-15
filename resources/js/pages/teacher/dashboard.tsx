@@ -1551,16 +1551,26 @@ function TeacherSectionCard({
                         data-testid={`teacher-section-students-${section.sectionId}`}
                     >
                         {allStudents.map((student) => (
-                            <ProgressCard
+                            <button
                                 key={student.studentId}
-                                title={student.studentName}
-                                currentHours={student.hours.totalHours}
-                                quota={student.hours.quota}
-                                status={student.hours.status}
-                                subtitle={`${student.hours.percentage.toFixed(1)}%`}
-                                showProgress={false}
-                                className="text-sm"
-                            />
+                                onClick={() =>
+                                    router.visit(
+                                        `/admin/users/${student.studentId}`,
+                                    )
+                                }
+                                className="text-left transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl"
+                                title={`Ver detalle de ${student.studentName}`}
+                            >
+                                <ProgressCard
+                                    title={student.studentName}
+                                    currentHours={student.hours.totalHours}
+                                    quota={student.hours.quota}
+                                    status={student.hours.status}
+                                    subtitle={`${student.hours.percentage.toFixed(1)}%`}
+                                    showProgress={false}
+                                    className="text-sm"
+                                />
+                            </button>
                         ))}
                     </div>
                 )}

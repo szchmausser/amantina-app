@@ -150,7 +150,7 @@ test('representante can view accumulated hours in dashboard', function () {
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
         ->component('representative/dashboard')
-        ->has('progress')
+        ->has('students')
     );
 });
 

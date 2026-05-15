@@ -180,12 +180,8 @@ class DashboardControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('representative/dashboard')
-            ->has('studentName')
-            ->has('studentId')
-            ->has('progress')
-            ->has('last4WeeksTrend')
-            ->has('nextSession')
-            ->has('healthReminder')
+            ->has('activeYear')
+            ->has('students')
         );
     }
 
