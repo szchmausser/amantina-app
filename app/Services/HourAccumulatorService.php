@@ -1201,7 +1201,7 @@ class HourAccumulatorService
 
         // Query photos for all activities, grouped by activity id
         $allActivityIds = $activities->flatten()->pluck('id')->unique()->toArray();
-        $photoRows = [];
+        $photoRows = collect();
         if (! empty($allActivityIds)) {
             $photoRows = DB::table('media')
                 ->whereIn('model_id', $allActivityIds)

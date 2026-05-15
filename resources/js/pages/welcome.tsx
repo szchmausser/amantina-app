@@ -6,7 +6,7 @@ export default function Welcome({
 }: {
 	canRegister?: boolean;
 }) {
-	const { auth } = usePage().props;
+	const { auth, institution } = usePage().props;
 
 	return (
 		<>
@@ -58,7 +58,9 @@ export default function Welcome({
 						</div>
 						<div className="relative flex aspect-[335/376] w-full shrink-0 items-center justify-center overflow-hidden rounded-t-lg bg-white lg:mb-0 lg:-ml-px lg:w-[438px] lg:rounded-t-none lg:rounded-r-lg dark:bg-card">
 							<img
-								src="/logos/amantina_logo_gpt_alpha.png"
+								src={
+									institution?.logo_url ?? "/logos/amantina_logo_gpt_alpha.png"
+								}
 								alt="Amantina Logo"
 								className="h-full w-full object-scale-down p-6 lg:p-10"
 							/>
