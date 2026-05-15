@@ -52,7 +52,7 @@ class InstitutionController extends Controller
     public function updateLogo(Request $request): RedirectResponse
     {
         $request->validate([
-            'logo' => ['required', 'image', 'mimes:jpeg,png,gif,webp', 'max:2048'],
+            'logo' => ['required', 'image', 'mimes:jpeg,png,gif,webp', 'max:10240'],
         ]);
 
         $institution = Institution::first();

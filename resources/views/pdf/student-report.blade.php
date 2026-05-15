@@ -68,9 +68,8 @@
 
         .report-header {
             width: 100%;
-            padding-bottom: 5pt;
+            padding-bottom: 0;
             margin-bottom: 0;
-            /* Se eliminó el borde inferior para evitar la doble línea con el divisor de sección */
         }
 
         .report-header table {
@@ -143,10 +142,14 @@
 
         .section-divider {
             text-align: center;
-            margin: 8pt 0 10pt 0;
-            border-top: 1pt solid #1e4e8c;
-            border-bottom: 1pt solid #1e4e8c;
+            margin: 14pt 0 12pt 0;
+            border-top: 1pt solid #1e3a8a;
+            border-bottom: 1pt solid #1e3a8a;
             padding: 4pt 0;
+        }
+
+        .section-divider.first-section {
+            margin-top: 2pt;
         }
 
         .section-divider-inner {
@@ -154,7 +157,7 @@
             font-weight: 700;
             letter-spacing: 0.8pt;
             text-transform: uppercase;
-            color: #1e4e8c;
+            color: #1e3a8a;
         }
 
         /* ─── STUDENT PROFILE ─── */
@@ -185,7 +188,7 @@
         .student-name {
             font-size: 22pt;
             font-weight: 700;
-            color: #0f172a;
+            color: #1e3a8a;
             margin-bottom: 5pt;
         }
 
@@ -196,8 +199,9 @@
 
         .student-academic {
             margin-top: 6pt;
-            font-size: 9.5pt;
+            font-size: 8.5pt;
             color: #000000;
+            white-space: nowrap;
         }
 
         .status-badge {
@@ -221,11 +225,11 @@
         }
 
         .c-brand {
-            color: #1e4e8c;
+            color: #1e3a8a;
         }
 
         .bg-brand {
-            background: #1e4e8c;
+            background: #1e3a8a;
         }
 
         .c-red {
@@ -265,7 +269,7 @@
 
         .contact-icon {
             display: inline-block;
-            color: #1e4e8c;
+            color: #1e3a8a;
             font-size: 12pt;
             text-align: center;
         }
@@ -273,7 +277,7 @@
         .contact-label {
             font-size: 6.5pt;
             text-transform: uppercase;
-            color: #1e4e8c;
+            color: #1e3a8a;
             font-weight: 700;
             margin-bottom: 2pt;
             letter-spacing: 0.3pt;
@@ -299,9 +303,9 @@
         }
 
         .hour-card-title {
-            font-size: 6.5pt;
+            font-size: 8pt;
             text-transform: uppercase;
-            color: #1e4e8c;
+            color: #1e3a8a;
             font-weight: 700;
             margin-bottom: 6pt;
             letter-spacing: 0.5pt;
@@ -323,7 +327,7 @@
             text-align: right;
             font-size: 18pt;
             font-weight: 700;
-            color: #1e4e8c;
+            color: #1e3a8a;
         }
 
         .progress-track {
@@ -350,11 +354,11 @@
         }
 
         .c-blue {
-            color: #1e4e8c;
+            color: #1e3a8a;
         }
 
         .bg-blue {
-            background: #1e4e8c;
+            background: #1e3a8a;
         }
 
         .c-amber {
@@ -382,7 +386,7 @@
         }
 
         .history-table thead th {
-            background: #1e4e8c;
+            background: #1e3a8a;
             color: #ffffff;
             text-align: left;
             font-size: 7pt;
@@ -411,9 +415,9 @@
         /* ─── TOTAL BOX ─── */
 
         .total-box {
-            margin-top: 20pt;
-            background: #1e4e8c;
-            padding: 7pt 16pt;
+            margin-top: 12pt;
+            background: #1e3a8a;
+            padding: 2pt 16pt;
             border-radius: 4pt;
         }
 
@@ -423,7 +427,7 @@
 
         .total-title {
             color: #ffffff;
-            font-size: 9pt;
+            font-size: 8pt;
             font-weight: 700;
             letter-spacing: 0.6pt;
             text-transform: uppercase;
@@ -432,7 +436,7 @@
 
         .total-value {
             color: #ffffff;
-            font-size: 14pt;
+            font-size: 12pt;
             font-weight: 700;
             text-align: right;
             vertical-align: middle;
@@ -495,9 +499,8 @@
         </table>
     </div>
 
-    {{-- DATOS PERSONALES --}}
-
-    <div class="section-divider">
+    {{-- Perfil del estudiante --}}
+    <div class="section-divider first-section">
         <span class="section-divider-inner">Datos Personales</span>
     </div>
 
@@ -510,11 +513,11 @@
 
                     @if($currentEnrollment)
                         <div class="student-academic" style="margin-top:0; margin-bottom:6pt;">
-                            <span class="bold">Año:</span> {{ $currentEnrollment->academicYear->name }}
+                            <span class="bold">Año:</span> <span class="bold">{{ $currentEnrollment->academicYear->name }}</span>
                             &nbsp;&nbsp;·&nbsp;&nbsp;
-                            <span class="bold">Grado:</span> {{ $currentEnrollment->grade->name }}
+                            <span class="bold">Grado:</span> <span class="bold">{{ $currentEnrollment->grade->name }}</span>
                             &nbsp;&nbsp;·&nbsp;&nbsp;
-                            <span class="bold">Sección:</span> {{ $currentEnrollment->section->name }}
+                            <span class="bold">Sección:</span> <span class="bold">{{ $currentEnrollment->section->name }}</span>
                         </div>
                     @endif
 
@@ -731,7 +734,7 @@
                 </td>
 
                 <td class="meta-cell">
-                    <div class="report-title">Historial Socioproductivo</div>
+                    <div class="report-title">Historial</div>
                     <div class="report-date">
                         {{ $user->name }} &nbsp;·&nbsp; C.I. {{ $user->cedula ?? '—' }}
                     </div>
@@ -745,7 +748,7 @@
     HISTORIAL DE JORNADAS
     ════════════════════════════════════════ --}}
 
-    <div class="section-divider">
+    <div class="section-divider first-section">
         <span class="section-divider-inner">Detalle de Jornadas Socioproductivas</span>
     </div>
 

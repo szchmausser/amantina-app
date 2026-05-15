@@ -45,9 +45,9 @@ class Institution extends Model implements HasMedia
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
             ->registerMediaConversions(function (Media $media) {
                 $this->addMediaConversion('thumb')
-                    ->width(150)
-                    ->height(150)
-                    ->fit(Fit::Crop, 150, 150)
+                    ->width(300)
+                    ->height(300)
+                    ->fit(Fit::Max, 300, 300)
                     ->nonQueued();
                 $this->addMediaConversion('favicon')
                     ->width(32)
@@ -59,8 +59,8 @@ class Institution extends Model implements HasMedia
 
     public function getLogoUrlAttribute(): ?string
     {
-        return $this->getFirstMediaUrl('logo', 'thumb')
-            ?: $this->getFirstMediaUrl('logo')
+        return $this->getFirstMediaUrl('logo')
+            ?: $this->getFirstMediaUrl('logo', 'thumb')
             ?: null;
     }
 

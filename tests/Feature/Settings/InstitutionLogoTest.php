@@ -97,8 +97,8 @@ class InstitutionLogoTest extends TestCase
         $user->assignRole('admin');
         Institution::create(['name' => 'Test School']);
 
-        // 3MB file (exceeds 2MB limit)
-        $file = UploadedFile::fake()->image('logo.png')->size(3072);
+        // 11MB file (exceeds 10MB limit)
+        $file = UploadedFile::fake()->image('logo.png')->size(11264);
 
         $response = $this->actingAs($user)->post(route('institution.logo.update'), [
             'logo' => $file,

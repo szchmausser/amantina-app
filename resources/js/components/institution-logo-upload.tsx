@@ -1,9 +1,12 @@
 import { useForm } from '@inertiajs/react';
-import { Save, Upload, X } from 'lucide-react';
+import { AlertCircle, Save, Upload, X } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import InstitutionController from '@/actions/App/Http/Controllers/Settings/InstitutionController';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 interface InstitutionLogoUploadProps {
     logoUrl: string | null;
@@ -16,6 +19,7 @@ export function InstitutionLogoUpload({
 }: InstitutionLogoUploadProps) {
     const [preview, setPreview] = useState<string | null>(null);
     const [isHovered, setIsHovered] = useState(false);
+    const [fileError, setFileError] = useState<string | null>(null);
 
     const {
         post,
@@ -34,6 +38,19 @@ export function InstitutionLogoUpload({
                 return;
             }
 
+            // Validate file size
+            if (file.size > MAX_FILE_SIZE) {
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+                setFileError(
+                    `El archivo pesa ${sizeMB}MB. El tamaño máximo permitido es 10MB.`,
+                );
+                setPreview(null);
+                setData('logo', null);
+                return;
+            }
+
+            setFileError(null);
+
             const reader = new FileReader();
             reader.onload = () => {
                 setPreview(reader.result as string);
@@ -48,8 +65,14 @@ export function InstitutionLogoUpload({
     const handleUpload = useCallback(() => {
         post(InstitutionController.updateLogo.url(), {
             forceFormData: true,
+            onError: (errors) => {
+                if (errors.logo) {
+                    setFileError(errors.logo);
+                }
+            },
             onSuccess: () => {
                 setPreview(null);
+                setFileError(null);
             },
         });
     }, [post]);
@@ -58,6 +81,7 @@ export function InstitutionLogoUpload({
         removeLogo(InstitutionController.removeLogo.url(), {
             onSuccess: () => {
                 setPreview(null);
+                setFileError(null);
             },
         });
     }, [removeLogo]);
@@ -108,13 +132,20 @@ export function InstitutionLogoUpload({
                 />
             </div>
 
+            {fileError && (
+                <Alert variant="destructive" className="max-w-xs">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{fileError}</AlertDescription>
+                </Alert>
+            )}
+
             {preview && (
                 <div className="flex gap-2">
                     <Button
                         type="button"
                         size="sm"
                         onClick={handleUpload}
-                        disabled={processing}
+                        disabled={processing || !!fileError}
                         data-testid="logo-save-btn"
                     >
                         <Save className="mr-2 h-4 w-4" />
@@ -124,7 +155,10 @@ export function InstitutionLogoUpload({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => setPreview(null)}
+                        onClick={() => {
+                            setPreview(null);
+                            setFileError(null);
+                        }}
                         data-testid="logo-cancel-btn"
                     >
                         <X className="h-4 w-4" />
@@ -147,7 +181,7 @@ export function InstitutionLogoUpload({
             )}
 
             <p className="text-xs text-muted-foreground">
-                JPG, PNG, GIF o WebP. Máximo 2MB.
+                JPG, PNG, GIF o WebP. Máximo 10MB.
             </p>
         </div>
     );

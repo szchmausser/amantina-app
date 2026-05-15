@@ -7,21 +7,16 @@ import {
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-} from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as academicInfoIndex } from '@/routes/admin/academic-info';
 import type { NavItem, SharedData } from '@/types';
+import { cn } from '@/lib/utils';
 
 export function AppSidebar() {
     const { auth } = usePage<SharedData>().props;
+    const { state } = useSidebar();
+    const isCollapsed = state === 'collapsed';
 
     const mainNavItems: NavItem[] = [];
 
@@ -65,7 +60,7 @@ export function AppSidebar() {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
+                        <SidebarMenuButton size="lg" asChild className={cn(isCollapsed ? 'h-12' : 'h-auto py-4 px-0')}>
                             <Link
                                 href={
                                     auth.permissions?.includes(
