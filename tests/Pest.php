@@ -51,6 +51,10 @@ pest()->extend(TestCase::class)
 // asegurar que la base de datos se limpia completamente entre tests, evitando
 // problemas de datos duplicados o residuales.
 //
+// ROOT CAUSE FIX: TestCase::afterTruncatingDatabase() fuerza TRUNCATE CASCADE
+// después de cada truncamiento, limpiando tablas con FK que DatabaseTruncation
+// deja residuales. Cada test es verdaderamente agnóstico e independiente.
+//
 pest()->extend(TestCase::class)
     ->use(DatabaseTruncation::class)
     ->use(Browsable::class)
