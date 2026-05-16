@@ -23,8 +23,8 @@ test('createGradeWithDefinition creates a grade with a grade definition', functi
 });
 
 test('createGradeWithDefinition reuses existing grade definitions', function () {
-    $academicYear1 = AcademicYear::factory()->create();
-    $academicYear2 = AcademicYear::factory()->create();
+    $academicYear1 = AcademicYear::factory()->create(['name' => '2024-2025']);
+    $academicYear2 = AcademicYear::factory()->create(['name' => '2025-2026']);
 
     // Create first grade with definition in first academic year
     $grade1 = $this->createGradeWithDefinition($academicYear1, '1er Año', 1);

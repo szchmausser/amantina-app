@@ -1,1 +1,30 @@
-{}
+{
+	"subagents": {
+		"agentOverrides": {
+			"context-builder": {
+				"model": "opencode/big-pickle"
+			},
+			"delegate": {
+				"model": "opencode/big-pickle"
+			},
+			"oracle": {
+				"model": "opencode/big-pickle"
+			},
+			"planner": {
+				"model": "opencode/big-pickle"
+			},
+			"researcher": {
+				"model": "opencode/big-pickle"
+			},
+			"reviewer": {
+				"model": "opencode/big-pickle"
+			},
+			"scout": {
+				"model": "opencode/big-pickle"
+			},
+			"worker": {
+				"model": "opencode/big-pickle"
+			}
+		}
+	}
+}

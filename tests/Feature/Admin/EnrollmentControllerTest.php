@@ -8,6 +8,7 @@ use App\Models\Grade;
 use App\Models\Section;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -30,6 +31,7 @@ class EnrollmentControllerTest extends TestCase
     {
         parent::setUp();
 
+        $this->withoutMiddleware(ValidateCsrfToken::class);
         $this->seed(RoleAndPermissionSeeder::class);
 
         $this->admin = User::factory()->create();

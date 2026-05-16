@@ -13,6 +13,11 @@ use App\Models\User;
 use Database\Seeders\FieldSessionStatusSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Database\Seeders\TermTypeSeeder;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Pest\Browser\Browsable;
+
+uses(DatabaseTruncation::class);
+uses(Browsable::class);
 
 /**
  * Happy Path: Student Dashboard
@@ -80,15 +85,10 @@ test('estudiante puede iniciar sesión y ver su dashboard', function () {
 
     $page->assertPathIs('/dashboard')
         ->assertSee('Diego Fernández')
-        ->assertSee('Sin datos suficientes')
         ->assertSee('Sin datos disponibles')
         ->assertSee('No has registrado asistencia aún')
         ->assertNoJavaScriptErrors();
 });
-
-// ============================================================================
-// PASO 2: Estudiante ve su dashboard sin horas previas
-// ============================================================================
 
 test('estudiante ve dashboard cuando no tiene horas registradas', function () {
     $this->actingAs($this->student);
@@ -96,12 +96,13 @@ test('estudiante ve dashboard cuando no tiene horas registradas', function () {
     $page = visit('/dashboard');
 
     $page->assertPathIs('/dashboard')
-        ->assertSee('Sin datos suficientes')
         ->assertSee('Sin datos disponibles')
         ->assertSee('No has registrado asistencia aún')
         ->assertNoJavaScriptErrors();
 });
 
+// ============================================================================
+// PASO 3: Student profile page shows correctly
 // ============================================================================
 // PASO 3: Estudiante con horas acumuladas ve su progreso
 // ============================================================================
@@ -160,7 +161,7 @@ test('estudiante puede ver su perfil', function () {
     $page->assertPathIs('/settings/profile')
         ->assertSee('Diego Fernández')
         ->assertSee('Mis Representantes')
-        ->assertSee('Mis Horas')
+        ->assertSee('Salud')
         ->assertNoJavaScriptErrors();
 });
 

@@ -10,6 +10,24 @@ use Laravel\Fortify\Features;
 abstract class TestCase extends BaseTestCase
 {
     /**
+     * Indicates whether the default seeder should run before each test.
+     *
+     * @var bool
+     */
+    protected $seed = false;
+
+    /**
+     * Force RefreshDatabase to use migrate:fresh instead of transactions.
+     *
+     * PostgreSQL + RefreshDatabase + 857 tests = transaction nesting issues.
+     * This forces a full migrate:fresh between tests, which is slower but
+     * guarantees isolation.
+     *
+     * @var bool
+     */
+    protected $shouldUseDatabaseTransactions = false;
+
+    /**
      * Force truncate ALL application tables with CASCADE.
      *
      * This is the core cleanup mechanism that DatabaseTruncation should do

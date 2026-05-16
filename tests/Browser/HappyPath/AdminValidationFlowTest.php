@@ -8,10 +8,11 @@ use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Database\Seeders\SectionDefinitionSeeder;
 use Database\Seeders\TermTypeSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Pest\Browser\Browsable;
 
-uses(RefreshDatabase::class, Browsable::class);
+uses(DatabaseTruncation::class);
+uses(Browsable::class);
 
 /**
  * FASE 5: TESTS DE VALIDACIÓN FRONTEND

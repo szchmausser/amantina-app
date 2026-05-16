@@ -13,6 +13,11 @@ use App\Models\User;
 use Database\Seeders\FieldSessionStatusSeeder;
 use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Pest\Browser\Browsable;
+
+uses(DatabaseTruncation::class);
+uses(Browsable::class);
 use Database\Seeders\SectionDefinitionSeeder;
 use Database\Seeders\TermTypeSeeder;
 
@@ -599,7 +604,7 @@ test('admin puede configurar toda la estructura académica en secuencia', functi
     $academicYear = AcademicYear::where('name', $academicYearName)->first();
     expect($academicYear)->not->toBeNull();
 
-    // 2. Create school terms via factory (browser tests can't use $this->post())
+    // 2. Create school terms via factory (these are preconditions, not the behavior under test)
     $termType1 = TermType::where('name', 'Lapso 1')->first();
     $termType2 = TermType::where('name', 'Lapso 2')->first();
     $termType3 = TermType::where('name', 'Lapso 3')->first();

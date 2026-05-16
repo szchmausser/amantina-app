@@ -51,7 +51,7 @@ test('la pagina de configuracion muestra la seccion de subida de logo', function
 
     $page->assertSee('Datos Institucionales')
         ->assertSee('Logo de la Institución')
-        ->assertSee('JPG, PNG, GIF o WebP. Máximo 2MB.')
+        ->assertSee('JPG, PNG, GIF o WebP. Máximo 10MB.')
         ->assertNoJavaScriptErrors();
 });
 

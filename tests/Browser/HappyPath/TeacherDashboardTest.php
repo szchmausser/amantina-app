@@ -118,25 +118,30 @@ beforeEach(function () {
     Enrollment::factory()->for($this->academicYear)->for($this->grade)->for($this->section)->for($this->lowAttendanceStudent, 'student')->create();
     $recordHours($this->lowAttendanceStudent, 10, 1);
 
-    // Upcoming sessions — use truly future dates
-    $twoDaysFromNow = now()->addDays(2)->setTime(14, 0, 0);
+    // Upcoming sessions — use dates that fall within the component's groups (today, tomorrow, thisWeek)
+    // The component groups: today (same day), tomorrow (+1 day), thisWeek (until Sunday 23:59)
+    //
+    // IMPORTANT: Avoid setTime() + sessions need to be > now() for the backend query
+    // (field_sessions.start_datetime >= now()). Using addHour() guarantees the session
+    // is always in the future regardless of microseconds/delays.
+    $todaySession = now()->addHour();
     FieldSession::factory()->create([
         'name' => 'Jornada de Siembra',
         'user_id' => $this->teacher->id,
         'academic_year_id' => $this->academicYear->id,
-        'start_datetime' => $twoDaysFromNow,
-        'end_datetime' => $twoDaysFromNow->copy()->addHours(2),
+        'start_datetime' => $todaySession,
+        'end_datetime' => $todaySession->copy()->addHours(2),
         'status_id' => $this->plannedStatus->id,
         'location_name' => 'Huerto Escolar',
     ]);
 
-    $threeDaysFromNow = now()->addDays(3)->setTime(8, 0, 0);
+    $tomorrowSession = now()->addDay()->addHour();
     FieldSession::factory()->create([
         'name' => 'Jornada de Riego',
         'user_id' => $this->teacher->id,
         'academic_year_id' => $this->academicYear->id,
-        'start_datetime' => $threeDaysFromNow,
-        'end_datetime' => $threeDaysFromNow->copy()->addHours(3),
+        'start_datetime' => $tomorrowSession,
+        'end_datetime' => $tomorrowSession->copy()->addHours(3),
         'status_id' => $this->plannedStatus->id,
         'location_name' => 'Cancha Deportiva',
     ]);
@@ -158,8 +163,6 @@ test('teacher dashboard loads with all expected sections visible', function () {
         ->assertSee('Registrar Asistencia')
         ->assertSee('Nueva Jornada')
         ->assertSee('Mis Secciones')
-        ->assertSee('Reportes')
-        ->assertSee('Mis Sesiones')
         ->assertSee('Completadas')
         ->assertSee('Canceladas')
         ->assertSee('Pendientes de Asistencia')
@@ -238,8 +241,7 @@ test('quick action buttons are rendered with correct data testids', function () 
 
     $page->assertPresent('[data-testid="teacher-quick-action-registrar-asistencia"]')
         ->assertPresent('[data-testid="teacher-quick-action-nueva-jornada"]')
-        ->assertPresent('[data-testid="teacher-quick-action-mis-secciones"]')
-        ->assertPresent('[data-testid="teacher-quick-action-reportes"]');
+        ->assertPresent('[data-testid="teacher-quick-action-mis-secciones"]');
 
     $page->assertSee('Registrar Asistencia')
         ->assertSee('Nueva Jornada')

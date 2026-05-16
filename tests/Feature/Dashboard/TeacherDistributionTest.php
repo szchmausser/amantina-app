@@ -44,7 +44,10 @@ class TeacherDistributionTest extends TestCase
             'name' => '2026',
         ]);
 
-        $this->grade = Grade::factory()->create(['name' => '5to Año']);
+        $this->grade = Grade::factory()->create([
+            'name' => '5to Año',
+            'academic_year_id' => $this->activeYear->id,
+        ]);
 
         $this->sectionA = Section::factory()->create([
             'name' => 'Sección A',

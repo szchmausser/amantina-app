@@ -3,6 +3,11 @@
 use App\Models\SectionDefinition;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Pest\Browser\Browsable;
+
+uses(DatabaseTruncation::class);
+uses(Browsable::class);
 
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);

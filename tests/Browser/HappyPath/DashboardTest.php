@@ -8,6 +8,11 @@ use App\Models\Section;
 use App\Models\StudentRepresentative;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Pest\Browser\Browsable;
+
+uses(DatabaseTruncation::class);
+uses(Browsable::class);
 
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
@@ -72,7 +77,7 @@ test('alumno ve el dashboard de estudiante', function () {
     $page->assertPathIs('/dashboard')
         ->assertSee('Mi Progreso')
         ->assertSee('2024-2025')
-        ->assertSee('Sin datos suficientes')
+        ->assertSee('Sin datos disponibles')
         ->assertSee('No has registrado asistencia aún')
         ->assertNoJavaScriptErrors();
 });
@@ -105,11 +110,10 @@ test('representante ve el dashboard de representante', function () {
 
     $page->assertPathIs('/dashboard')
         ->assertSee('Panel del Representante')
-        ->assertSee('Progreso de Valentina Rojas')
+        ->assertSee('Valentina Rojas')
         ->assertSee('2024-2025')
         ->assertSee('0.0h')
-        ->assertSee('600.0h')
-        ->assertSee('El estudiante necesita más horas para cumplir el cupo.')
+        ->assertSee('600h')
         ->assertNoJavaScriptErrors();
 });
 

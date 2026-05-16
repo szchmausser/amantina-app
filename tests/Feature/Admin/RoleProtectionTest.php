@@ -16,6 +16,7 @@ class RoleProtectionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
         $this->seed(RoleAndPermissionSeeder::class);
     }
 

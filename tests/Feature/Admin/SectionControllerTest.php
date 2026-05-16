@@ -87,8 +87,8 @@ class SectionControllerTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('admin');
 
-        $year1 = AcademicYear::factory()->create();
-        $year2 = AcademicYear::factory()->create();
+        $year1 = AcademicYear::factory()->create(['name' => '2024-2025']);
+        $year2 = AcademicYear::factory()->create(['name' => '2025-2026']);
         $definition = SectionDefinition::first();
         $gradeFromYear1 = Grade::factory()->create(['academic_year_id' => $year1->id]);
 

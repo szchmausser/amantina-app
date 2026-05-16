@@ -9,6 +9,11 @@ use App\Models\User;
 use Database\Seeders\FieldSessionStatusSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Database\Seeders\TermTypeSeeder;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Pest\Browser\Browsable;
+
+uses(DatabaseTruncation::class);
+uses(Browsable::class);
 
 /**
  * Happy Path: Admin Navigation Flow

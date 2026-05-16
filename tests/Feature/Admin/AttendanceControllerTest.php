@@ -58,7 +58,7 @@ class AttendanceControllerTest extends TestCase
         $this->otherProfesor = User::factory()->create();
         $this->otherProfesor->assignRole('profesor');
 
-        $this->grade = Grade::factory()->create(['name' => '1er Año', 'order' => 1]);
+        $this->grade = Grade::factory()->for($this->academicYear)->create(['name' => '1er Año', 'order' => 1]);
         $this->section = Section::factory()->create([
             'grade_id' => $this->grade->id,
             'name' => 'Sección A',

@@ -2,10 +2,11 @@
 
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Pest\Browser\Browsable;
 
-uses(RefreshDatabase::class, Browsable::class);
+uses(DatabaseTruncation::class);
+uses(Browsable::class);
 
 /**
  * SECURITY TESTS: User Management Access Control

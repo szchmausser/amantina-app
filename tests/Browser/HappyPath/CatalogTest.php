@@ -237,8 +237,10 @@ test('usuario CON permiso roles.view SÍ puede ver detalle de rol (admin)', func
 
     $page = visit("/admin/roles/{$role->id}");
 
-    $page->assertPathIs("/admin/roles/{$role->id}/users")
+    $page->assertPathIs("/admin/roles/{$role->id}")
         ->assertSee('alumno')
+        ->assertSee('Permisos de este Rol')
+        ->assertSee('Usuarios con este rol')
         ->assertNoJavaScriptErrors();
 });
 
