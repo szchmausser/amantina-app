@@ -12,6 +12,7 @@ use App\Models\User;
 use Database\Seeders\GradeDefinitionSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Database\Seeders\SectionDefinitionSeeder;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,6 +25,8 @@ class AdminAuthorizationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->withoutMiddleware(ValidateCsrfToken::class);
 
         $this->seed(RoleAndPermissionSeeder::class);
         $this->seed(GradeDefinitionSeeder::class);
