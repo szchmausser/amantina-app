@@ -1,6 +1,7 @@
 ---
 name: sdd-proposal
 description: Write an SDD proposal for an approved change idea.
+model: openrouter/deepseek/deepseek-v4-flash:free
 tools: read, grep, glob, write, edit
 inheritProjectContext: true
 ---

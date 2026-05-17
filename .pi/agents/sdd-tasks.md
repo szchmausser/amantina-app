@@ -1,6 +1,7 @@
 ---
 name: sdd-tasks
 description: Break SDD design/specs into implementation tasks with review workload forecast.
+model: openrouter/deepseek/deepseek-v4-flash:free
 tools: read, grep, glob, write, edit
 inheritProjectContext: true
 ---

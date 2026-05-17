@@ -1,6 +1,7 @@
 ---
 name: sdd-onboard
 description: Guide a user through a complete SDD cycle on a small real project change.
+model: openrouter/deepseek/deepseek-v4-flash:free
 tools: read, grep, glob, write, edit, bash
 inheritProjectContext: true
 ---

@@ -1,7 +1,7 @@
 ---
 name: wayfinder-development
 description: "Activates whenever referencing backend routes in frontend components. Use when importing from @/actions or @/routes, calling Laravel routes from TypeScript, or working with Wayfinder route functions."
-model: opencode/big-pickle
+model: openrouter/deepseek/deepseek-v4-flash:free
 license: MIT
 metadata:
   author: laravel

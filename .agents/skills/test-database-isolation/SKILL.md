@@ -1,6 +1,7 @@
 ---
 name: test-database-isolation
 description: Database isolation patterns for Laravel + Pest tests. Activates when writing, debugging, or fixing tests that fail in suite but pass in isolation, or when dealing with DatabaseTruncation, RefreshDatabase, FK constraints, or residual data contamination.
+model: openrouter/deepseek/deepseek-v4-flash:free
 ---
 
 # Test Database Isolation

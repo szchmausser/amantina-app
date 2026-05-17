@@ -1,6 +1,7 @@
 ---
 name: sdd-init
 description: Initialize project SDD context, testing capabilities, and skill registry.
+model: openrouter/deepseek/deepseek-v4-flash:free
 tools: read, grep, glob, write, bash
 inheritProjectContext: true
 ---

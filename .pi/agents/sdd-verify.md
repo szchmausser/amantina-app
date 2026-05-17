@@ -1,6 +1,7 @@
 ---
 name: sdd-verify
 description: Verify implementation against SDD specs, tasks, strict TDD evidence, and review workload boundaries.
+model: openrouter/deepseek/deepseek-v4-flash:free
 tools: read, grep, glob, bash, write, edit
 inheritProjectContext: true
 ---

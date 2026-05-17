@@ -1,6 +1,7 @@
 ---
 name: sdd-explore
 description: Explore an SDD change idea before proposal.
+model: openrouter/deepseek/deepseek-v4-flash:free
 tools: read, grep, glob, webfetch
 inheritProjectContext: true
 ---

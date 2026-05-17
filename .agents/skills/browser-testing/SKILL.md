@@ -1,6 +1,7 @@
 ---
 name: browser-testing
 description: >
+model: openrouter/deepseek/deepseek-v4-flash:free
     Guía completa de browser tests con Pest + Playwright en proyectos Laravel + Inertia + React.
     Cubre dos contextos: (1) escribir nuevos tests desde cero con criterio, estructura correcta
     y cobertura estratégica; (2) reparar tests existentes rotos después de un rediseño o

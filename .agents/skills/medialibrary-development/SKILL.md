@@ -1,6 +1,7 @@
 ---
 name: medialibrary-development
 description: Build and work with spatie/laravel-medialibrary features including associating files with Eloquent models, defining media collections and conversions, generating responsive images, and retrieving media URLs and paths.
+model: openrouter/deepseek/deepseek-v4-flash:free
 license: MIT
 metadata:
   author: Spatie

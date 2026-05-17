@@ -1,6 +1,7 @@
 ---
 name: sdd-spec
 description: Write SDD delta specs with requirements and scenarios.
+model: openrouter/deepseek/deepseek-v4-flash:free
 tools: read, grep, glob, write, edit
 inheritProjectContext: true
 ---

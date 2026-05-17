@@ -1,6 +1,7 @@
 ---
 name: laravel-permission-development
 description: Build and work with Spatie Laravel Permission features, including roles, permissions, middleware, policies, teams, and Blade directives.
+model: openrouter/deepseek/deepseek-v4-flash:free
 ---
 
 # Laravel Permission Development
