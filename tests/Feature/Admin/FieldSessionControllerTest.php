@@ -301,4 +301,17 @@ class FieldSessionControllerTest extends TestCase
             'academic_year_id' => $this->academicYear->id,
         ]);
     }
+
+    public function test_index_shows_null_active_year_when_no_academic_year_is_active(): void
+    {
+        AcademicYear::query()->update(['is_active' => false]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.field-sessions.index'));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('admin/field-sessions/index')
+            ->where('activeYear', null)
+        );
+    }
 }

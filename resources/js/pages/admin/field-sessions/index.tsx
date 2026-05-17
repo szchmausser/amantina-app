@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,10 @@ interface Props {
     fieldSessions: PaginatedSessions;
     statuses: Status[];
     selectedStatusId: number | null;
+    activeYear: {
+        id: number;
+        name: string;
+    } | null;
 }
 
 const statusColors: Record<string, string> = {
@@ -84,11 +88,32 @@ export default function FieldSessionsIndex({
     fieldSessions,
     statuses,
     selectedStatusId,
+    activeYear,
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Jornadas de Campo', href: '#' },
     ];
+
+    if (!activeYear) {
+        return (
+            <AppLayout breadcrumbs={breadcrumbs}>
+                <Head title="Jornadas de Campo" />
+                <div className="flex h-[450px] flex-col items-center justify-center space-y-4 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-800">
+                    <Calendar className="h-12 w-12 text-neutral-400 dark:text-neutral-500" />
+                    <div className="text-center">
+                        <h3 className="text-lg font-semibold">
+                            No hay Año Escolar activo
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                            Debe configurar un año escolar como activo para
+                            visualizar la estructura académica.
+                        </p>
+                    </div>
+                </div>
+            </AppLayout>
+        );
+    }
 
     const [perPage, setPerPage] = useState(fieldSessions.per_page || 10);
     const isFirstPerPageRender = useRef(true);

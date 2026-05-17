@@ -44,10 +44,16 @@ class FieldSessionController extends Controller
             $query->where('status_id', $statusId);
         }
 
+        $activeYear = AcademicYear::where('is_active', true)->first();
+
         return Inertia::render('admin/field-sessions/index', [
             'fieldSessions' => $query->paginate($perPage)->withQueryString(),
             'statuses' => FieldSessionStatus::orderBy('name')->get(['id', 'name', 'description']),
             'selectedStatusId' => $statusId ? (int) $statusId : null,
+            'activeYear' => $activeYear ? [
+                'id' => $activeYear->id,
+                'name' => $activeYear->name,
+            ] : null,
         ]);
     }
 
