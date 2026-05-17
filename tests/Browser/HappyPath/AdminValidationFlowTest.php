@@ -58,7 +58,6 @@ beforeEach(function () {
 
 it('formulario de año escolar muestra error cuando campos requeridos están vacíos', function () {
     $page = visit('/admin/academic-years/create');
-    $page->wait(2);
 
     $page->assertSee('Nuevo Año Escolar');
 
@@ -67,7 +66,6 @@ it('formulario de año escolar muestra error cuando campos requeridos están vac
 
     // Intentar submit sin llenar campos
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que el mensaje de error aparece en pantalla
     $page->assertSee('The name field is required.');
@@ -81,7 +79,6 @@ it('formulario de lapso muestra error cuando campos requeridos están vacíos', 
     $academicYear = AcademicYear::factory()->create();
 
     $page = visit('/admin/school-terms/create');
-    $page->wait(2);
 
     $page->assertSee('Nuevo Lapso Académico');
 
@@ -89,16 +86,14 @@ it('formulario de lapso muestra error cuando campos requeridos están vacíos', 
     // NOTA: term_type_id tiene un valor por defecto en el formulario (primer tipo),
     // por lo que los campos requeridos que faltan son start_date y end_date
     $page->click('[data-test="academic-year-select-trigger"]');
-    $page->wait(1);
+
     $page->click('[role="option"]:has-text("'.$academicYear->name.'")');
-    $page->wait(1);
 
     // Deshabilitar validación HTML5 para probar la validación del servidor
     $page->script('document.querySelector("form").noValidate = true');
 
     // Intentar submit sin llenar fechas
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que el mensaje de error aparece en pantalla
     $page->assertSee('The start date field is required.');
@@ -111,22 +106,19 @@ it('formulario de grado muestra error cuando nombre está vacío', function () {
     $academicYear = AcademicYear::factory()->create();
 
     $page = visit('/admin/grades/create');
-    $page->wait(2);
 
     $page->assertSee('Nuevo Grado');
 
     // Seleccionar año escolar pero NO seleccionar definición de grado
     $page->click('[data-test="academic-year-select-trigger"]');
-    $page->wait(1);
+
     $page->click('[role="option"]:has-text("'.$academicYear->name.'")');
-    $page->wait(1);
 
     // Llenar orden pero NO definición de grado
     $page->type('[data-test="grade-order-input"]', '1');
 
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que el mensaje de error aparece en pantalla
     $page->assertSee('The grade definition id field is required.');
@@ -140,24 +132,20 @@ it('formulario de sección muestra error cuando nombre está vacío', function (
     $grade = Grade::factory()->create(['academic_year_id' => $academicYear->id]);
 
     $page = visit('/admin/sections/create');
-    $page->wait(2);
 
     $page->assertSee('Nueva Sección');
 
     // Seleccionar año y grado pero NO seleccionar definición de sección
     $page->click('[data-test="academic-year-select-trigger"]');
-    $page->wait(1);
+
     $page->click('[role="option"]:has-text("'.$academicYear->name.'")');
-    $page->wait(1);
 
     $page->click('[data-test="grade-select-trigger"]');
-    $page->wait(1);
+
     $page->click('[role="option"]:has-text("'.$grade->name.'")');
-    $page->wait(1);
 
     // Intentar submit sin definición de sección
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que el mensaje de error aparece en pantalla
     $page->assertSee('The section definition id field is required.');
@@ -168,13 +156,11 @@ it('formulario de sección muestra error cuando nombre está vacío', function (
 
 it('formulario de usuario muestra error cuando campos requeridos están vacíos', function () {
     $page = visit('/admin/users/create');
-    $page->wait(2);
 
     $page->assertSee('Nuevo Usuario');
 
     // Intentar submit sin llenar nada
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que los mensajes de error aparecen en pantalla
     $page->assertSee('The name field is required.');
@@ -195,19 +181,16 @@ it('formulario de lapso valida que fecha de inicio sea anterior a fecha de fin',
     ]);
 
     $page = visit('/admin/school-terms/create');
-    $page->wait(2);
 
     // Seleccionar año escolar
     $page->click('[data-test="academic-year-select-trigger"]');
-    $page->wait(1);
+
     $page->click('[role="option"]:has-text("'.$academicYear->name.'")');
-    $page->wait(1);
 
     // Seleccionar tipo de lapso
     $page->click('[data-test="term-type-select-trigger"]');
-    $page->wait(1);
+
     $page->click('[role="option"]:has-text("Lapso 1")');
-    $page->wait(1);
 
     // Ingresar fecha de inicio POSTERIOR a fecha de fin (inválido)
     $page->type('[data-test="start-date-input"]', '2025-12-31');
@@ -218,7 +201,6 @@ it('formulario de lapso valida que fecha de inicio sea anterior a fecha de fin',
 
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que el mensaje de error de validación aparece en pantalla
     $page->assertSee('The end date field must be a date after start date.');
@@ -229,7 +211,6 @@ it('formulario de lapso valida que fecha de inicio sea anterior a fecha de fin',
 
 it('formulario de año escolar valida que fecha de inicio sea anterior a fecha de fin', function () {
     $page = visit('/admin/academic-years/create');
-    $page->wait(2);
 
     // Llenar nombre
     $page->type('#name', '2025-2026');
@@ -246,7 +227,6 @@ it('formulario de año escolar valida que fecha de inicio sea anterior a fecha d
 
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que el mensaje de error de validación aparece en pantalla
     $page->assertSee('The end date field must be a date after start date.');
@@ -261,7 +241,6 @@ it('formulario de año escolar valida que fecha de inicio sea anterior a fecha d
 
 it('formulario de usuario valida formato de email', function () {
     $page = visit('/admin/users/create');
-    $page->wait(2);
 
     // Llenar todos los campos EXCEPTO email válido
     $page->type('[data-test="cedula-input"]', 'V-12345678');
@@ -272,14 +251,12 @@ it('formulario de usuario valida formato de email', function () {
 
     // Seleccionar rol
     $page->click('[data-test="role-checkbox-alumno"]');
-    $page->wait(0.5);
 
     // Deshabilitar validación HTML5 (type="email" bloquea envíos con email inválido)
     $page->script('document.querySelector("form").noValidate = true');
 
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que el mensaje de error de email aparece en pantalla
     $page->assertSee('The email field must be a valid email address.');
@@ -290,7 +267,6 @@ it('formulario de usuario valida formato de email', function () {
 
 it('formulario de usuario valida que contraseñas coincidan', function () {
     $page = visit('/admin/users/create');
-    $page->wait(2);
 
     // Llenar todos los campos con contraseñas DIFERENTES
     $page->type('[data-test="cedula-input"]', 'V-12345678');
@@ -301,11 +277,9 @@ it('formulario de usuario valida que contraseñas coincidan', function () {
 
     // Seleccionar rol
     $page->click('[data-test="role-checkbox-alumno"]');
-    $page->wait(0.5);
 
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que el mensaje de error de confirmación aparece en pantalla
     $page->assertSee('The password field confirmation does not match.');
@@ -316,7 +290,6 @@ it('formulario de usuario valida que contraseñas coincidan', function () {
 
 it('formulario de usuario valida longitud mínima de contraseña', function () {
     $page = visit('/admin/users/create');
-    $page->wait(2);
 
     // Llenar todos los campos con contraseña MUY CORTA
     $page->type('[data-test="cedula-input"]', 'V-12345678');
@@ -327,14 +300,12 @@ it('formulario de usuario valida longitud mínima de contraseña', function () {
 
     // Seleccionar rol
     $page->click('[data-test="role-checkbox-alumno"]');
-    $page->wait(0.5);
 
     // Deshabilitar validación HTML5 (minLength en input password puede bloquear)
     $page->script('document.querySelector("form").noValidate = true');
 
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que el mensaje de error de longitud mínima aparece en pantalla
     $page->assertSee('The password field must be at least 8 characters.');
@@ -351,19 +322,16 @@ it('formulario de grado valida que orden sea número positivo', function () {
     $academicYear = AcademicYear::factory()->create();
 
     $page = visit('/admin/grades/create');
-    $page->wait(2);
 
     // Seleccionar año escolar
     $page->click('[data-test="academic-year-select-trigger"]');
-    $page->wait(1);
+
     $page->click('[role="option"]:has-text("'.$academicYear->name.'")');
-    $page->wait(1);
 
     // Select grade definition (dropdown instead of text input)
     $page->click('[data-test="grade-definition-select-trigger"]');
-    $page->wait(0.5);
+
     $page->click('[role="option"]:has-text("1er Año")');
-    $page->wait(0.5);
 
     // Ingresar orden inválido (-1 no cumple min:1)
     $page->type('[data-test="grade-order-input"]', '-1');
@@ -373,7 +341,6 @@ it('formulario de grado valida que orden sea número positivo', function () {
 
     // Intentar submit
     $page->click('button[type="submit"]');
-    $page->wait(2);
 
     // PRIMARIO: verificar que el mensaje de error aparece en pantalla
     $page->assertSee('The order field must be at least 1.');

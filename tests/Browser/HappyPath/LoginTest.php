@@ -29,7 +29,7 @@ test('admin puede iniciar sesión y llegar al dashboard', function () {
         ->type('[name="password"]', 'password')
         ->select('[name="context"]', 'admin')
         ->click('[data-testid="login-button"]')
-        ->wait(3)
+
         ->assertPathIs('/dashboard')
         ->assertSee('Panel de Administración')
         ->assertNoJavaScriptErrors();
@@ -40,7 +40,7 @@ test('credenciales incorrectas muestran error de validación', function () {
         ->type('[name="email"]', 'noexiste@test.com')
         ->type('[name="password"]', 'wrongpassword')
         ->click('[data-testid="login-button"]')
-        ->wait(2)
+
         ->assertPathIs('/login')
         ->assertSee('do not match');
 });
@@ -59,7 +59,7 @@ test('usuario sin verificar email puede iniciar sesión', function () {
         ->type('[name="password"]', 'password')
         ->select('[name="context"]', 'alumno')
         ->click('[data-testid="login-button"]')
-        ->wait(3)
+
         ->assertPathIs('/dashboard');
 })->skip('Requiere configurar middleware EnsureEmailIsVerified en rutas protegidas');
 
@@ -75,12 +75,11 @@ test('usuario autenticado es redirigido al dashboard desde login', function () {
         ->type('[name="email"]', 'admin@test.com')
         ->type('[name="password"]', 'password')
         ->select('[name="context"]', 'admin')
-        ->click('[data-testid="login-button"]')
-        ->wait(3);
+        ->click('[data-testid="login-button"]');
 
     // Intentar visitar login estando autenticado
     $this->visit('/login')
-        ->wait(2)
+
         ->assertPathIs('/dashboard');
 });
 
@@ -96,19 +95,18 @@ test('usuario puede cerrar sesión', function () {
         ->type('[name="email"]', 'admin@test.com')
         ->type('[name="password"]', 'password')
         ->select('[name="context"]', 'admin')
-        ->click('[data-testid="login-button"]')
-        ->wait(3);
+        ->click('[data-testid="login-button"]');
 
     // Logout real por UI: abrir menú de usuario en sidebar y click en logout
     $this->visit('/dashboard')
         ->click('[data-test="sidebar-menu-button"]')
-        ->wait(1)
+
         ->click('[data-test="logout-button"]')
-        ->wait(2)
+
         ->assertPathIs('/');
 
     // Verificar que ya no tiene acceso al dashboard (redirige a login)
     $this->visit('/dashboard')
-        ->wait(2)
+
         ->assertPathIs('/login');
 });

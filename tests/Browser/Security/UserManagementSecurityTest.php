@@ -32,7 +32,6 @@ test('admin puede acceder al listado de usuarios', function () {
     $this->actingAs($admin);
 
     $page = visit('/admin/users');
-    $page->wait(2);
 
     $page->assertPathIs('/admin/users');
     $page->assertSee('Gestión de Usuarios');
@@ -45,7 +44,6 @@ test('admin puede acceder al formulario de creación', function () {
     $this->actingAs($admin);
 
     $page = visit('/admin/users/create');
-    $page->wait(2);
 
     $page->assertPathIs('/admin/users/create');
     $page->assertSee('Nuevo Usuario');
@@ -62,7 +60,6 @@ test('admin puede acceder al detalle de un usuario', function () {
     $this->actingAs($admin);
 
     $page = visit("/admin/users/{$user->id}");
-    $page->wait(2);
 
     $page->assertPathIs("/admin/users/{$user->id}");
     $page->assertSee('Juan Test');
@@ -78,7 +75,6 @@ test('admin puede acceder al formulario de edición', function () {
     $this->actingAs($admin);
 
     $page = visit("/admin/users/{$user->id}/edit");
-    $page->wait(2);
 
     $page->assertPathIs("/admin/users/{$user->id}/edit");
     $page->assertSee('Editar Usuario');
@@ -96,7 +92,6 @@ test('profesor puede acceder al listado de usuarios', function () {
     $this->actingAs($profesor);
 
     $page = visit('/admin/users');
-    $page->wait(2);
 
     $page->assertPathIs('/admin/users');
     $page->assertSee('Gestión de Usuarios');
@@ -112,7 +107,6 @@ test('profesor puede ver detalle de un usuario', function () {
     $this->actingAs($profesor);
 
     $page = visit("/admin/users/{$user->id}");
-    $page->wait(2);
 
     $page->assertPathIs("/admin/users/{$user->id}");
     $page->assertSee('María Test');
@@ -129,7 +123,6 @@ test('profesor no puede acceder al formulario de creación de usuarios', functio
     $this->actingAs($profesor);
 
     $page = visit('/admin/users/create');
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee('Nuevo Usuario');
@@ -145,7 +138,6 @@ test('profesor no puede acceder al formulario de edición de otro usuario', func
     $this->actingAs($profesor);
 
     $page = visit("/admin/users/{$user->id}/edit");
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee('Editar Usuario');
@@ -162,7 +154,6 @@ test('alumno no puede acceder al listado de usuarios', function () {
     $this->actingAs($alumno);
 
     $page = visit('/admin/users');
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee('Gestión de Usuarios');
@@ -175,7 +166,6 @@ test('alumno no puede acceder al formulario de creación', function () {
     $this->actingAs($alumno);
 
     $page = visit('/admin/users/create');
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee('Nuevo Usuario');
@@ -191,7 +181,6 @@ test('alumno no puede acceder al detalle de un usuario', function () {
     $this->actingAs($alumno);
 
     $page = visit("/admin/users/{$user->id}");
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee($user->name);
@@ -207,7 +196,6 @@ test('alumno no puede acceder al formulario de edición', function () {
     $this->actingAs($alumno);
 
     $page = visit("/admin/users/{$user->id}/edit");
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee('Editar Usuario');
@@ -224,7 +212,6 @@ test('representante no puede acceder al listado de usuarios', function () {
     $this->actingAs($representante);
 
     $page = visit('/admin/users');
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee('Gestión de Usuarios');
@@ -237,7 +224,6 @@ test('representante no puede acceder al formulario de creación', function () {
     $this->actingAs($representante);
 
     $page = visit('/admin/users/create');
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee('Nuevo Usuario');
@@ -253,7 +239,6 @@ test('representante no puede acceder al detalle de un usuario', function () {
     $this->actingAs($representante);
 
     $page = visit("/admin/users/{$user->id}");
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee($user->name);
@@ -269,7 +254,6 @@ test('representante no puede acceder al formulario de edición', function () {
     $this->actingAs($representante);
 
     $page = visit("/admin/users/{$user->id}/edit");
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee('Editar Usuario');

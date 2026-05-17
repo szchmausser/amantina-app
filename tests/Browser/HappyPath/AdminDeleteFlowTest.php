@@ -62,19 +62,16 @@ test('admin puede eliminar un año escolar', function () {
 
     // Navegar a la página de listado
     $page = visit('/admin/academic-years');
-    $page->wait(2);
     $page->assertSee($academicYear->name);
 
     // Click en botón eliminar (abre el AlertDialog)
     $page->click('[data-testid="delete-btn"]');
-    $page->wait(1);
 
     // Verificar que el AlertDialog aparece
     $page->assertSee('¿Eliminar año escolar?');
 
     // Confirmar eliminación
     $page->click('[data-test="confirm-delete-button"]');
-    $page->wait(3);
 
     // Verificar que redirigió al listado
     expect($page->url())->toContain('/admin/academic-years');
@@ -107,21 +104,18 @@ test('admin puede eliminar un lapso académico', function () {
 
     // Navegar a la página de listado
     $page = visit('/admin/school-terms');
-    $page->wait(2);
 
     // Verificar que el lapso aparece (por el nombre del tipo de lapso)
     $page->assertSee('Lapso 1');
 
     // Click en botón eliminar (abre el AlertDialog)
     $page->click('[data-testid="delete-btn"]');
-    $page->wait(1);
 
     // Verificar que el AlertDialog aparece
     $page->assertSee('¿Eliminar lapso académico?');
 
     // Confirmar eliminación
     $page->click('[data-test="confirm-delete-button"]');
-    $page->wait(3);
 
     // Verificar que redirigió al listado
     expect($page->url())->toContain('/admin/school-terms');
@@ -143,7 +137,7 @@ test('admin puede eliminar un grado', function () {
         'is_active' => true,
     ]);
 
-    $grade = Grade::factory()->create([
+    Grade::factory()->create([
         'academic_year_id' => $academicYear->id,
         'name' => '1er Año',
         'order' => 1,
@@ -151,19 +145,16 @@ test('admin puede eliminar un grado', function () {
 
     // Navegar a la página de listado
     $page = visit('/admin/grades');
-    $page->wait(2);
     $page->assertSee('1er Año');
 
     // Click en botón eliminar (abre el AlertDialog)
     $page->click('[data-testid="delete-btn"]');
-    $page->wait(1);
 
     // Verificar que el AlertDialog aparece
     $page->assertSee('¿Eliminar grado?');
 
     // Confirmar eliminación
     $page->click('[data-test="confirm-delete-button"]');
-    $page->wait(3);
 
     // Verificar que redirigió al listado
     expect($page->url())->toContain('/admin/grades');
@@ -198,20 +189,17 @@ test('admin puede eliminar una sección', function () {
 
     // Navegar a la página de listado
     $page = visit('/admin/sections');
-    $page->wait(2);
     // Verificar que la sección aparece
     $page->assertSee('Sección A');
 
     // Click en botón eliminar (abre el AlertDialog)
     $page->click('[data-testid="delete-btn"]');
-    $page->wait(1);
 
     // Verificar que el AlertDialog aparece
     $page->assertSee('Confirmar Eliminación');
 
     // Confirmar eliminación
     $page->click('[data-test="confirm-delete-button"]');
-    $page->wait(3);
 
     // Verificar que redirigió al listado
     expect($page->url())->toContain('/admin/sections');
@@ -235,20 +223,17 @@ test('admin puede eliminar un usuario', function () {
 
     // Navegar a la página de listado
     $page = visit('/admin/users');
-    $page->wait(2);
     $page->assertSee('Juan Pérez');
 
     // Click en botón eliminar del usuario Juan Pérez (no del admin)
     // Usar un selector más específico: buscar la fila que contiene "Juan Pérez" y hacer click en su botón eliminar
     $page->click('tr:has-text("Juan Pérez") [data-testid="delete-btn"]');
-    $page->wait(1);
 
     // Verificar que el AlertDialog aparece
     $page->assertSee('Confirmar Eliminación');
 
     // Confirmar eliminación
     $page->click('[data-test="confirm-delete-button"]');
-    $page->wait(3);
 
     // Verificar que redirigió al listado
     expect($page->url())->toContain('/admin/users');
@@ -289,7 +274,7 @@ test('admin puede desinscribir un alumno de una sección', function () {
     $student->assignRole('alumno');
 
     // Crear inscripción
-    $enrollment = Enrollment::factory()->create([
+    Enrollment::factory()->create([
         'academic_year_id' => $academicYear->id,
         'grade_id' => $grade->id,
         'section_id' => $section->id,
@@ -298,7 +283,6 @@ test('admin puede desinscribir un alumno de una sección', function () {
 
     // Navegar a la página de inscripciones
     $page = visit('/admin/enrollments');
-    $page->wait(2);
 
     // Verificar que el alumno aparece en el listado
     $page->assertSee('Pedro Martínez');
@@ -307,14 +291,12 @@ test('admin puede desinscribir un alumno de una sección', function () {
     // Click en botón eliminar (papelera) del alumno
     // Usar selector específico para evitar conflictos
     $page->click('tr:has-text("Pedro Martínez") [data-testid="delete-btn"]');
-    $page->wait(1);
 
     // Verificar que el AlertDialog aparece
     $page->assertSee('Confirmar Eliminación');
 
     // Confirmar eliminación
     $page->click('[data-test="confirm-delete-button"]');
-    $page->wait(3);
 
     // Verificar que redirigió al listado
     expect($page->url())->toContain('/admin/enrollments');
@@ -355,7 +337,7 @@ test('admin puede desasignar un profesor de una sección', function () {
     $teacher->assignRole('profesor');
 
     // Crear asignación de profesor a sección
-    $assignment = TeacherAssignment::factory()->create([
+    TeacherAssignment::factory()->create([
         'academic_year_id' => $academicYear->id,
         'grade_id' => $grade->id,
         'user_id' => $teacher->id,
@@ -364,11 +346,9 @@ test('admin puede desasignar un profesor de una sección', function () {
 
     // Navegar a la página de asignaciones
     $page = visit('/admin/teacher-assignments/create');
-    $page->wait(2);
 
     // Seleccionar el profesor (click en card)
     $page->click('[data-test="teacher-item-'.$teacher->id.'"]');
-    $page->wait(2);
 
     // Verificar que la sección aparece (el profesor ya está asignado)
     $page->assertSee('Sección A');
@@ -377,7 +357,6 @@ test('admin puede desasignar un profesor de una sección', function () {
     // Desmarcar la sección (click en card para toggle)
     // Esto debe abrir un AlertDialog de confirmación
     $page->click('[data-test="section-checkbox-'.$section->id.'"]');
-    $page->wait(1);
 
     // Verificar que aparece el AlertDialog de confirmación de desasignación
     $page->assertSee('Desasignar Sección');
@@ -385,14 +364,12 @@ test('admin puede desasignar un profesor de una sección', function () {
 
     // Confirmar la desasignación (esto solo desmarca, no guarda todavía)
     $page->click('[data-test="confirm-unassign-button"]');
-    $page->wait(1);
 
     // Verificar que el badge "Ya está asignado" desapareció
     $page->assertDontSee('Ya está asignado a esta sección.');
 
     // Click en botón "Guardar Cambios" (debe estar habilitado porque hay cambios)
     $page->click('[data-test="save-assignments-button"]');
-    $page->wait(1);
 
     // Verificar que el AlertDialog de guardar aparece
     $page->assertSee('Confirmar Asignación');
@@ -400,7 +377,6 @@ test('admin puede desasignar un profesor de una sección', function () {
 
     // Confirmar guardado
     $page->click('[data-test="confirm-save-button"]');
-    $page->wait(3);
 
     // Verificar que redirigió correctamente
     expect($page->url())->toContain('/admin/teacher-assignments/create');

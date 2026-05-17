@@ -40,7 +40,6 @@ test('admin puede ver el listado de grados', function () {
     $grades = Grade::factory()->for($this->academicYear)->count(3)->create();
 
     $this->visit('/admin/grades')
-        ->wait(2)
         ->assertPathIs('/admin/grades')
         ->assertSee('Grados Académicos')
         ->assertSee('2024-2025')
@@ -54,7 +53,6 @@ test('admin puede ver grados del año activo', function () {
     Grade::factory()->for($this->academicYear)->create(['name' => '1er Año']);
 
     $this->visit('/admin/grades')
-        ->wait(2)
         ->assertSee('1er Año')
         ->assertNoJavaScriptErrors();
 });
@@ -66,7 +64,6 @@ test('admin puede ver el listado de secciones', function () {
     $sections = Section::factory()->for($this->academicYear)->for($grade)->count(2)->create();
 
     $this->visit('/admin/sections')
-        ->wait(2)
         ->assertPathIs('/admin/sections')
         ->assertSee('Secciones')
         ->assertSee('2024-2025')
@@ -80,7 +77,6 @@ test('admin puede ver el detalle de una sección', function () {
     $section = Section::factory()->for($this->academicYear)->for($grade)->create(['name' => 'A']);
 
     $this->visit("/admin/sections/{$section->id}")
-        ->wait(2)
         ->assertSee('A')
         ->assertSee('1er Año')
         ->assertNoJavaScriptErrors();
@@ -91,7 +87,7 @@ test('admin puede ver el detalle de una sección', function () {
 test('admin puede ver el listado de lapsos escolares', function () {
     $termType = TermType::firstOrCreate(['name' => 'Lapso 1'], ['order' => 1]);
 
-    $schoolTerm = SchoolTerm::factory()->create([
+    SchoolTerm::factory()->create([
         'academic_year_id' => $this->academicYear->id,
         'term_type_id' => $termType->id,
         'start_date' => '2024-09-01',
@@ -99,7 +95,6 @@ test('admin puede ver el listado de lapsos escolares', function () {
     ]);
 
     $this->visit('/admin/school-terms')
-        ->wait(2)
         ->assertPathIs('/admin/school-terms')
         ->assertSee('Lapsos Académicos')
         ->assertSee('2024-2025')
@@ -109,28 +104,10 @@ test('admin puede ver el listado de lapsos escolares', function () {
         ->assertNoJavaScriptErrors();
 });
 
-test('admin puede ver lapsos del año activo', function () {
-    $termType = TermType::firstOrCreate(['name' => 'Lapso 1'], ['order' => 1]);
-
-    SchoolTerm::factory()->create([
-        'academic_year_id' => $this->academicYear->id,
-        'term_type_id' => $termType->id,
-        'start_date' => '2024-09-01',
-        'end_date' => '2024-11-30',
-    ]);
-
-    $this->visit('/admin/school-terms')
-        ->wait(2)
-        ->assertPathIs('/admin/school-terms')
-        ->assertSee('Lapso 1')
-        ->assertNoJavaScriptErrors();
-});
-
 // ─── INFORMACIÓN ACADÉMICA ────────────────────────────────────────────────────
 
 test('admin puede ver la vista general de información académica', function () {
     $this->visit('/admin/academic-info')
-        ->wait(2)
         ->assertPathIs('/admin/academic-info')
         ->assertSee('2024-2025')
         ->assertSee('Fuera de Período')
@@ -151,16 +128,13 @@ test('usuario sin permiso no puede acceder a la gestión de estructura académic
 
     // No puede acceder a grados
     $this->visit('/admin/grades')
-        ->wait(2)
         ->assertSee('403');
 
     // No puede acceder a secciones
     $this->visit('/admin/sections')
-        ->wait(2)
         ->assertSee('403');
 
     // No puede acceder a lapsos
     $this->visit('/admin/school-terms')
-        ->wait(2)
         ->assertSee('403');
 });

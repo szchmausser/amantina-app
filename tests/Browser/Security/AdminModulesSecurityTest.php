@@ -89,7 +89,6 @@ dataset('forbidden_for_profesor', [
     ['/admin/enrollments', 'Inscripciones'],
 ]);
 
-
 // ============================================================================
 // Tests consolidados
 // ============================================================================
@@ -101,7 +100,6 @@ test('rol sin permisos no puede acceder a módulo administrativo', function ($ro
     $this->actingAs($user);
 
     $page = visit($route);
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee($titleText);
@@ -114,7 +112,6 @@ test('profesor no puede acceder a módulo solo-admin', function ($route, $titleT
     $this->actingAs($profesor);
 
     $page = visit($route);
-    $page->wait(2);
 
     $page->assertSee('403');
     $page->assertDontSee($titleText);
@@ -127,7 +124,6 @@ test('profesor puede acceder a módulo con permiso de vista', function ($route, 
     $this->actingAs($profesor);
 
     $page = visit($route);
-    $page->wait(2);
 
     $page->assertDontSee('403');
     $page->assertSee($titleText);

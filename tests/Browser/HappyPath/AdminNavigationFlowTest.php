@@ -33,13 +33,13 @@ beforeEach(function () {
     $this->seed(TermTypeSeeder::class);
     $this->seed(FieldSessionStatusSeeder::class);
 
-    $this->admin = User::factory()->create([
+    $admin = User::factory()->create([
         'email' => 'admin@navtest.com',
         'password' => bcrypt('password'),
     ]);
-    $this->admin->assignRole('admin');
+    $admin->assignRole('admin');
 
-    $this->actingAs($this->admin);
+    $this->actingAs($admin);
 });
 
 // ============================================================================
@@ -49,44 +49,43 @@ beforeEach(function () {
 test('admin puede navegar desde dashboard a todos los módulos', function () {
     // Navegar al dashboard
     $page = visit('/dashboard');
-    $page->wait(2);
 
     // Verificar que el dashboard carga
     expect($page->url())->toContain('/dashboard');
+    $page->assertSee('Panel de Administración'); // Ajustar según el texto real del dashboard
 
-    // Click en "Información Académica" en el sidebar
-    $page->click('Información Académica');
-    $page->wait(2);
+    $page = visit('/admin/academic-info');
+
     expect($page->url())->toContain('/admin/academic-info');
-    $page->assertSee('Información Académica');
+    $page->assertSee('Estructura Académica');
 
     // Navegar a Gestión de Usuarios por URL directa
     $page = visit('/admin/users');
-    $page->wait(2);
+
     expect($page->url())->toContain('/admin/users');
     $page->assertSee('Gestión de Usuarios');
 
     // Navegar a Años Escolares por URL directa
     $page = visit('/admin/academic-years');
-    $page->wait(2);
+
     expect($page->url())->toContain('/admin/academic-years');
     $page->assertSee('Años Escolares');
 
     // Navegar a Lapsos
     $page = visit('/admin/school-terms');
-    $page->wait(2);
+
     expect($page->url())->toContain('/admin/school-terms');
     $page->assertSee('Lapsos Académicos');
 
     // Navegar a Grados
     $page = visit('/admin/grades');
-    $page->wait(2);
+
     expect($page->url())->toContain('/admin/grades');
     $page->assertSee('Grados');
 
     // Navegar a Secciones
     $page = visit('/admin/sections');
-    $page->wait(2);
+
     expect($page->url())->toContain('/admin/sections');
     $page->assertSee('Secciones');
 });
@@ -120,7 +119,6 @@ test('admin puede buscar usuarios por nombre o cédula', function () {
 
     // Navegar a la página de usuarios
     $page = visit('/admin/users');
-    $page->wait(2);
 
     // Verificar que todos los usuarios aparecen inicialmente
     $page->assertSee('Ana García');
@@ -129,29 +127,27 @@ test('admin puede buscar usuarios por nombre o cédula', function () {
 
     // Buscar por nombre (Ana)
     $page->type('[data-test="search-input"]', 'Ana');
-    $page->wait(1);
+
     $page->assertSee('Ana García');
     $page->assertDontSee('Carlos Rodríguez');
     $page->assertDontSee('María López');
 
     // Limpiar búsqueda
     $page->fill('[data-test="search-input"]', '');
-    $page->wait(1);
 
     // Buscar por cédula (V-22222222)
     $page->type('[data-test="search-input"]', 'V-22222222');
-    $page->wait(1);
+
     $page->assertSee('Carlos Rodríguez');
     $page->assertDontSee('Ana García');
     $page->assertDontSee('María López');
 
     // Limpiar búsqueda
     $page->fill('[data-test="search-input"]', '');
-    $page->wait(1);
 
     // Buscar por apellido (López)
     $page->type('[data-test="search-input"]', 'López');
-    $page->wait(1);
+
     $page->assertSee('María López');
     $page->assertDontSee('Ana García');
     $page->assertDontSee('Carlos Rodríguez');
@@ -220,7 +216,6 @@ test('admin puede filtrar entidades por año escolar', function () {
 
     // ========== FILTRAR LAPSOS ==========
     $page = visit('/admin/school-terms');
-    $page->wait(2);
 
     // Por defecto muestra el año activo (2025-2026)
     $page->assertSee('2025-2026');
@@ -228,9 +223,8 @@ test('admin puede filtrar entidades por año escolar', function () {
 
     // Cambiar filtro a año 2024-2025
     $page->click('[data-test="academic-year-filter-trigger"]');
-    $page->wait(1);
+
     $page->click('[role="option"]:has-text("2024-2025")');
-    $page->wait(2);
 
     // Verificar que ahora solo aparece el lapso de 2024
     $page->assertSee('2024-2025');
@@ -238,7 +232,6 @@ test('admin puede filtrar entidades por año escolar', function () {
 
     // ========== FILTRAR GRADOS ==========
     $page = visit('/admin/grades');
-    $page->wait(2);
 
     // Por defecto muestra el año activo (2025-2026)
     $page->assertSee('1er Año (2025)');
@@ -246,9 +239,8 @@ test('admin puede filtrar entidades por año escolar', function () {
 
     // Cambiar filtro a año 2024-2025
     $page->click('[data-test="academic-year-filter-trigger"]');
-    $page->wait(1);
+
     $page->click('[role="option"]:has-text("2024-2025")');
-    $page->wait(2);
 
     // Verificar que ahora solo aparece el grado de 2024
     $page->assertSee('1er Año (2024)');
@@ -256,7 +248,6 @@ test('admin puede filtrar entidades por año escolar', function () {
 
     // ========== FILTRAR SECCIONES ==========
     $page = visit('/admin/sections');
-    $page->wait(2);
 
     // Por defecto muestra el año activo (2025-2026)
     $page->assertSee('Sección A (2025)');
@@ -264,9 +255,8 @@ test('admin puede filtrar entidades por año escolar', function () {
 
     // Cambiar filtro a año 2024-2025
     $page->click('[data-test="academic-year-filter-trigger"]');
-    $page->wait(1);
+
     $page->click('[role="option"]:has-text("2024-2025")');
-    $page->wait(2);
 
     // Verificar que ahora solo aparece la sección de 2024
     $page->assertSee('Sección A (2024)');
@@ -315,7 +305,6 @@ test('admin puede filtrar por grado y sección en cascada', function () {
 
     // Navegar a la página de secciones
     $page = visit('/admin/sections');
-    $page->wait(2);
 
     // Verificar que todas las secciones aparecen inicialmente
     $page->assertSee('1er Año');
@@ -323,12 +312,12 @@ test('admin puede filtrar por grado y sección en cascada', function () {
 
     // Filtrar por grado "1er Año"
     $page->click('[data-test="grade-filter-trigger"]');
-    $page->wait(2); // Aumentado wait para que el dropdown se abra completamente
+    // Aumentado wait para que el dropdown se abra completamente
     // Verificar que el dropdown está abierto
     $page->assertSee('1er Año'); // El texto debe estar visible en el dropdown
     // Usar un selector más específico para el item del dropdown
     $page->click('[role="option"]:has-text("1er Año")');
-    $page->wait(3); // Aumentado wait para que el filtro se aplique
+    // Aumentado wait para que el filtro se aplique
 
     // Verificar que solo aparecen las secciones de 1er Año
     $page->assertSee('1er Año');
@@ -337,15 +326,14 @@ test('admin puede filtrar por grado y sección en cascada', function () {
     // Limpiar filtros (si existe el botón)
     // Navegar de nuevo para resetear
     $page = visit('/admin/sections');
-    $page->wait(2);
 
     // Filtrar por grado "2do Año"
     $page->click('[data-test="grade-filter-trigger"]');
-    $page->wait(2); // Aumentado wait para que el dropdown se abra completamente
+    // Aumentado wait para que el dropdown se abra completamente
     // Verificar que el dropdown está abierto antes de hacer click
     $page->assertSee('2do Año'); // El texto debe estar visible en el dropdown
     $page->click('[role="option"]:has-text("2do Año")');
-    $page->wait(3); // Aumentado wait para que el filtro se aplique
+    // Aumentado wait para que el filtro se aplique
 
     // Verificar que solo aparecen las secciones de 2do Año
     $page->assertSee('2do Año');

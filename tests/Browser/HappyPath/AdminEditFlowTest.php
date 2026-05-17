@@ -31,13 +31,13 @@ beforeEach(function () {
     $this->seed(TermTypeSeeder::class);
     $this->seed(FieldSessionStatusSeeder::class);
 
-    $this->admin = User::factory()->create([
+    $admin = User::factory()->create([
         'email' => 'admin@edittest.com',
         'password' => bcrypt('password'),
     ]);
-    $this->admin->assignRole('admin');
+    $admin->assignRole('admin');
 
-    $this->actingAs($this->admin);
+    $this->actingAs($admin);
 });
 
 // ============================================================================
@@ -56,25 +56,19 @@ test('admin puede editar un año escolar existente', function () {
 
     // Navegar a la página de edición
     $page = visit("/admin/academic-years/{$academicYear->id}/edit");
-    $page->wait(2);
     $page->assertSee('Editar Año Escolar');
     $page->assertSee('2024-2025'); // Verificar que el nombre aparece en la página
 
     // Modificar solo el nombre (más simple y seguro)
     $page->clear('#name');
-    $page->wait(0.2);
     $page->type('#name', '2024-2025 Modificado');
-    $page->wait(0.5);
 
     // Submit y esperar navegación
     $page->click('button[type="submit"]');
 
-    // Esperar que Inertia complete la navegación
-    $page->wait(2);
-
     // Verificar que redirigió al índice
     expect($page->url())->toContain('/admin/academic-years');
-    expect($page->url())->not->toContain('/edit');
+    $page->assertSee('Año académico actualizado correctamente.'); // Verificar que el mensaje de éxito aparece
 
     // Verificar que el nombre actualizado aparece en el listado
     $page->assertSee('2024-2025 Modificado');
@@ -104,22 +98,18 @@ test('admin puede editar un lapso académico existente', function () {
 
     // Navegar a la página de edición
     $page = visit("/admin/school-terms/{$schoolTerm->id}/edit");
-    $page->wait(2);
     $page->assertSee('Editar Lapso Académico');
 
     // Modificar solo la fecha de fin (más simple y seguro, y no viola validación)
     $page->clear('#end_date');
-    $page->wait(0.2);
     $page->type('#end_date', '2024-12-20');
-    $page->wait(0.5);
 
     // Submit
     $page->click('button[type="submit"]');
-    $page->wait(5);
 
     // Verificar redirección (la URL ya no debe contener /edit)
     expect($page->url())->toContain('/admin/school-terms');
-    expect($page->url())->not->toContain('/edit');
+    $page->assertSee('Lapso académico actualizado correctamente.'); // Verificar que el mensaje de éxito aparece
 
     // Verificar que redirigió al listado (la edición fue exitosa)
     $page->assertSee('Lapso 1');
@@ -147,22 +137,18 @@ test('admin puede editar un grado existente', function () {
 
     // Navegar a la página de edición
     $page = visit("/admin/grades/{$grade->id}/edit");
-    $page->wait(2);
-    $page->assertSee('Editar Grado');
+    $page->assertSee('Editar Grado Académico');
 
     // Modificar el orden (el nombre viene de la definición y no se puede editar)
     $page->clear('[data-test="grade-order-input"]');
-    $page->wait(0.2);
     $page->type('[data-test="grade-order-input"]', '5');
-    $page->wait(0.5);
 
     // Submit
     $page->click('[data-test="submit-button"]');
-    $page->wait(5);
 
     // Verificar redirección (la URL ya no debe contener /edit)
     expect($page->url())->toContain('/admin/grades');
-    expect($page->url())->not->toContain('/edit');
+    $page->assertSee('Grado actualizado correctamente.'); // Verificar que el mensaje de éxito aparece
 
     // Verificar que el grado editado sigue apareciendo en el listado
     // Nota: el campo 'order' no se muestra en el listado de grados,
@@ -196,23 +182,19 @@ test('admin puede editar un usuario existente', function () {
 
     // Navegar a la página de edición
     $page = visit("/admin/users/{$user->id}/edit");
-    $page->wait(2);
     $page->assertSee('Editar Usuario');
     $page->assertSee('Juan Pérez');
 
     // Modificar solo el nombre (más simple y seguro) - usar #id en lugar de data-test
     $page->clear('#name');
-    $page->wait(0.2);
     $page->type('#name', 'Juan Pérez Modificado');
-    $page->wait(0.5);
 
     // Submit
     $page->click('button[type="submit"]');
-    $page->wait(5);
 
     // Verificar redirección (la URL ya no debe contener /edit)
     expect($page->url())->toContain('/admin/users');
-    expect($page->url())->not->toContain('/edit');
+    $page->assertSee('Usuario actualizado correctamente.'); // Verificar que el mensaje de éxito aparece
 
     // Verificar que el nombre actualizado aparece en el listado
     $page->assertSee('Juan Pérez Modificado');
