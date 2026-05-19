@@ -31,7 +31,7 @@ class UpdateSectionDefinitionRequest extends FormRequest
                 'string',
                 'max:1',
                 'regex:/^[A-Z]$/',
-                Rule::unique('section_definitions', 'name')->ignore($definition),
+                Rule::unique('section_definitions', 'name')->ignore($definition)->withoutTrashed(),
             ],
             'is_active' => ['sometimes', 'boolean'],
         ];

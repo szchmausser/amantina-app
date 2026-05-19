@@ -32,7 +32,8 @@ class UpdateGradeRequest extends FormRequest
                 'min:1',
                 Rule::unique('grades', 'order')
                     ->where('academic_year_id', $academicYearId)
-                    ->ignore($grade->id),
+                    ->ignore($grade->id)
+                    ->withoutTrashed(),
             ],
         ];
     }

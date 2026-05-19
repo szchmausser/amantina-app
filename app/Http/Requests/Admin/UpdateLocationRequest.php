@@ -30,7 +30,7 @@ class UpdateLocationRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('locations', 'name')->ignore($location),
+                Rule::unique('locations', 'name')->ignore($location)->withoutTrashed(),
             ],
             'description' => ['nullable', 'string', 'max:500'],
         ];

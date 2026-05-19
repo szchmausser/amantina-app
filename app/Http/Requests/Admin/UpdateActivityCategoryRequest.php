@@ -30,7 +30,7 @@ class UpdateActivityCategoryRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('activity_categories', 'name')->ignore($category),
+                Rule::unique('activity_categories', 'name')->ignore($category)->withoutTrashed(),
             ],
             'description' => ['nullable', 'string', 'max:500'],
         ];

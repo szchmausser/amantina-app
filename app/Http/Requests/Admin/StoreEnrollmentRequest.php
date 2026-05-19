@@ -46,7 +46,7 @@ class StoreEnrollmentRequest extends FormRequest
                 },
                 Rule::unique('enrollments', 'user_id')
                     ->where('academic_year_id', $this->academic_year_id)
-                    ->whereNull('deleted_at'),
+                    ->withoutTrashed(),
             ],
             'grade_id' => [
                 'required',

@@ -33,7 +33,8 @@ class UpdateSchoolTermRequest extends FormRequest
                 'exists:term_types,id',
                 Rule::unique('school_terms', 'term_type_id')
                     ->where('academic_year_id', $academicYearId)
-                    ->ignore($schoolTerm->id),
+                    ->ignore($schoolTerm->id)
+                    ->withoutTrashed(),
             ],
             'start_date' => [
                 'required',

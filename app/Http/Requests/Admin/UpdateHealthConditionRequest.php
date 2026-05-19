@@ -30,7 +30,7 @@ class UpdateHealthConditionRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('health_conditions', 'name')->ignore($condition),
+                Rule::unique('health_conditions', 'name')->ignore($condition)->withoutTrashed(),
             ],
             'is_active' => ['boolean'],
         ];

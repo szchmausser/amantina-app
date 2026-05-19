@@ -29,7 +29,8 @@ class StoreGradeRequest extends FormRequest
                 'integer',
                 'min:1',
                 Rule::unique('grades', 'order')
-                    ->where('academic_year_id', $this->academic_year_id),
+                    ->where('academic_year_id', $this->academic_year_id)
+                    ->withoutTrashed(),
             ],
         ];
     }

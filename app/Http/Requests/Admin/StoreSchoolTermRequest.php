@@ -29,7 +29,8 @@ class StoreSchoolTermRequest extends FormRequest
                 'required',
                 'exists:term_types,id',
                 Rule::unique('school_terms', 'term_type_id')
-                    ->where('academic_year_id', $this->academic_year_id),
+                    ->where('academic_year_id', $this->academic_year_id)
+                    ->withoutTrashed(),
             ],
             'start_date' => [
                 'required',

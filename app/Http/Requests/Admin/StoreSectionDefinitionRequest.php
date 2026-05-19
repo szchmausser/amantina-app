@@ -24,7 +24,7 @@ class StoreSectionDefinitionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:1', 'regex:/^[A-Z]$/', Rule::unique('section_definitions', 'name')],
+            'name' => ['required', 'string', 'max:1', 'regex:/^[A-Z]$/', Rule::unique('section_definitions', 'name')->withoutTrashed()],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

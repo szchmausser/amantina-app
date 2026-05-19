@@ -24,7 +24,7 @@ class StoreGradeDefinitionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100', Rule::unique('grade_definitions', 'name')],
+            'name' => ['required', 'string', 'max:100', Rule::unique('grade_definitions', 'name')->withoutTrashed()],
             'order' => ['required', 'integer', 'min:1'],
             'is_active' => ['sometimes', 'boolean'],
         ];

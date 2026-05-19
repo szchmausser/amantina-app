@@ -1178,3 +1178,76 @@ Esta lógica fue validada y aplicada en `UserController` y `StudentPdfController
 3. **Alumno:** Solo ve su propio perfil, horas y salud
 4. **Representante:** Solo ve la info de su representado
 5. **Usuario sin rol:** No ve nada del panel admin
+
+---
+
+## Restauración de Registros Eliminados (Soft Delete con Cascada)
+
+El sistema usa **soft deletes** en todas las tablas transaccionales para prevenir pérdida de datos ante eliminaciones accidentales. Los registros no se eliminan físicamente — solo se marca su `deleted_at` con un timestamp.
+
+### Restauración en Cascada con `Askedio/laravel-soft-cascade`
+
+El paquete `askedio/laravel-soft-cascade` ya está instalado y configurado en los modelos que tienen relaciones en cascada. Cuando se restaura un registro padre, los registros hijos también se restauran automáticamente.
+
+**Cadena de restauración completa:**
+
+```
+AcademicYear.restore()
+├─ SchoolTerm.restore()
+├─ Grade.restore()
+│   └─ Section.restore()
+│       ├─ Enrollment.restore()
+│       └─ TeacherAssignment.restore()
+└─ FieldSession.restore()
+    └─ Attendance.restore()
+        └─ AttendanceActivity.restore()
+```
+
+### Cómo restaurar
+
+**Opción 1 — Tinker (recomendado para administradores con acceso técnico):**
+
+```bash
+php artisan tinker
+```
+
+```php
+// Restaurar un año académico completo con todo su árbol
+$year = AcademicYear::withTrashed()->find(1);
+$year->restore();  // Restaura en cascada: SchoolTerms, Grades → Sections → Enrollments + TeacherAssignments, FieldSessions → Attendances → AttendanceActivities
+
+// Restaurar un grado específico (restaura también sus secciones, inscripciones y asignaciones)
+$grade = Grade::withTrashed()->find(5);
+$grade->restore();
+
+// Restaurar una sección específica (restaura sus inscripciones y asignaciones docentes)
+$section = Section::withTrashed()->find(10);
+$section->restore();
+```
+
+**Opción 2 — Comando Artisan personalizado:**
+
+```bash
+# php artisan records:restore {model} {id}
+php artisan records:restore "App\Models\AcademicYear" 1
+```
+
+### ¿Qué NO se restaura?
+
+- **Archivos adjuntos (media):** Los archivos subidos con `spatie/laravel-medialibrary` se eliminan físicamente al hacer soft delete del registro padre. No se recuperan al restaurar.
+- **Catálogos independientes:** `ActivityCategory`, `Location`, `HealthCondition` no tienen relaciones en cascada configuradas (son hojas del árbol). Se restauran individualmente con el mismo patrón.
+
+### Índices Parciales
+
+Para permitir crear registros con el mismo nombre que uno eliminado (sin violar la unicidad), las tablas usan **índices parciales** de PostgreSQL:
+
+```sql
+CREATE UNIQUE INDEX section_definitions_name_unique 
+ON section_definitions (name) WHERE deleted_at IS NULL;
+```
+
+Esto permite:
+- ✅ Un solo registro activo con un nombre dado
+- ✅ Múltiples registros eliminados con el mismo nombre
+- ✅ Crear un nuevo registro con el nombre de uno eliminado
+- ✅ Restaurar un registro eliminado aunque exista otro activo con el mismo nombre

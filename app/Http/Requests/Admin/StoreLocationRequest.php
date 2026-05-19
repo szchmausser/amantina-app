@@ -24,7 +24,7 @@ class StoreLocationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100', Rule::unique('locations', 'name')],
+            'name' => ['required', 'string', 'max:100', Rule::unique('locations', 'name')->withoutTrashed()],
             'description' => ['nullable', 'string', 'max:500'],
         ];
     }

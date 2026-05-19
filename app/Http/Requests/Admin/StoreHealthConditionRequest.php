@@ -24,7 +24,7 @@ class StoreHealthConditionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100', Rule::unique('health_conditions', 'name')],
+            'name' => ['required', 'string', 'max:100', Rule::unique('health_conditions', 'name')->withoutTrashed()],
             'is_active' => ['boolean'],
         ];
     }

@@ -30,7 +30,7 @@ class UpdateGradeDefinitionRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('grade_definitions', 'name')->ignore($definition),
+                Rule::unique('grade_definitions', 'name')->ignore($definition)->withoutTrashed(),
             ],
             'order' => ['required', 'integer', 'min:1'],
             'is_active' => ['sometimes', 'boolean'],
