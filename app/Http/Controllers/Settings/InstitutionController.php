@@ -61,11 +61,17 @@ class InstitutionController extends Controller
             return back()->with('error', 'La institución no está configurada.');
         }
 
+        // Delete old logo if exists
         if ($institution->getFirstMedia('logo')) {
             $institution->getFirstMedia('logo')->delete();
         }
 
-        $institution->addMediaFromRequest('logo')
+        // Store directly without conversions
+        $file = $request->file('logo');
+        $path = $file->store('institution/logo', 'public');
+
+        // Save to media library with the stored path
+        $institution->addMedia(storage_path('app/public/' . $path))
             ->toMediaCollection('logo');
 
         return back()->with('success', 'Logo actualizado correctamente.');

@@ -54,7 +54,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 'warning' => fn () => $request->session()->get('warning'),
             ],
-            'institution' => fn () => Institution::with('media')->first()?->only(['name', 'logo_url', 'favicon_url']),
+            'institution' => fn () => Institution::with('media')->first()?->append(['logo_url', 'favicon_url'])->only(['name', 'logo_url', 'favicon_url']),
         ];
     }
 

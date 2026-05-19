@@ -44,16 +44,7 @@ class Institution extends Model implements HasMedia
             ->singleFile()
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
             ->registerMediaConversions(function (Media $media) {
-                $this->addMediaConversion('thumb')
-                    ->width(300)
-                    ->height(300)
-                    ->fit(Fit::Max, 300, 300)
-                    ->nonQueued();
-                $this->addMediaConversion('favicon')
-                    ->width(32)
-                    ->height(32)
-                    ->fit(Fit::Crop, 32, 32)
-                    ->nonQueued();
+                // No conversions needed - logo is stored directly
             });
     }
 
@@ -66,8 +57,6 @@ class Institution extends Model implements HasMedia
 
     public function getFaviconUrlAttribute(): ?string
     {
-        return $this->getFirstMediaUrl('logo', 'favicon')
-            ?: $this->getFirstMediaUrl('logo')
-            ?: null;
+        return $this->getFirstMediaUrl('logo') ?: null;
     }
 }

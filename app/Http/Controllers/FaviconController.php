@@ -20,12 +20,7 @@ class FaviconController extends Controller
         }
 
         $media = $institution->getFirstMedia('logo');
-
-        // Try favicon conversion first, fall back to original
-        $path = $media->getPath('favicon');
-        if (! file_exists($path)) {
-            $path = $media->getPath();
-        }
+        $path = $media->getPath();
 
         if (! file_exists($path)) {
             return redirect()->to('/favicon.ico');
