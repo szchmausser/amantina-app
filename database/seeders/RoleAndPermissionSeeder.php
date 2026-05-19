@@ -104,8 +104,13 @@ class RoleAndPermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::findOrCreate($permission);
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web',
+            ]);
         }
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Create base roles and assign permissions
         $roles = [
@@ -116,14 +121,19 @@ class RoleAndPermissionSeeder extends Seeder
         ];
 
         foreach ($roles as $roleName) {
-            $role = Role::findOrCreate($roleName);
+            $role = Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => 'web',
+            ]);
 
             if ($roleName === 'admin') {
-                $role->syncPermissions($permissions);
+                $role->syncPermissions(
+                    Permission::where('guard_name', 'web')->whereIn('name', $permissions)->get()
+                );
             }
 
             if ($roleName === 'profesor') {
-                $role->syncPermissions([
+                $role->syncPermissions(Permission::where('guard_name', 'web')->whereIn('name', [
                     'users.view',
                     'academic_info.view',
                     'academic_years.view',
@@ -152,22 +162,24 @@ class RoleAndPermissionSeeder extends Seeder
                     'attendance_activities.delete',
                     'dashboard.view',
                     'accumulated_hours.view',
-                ]);
+                ])->get());
             }
 
             if ($roleName === 'alumno') {
-                $role->syncPermissions([
+                $role->syncPermissions(Permission::where('guard_name', 'web')->whereIn('name', [
                     'dashboard.view',
                     'accumulated_hours.view',
-                ]);
+                ])->get());
             }
 
             if ($roleName === 'representante') {
-                $role->syncPermissions([
+                $role->syncPermissions(Permission::where('guard_name', 'web')->whereIn('name', [
                     'dashboard.view',
                     'accumulated_hours.view',
-                ]);
+                ])->get());
             }
         }
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }

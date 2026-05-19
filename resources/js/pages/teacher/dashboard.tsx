@@ -64,6 +64,7 @@ function toBadgeStudent(s: TeacherScopedStudent) {
 // --- Props ---
 interface Props {
     activeYear: TeacherDashboardData['activeYear'];
+    availableYears: { id: number; name: string; isActive: boolean }[];
     sections: TeacherDashboardData['sections'];
     ownSessions: TeacherDashboardData['ownSessions'];
     pendingAttendance: TeacherDashboardData['pendingAttendance'];
@@ -94,6 +95,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 // --- Main Component ---
 export default function TeacherDashboard({
     activeYear,
+    availableYears,
     sections,
     ownSessions,
     pendingAttendance,
@@ -144,6 +146,7 @@ export default function TeacherDashboard({
         router.get(
             dashboard().url,
             {
+                year: activeYear?.id,
                 grade_id: value === 'all' ? null : value,
                 section_id: null,
             },
@@ -155,6 +158,7 @@ export default function TeacherDashboard({
         router.get(
             dashboard().url,
             {
+                year: activeYear?.id,
                 grade_id: selectedGradeId,
                 section_id: value === 'all' ? null : value,
             },
@@ -187,6 +191,18 @@ export default function TeacherDashboard({
         [categoryDistribution],
     );
 
+    const handleYearChange = (value: string) => {
+        router.get(
+            dashboard().url,
+            {
+                year: value,
+                grade_id: null,
+                section_id: null,
+            },
+            { preserveState: false, preserveScroll: true },
+        );
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Panel del Profesor" />
@@ -203,17 +219,34 @@ export default function TeacherDashboard({
                                 Vista general de tus secciones y estudiantes
                             </p>
                         </div>
-                        {activeYear && (
-                            <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">
-                                    {activeYear.name}
-                                </span>
-                                <span className="text-muted-foreground">
-                                    ({activeYear.requiredHours}h requeridas)
-                                </span>
-                            </div>
-                        )}
+                        <div className="flex flex-wrap items-center gap-2">
+                            {activeYear && (
+                                <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm">
+                                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                                    <span className="font-medium">
+                                        {activeYear.name}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                        ({activeYear.requiredHours}h requeridas)
+                                    </span>
+                                </div>
+                            )}
+                            <Select
+                                value={activeYear?.id.toString()}
+                                onValueChange={handleYearChange}
+                            >
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Año escolar" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {availableYears.map((year) => (
+                                        <SelectItem key={year.id} value={year.id.toString()}>
+                                            {year.name}{year.isActive ? ' (actual)' : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     {/* ===== QUICK ACTIONS ===== */}

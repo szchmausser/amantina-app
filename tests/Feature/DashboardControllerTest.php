@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use App\Models\AttendanceActivity;
 use App\Models\Enrollment;
 use App\Models\FieldSession;
+use App\Models\FieldSessionStatus;
 use App\Models\Grade;
 use App\Models\HealthCondition;
 use App\Models\Section;
@@ -228,6 +229,119 @@ class DashboardControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->where('activeYear', null)
+        );
+    }
+
+    public function test_admin_dashboard_is_scoped_to_selected_academic_year(): void
+    {
+        $previousYear = AcademicYear::factory()->create([
+            'is_active' => false,
+            'name' => '2024-2025',
+            'required_hours' => 80,
+        ]);
+
+        $currentGrade = Grade::factory()->create([
+            'academic_year_id' => $this->activeYear->id,
+            'name' => '1er año',
+            'order' => 1,
+        ]);
+        $currentSection = Section::factory()->create([
+            'academic_year_id' => $this->activeYear->id,
+            'grade_id' => $currentGrade->id,
+            'name' => 'A',
+        ]);
+
+        $previousGrade = Grade::factory()->create([
+            'academic_year_id' => $previousYear->id,
+            'name' => '1er año',
+            'order' => 1,
+        ]);
+        $previousSection = Section::factory()->create([
+            'academic_year_id' => $previousYear->id,
+            'grade_id' => $previousGrade->id,
+            'name' => 'A',
+        ]);
+
+        $currentStudent = User::factory()->create();
+        $currentStudent->assignRole('alumno');
+        $previousStudent = User::factory()->create();
+        $previousStudent->assignRole('alumno');
+
+        Enrollment::create([
+            'user_id' => $currentStudent->id,
+            'academic_year_id' => $this->activeYear->id,
+            'grade_id' => $currentGrade->id,
+            'section_id' => $currentSection->id,
+        ]);
+        Enrollment::create([
+            'user_id' => $previousStudent->id,
+            'academic_year_id' => $previousYear->id,
+            'grade_id' => $previousGrade->id,
+            'section_id' => $previousSection->id,
+        ]);
+
+        TeacherAssignment::create([
+            'user_id' => $this->profesor->id,
+            'academic_year_id' => $this->activeYear->id,
+            'grade_id' => $currentGrade->id,
+            'section_id' => $currentSection->id,
+        ]);
+        TeacherAssignment::create([
+            'user_id' => $this->profesor->id,
+            'academic_year_id' => $previousYear->id,
+            'grade_id' => $previousGrade->id,
+            'section_id' => $previousSection->id,
+        ]);
+
+        $status = FieldSessionStatus::create(['name' => 'realized']);
+        $currentCategory = ActivityCategory::factory()->create(['name' => 'Siembra']);
+        $previousCategory = ActivityCategory::factory()->create(['name' => 'Cosecha']);
+
+        $currentSession = FieldSession::factory()->create([
+            'user_id' => $this->profesor->id,
+            'academic_year_id' => $this->activeYear->id,
+            'status_id' => $status->id,
+        ]);
+        $currentAttendance = Attendance::create([
+            'field_session_id' => $currentSession->id,
+            'user_id' => $currentStudent->id,
+            'academic_year_id' => $this->activeYear->id,
+            'attended' => true,
+        ]);
+        AttendanceActivity::create([
+            'attendance_id' => $currentAttendance->id,
+            'activity_category_id' => $currentCategory->id,
+            'hours' => 4,
+        ]);
+
+        $previousSession = FieldSession::factory()->create([
+            'user_id' => $this->profesor->id,
+            'academic_year_id' => $previousYear->id,
+            'status_id' => $status->id,
+        ]);
+        $previousAttendance = Attendance::create([
+            'field_session_id' => $previousSession->id,
+            'user_id' => $previousStudent->id,
+            'academic_year_id' => $previousYear->id,
+            'attended' => true,
+        ]);
+        AttendanceActivity::create([
+            'attendance_id' => $previousAttendance->id,
+            'activity_category_id' => $previousCategory->id,
+            'hours' => 6,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get('/dashboard');
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('totalStudents', 1)
+            ->has('grades', 1)
+            ->where('grades.0.id', $currentGrade->id)
+            ->has('sections', 1)
+            ->where('sections.0.id', $currentSection->id)
+            ->has('categoryDistribution', 1)
+            ->where('categoryDistribution.0.categoryName', 'Siembra')
+            ->where('categoryDistribution.0.totalHours', 4)
         );
     }
 

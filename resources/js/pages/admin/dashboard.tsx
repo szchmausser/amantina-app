@@ -75,6 +75,7 @@ interface Props {
         name: string;
         requiredHours: number;
     } | null;
+    availableYears: { id: number; name: string; isActive: boolean }[];
     totalStudents: number;
     requiredHours: number;
     averageHours: number;
@@ -146,6 +147,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function AdminDashboard({
     activeYear,
+    availableYears,
     totalStudents,
     requiredHours,
     averageHours,
@@ -193,6 +195,7 @@ export default function AdminDashboard({
         router.get(
             dashboard().url,
             {
+                year: activeYear?.id,
                 teacher_id: value === 'all' ? null : value,
                 grade_id: null,
                 section_id: null,
@@ -205,6 +208,7 @@ export default function AdminDashboard({
         router.get(
             dashboard().url,
             {
+                year: activeYear?.id,
                 teacher_id: selectedTeacherId,
                 grade_id: value === 'all' ? null : value,
                 section_id: null,
@@ -217,6 +221,7 @@ export default function AdminDashboard({
         router.get(
             dashboard().url,
             {
+                year: activeYear?.id,
                 teacher_id: selectedTeacherId,
                 grade_id: selectedGradeId,
                 section_id: value === 'all' ? null : value,
@@ -232,6 +237,19 @@ export default function AdminDashboard({
         }
         return sections;
     }, [sections, selectedGradeId]);
+
+    const handleYearChange = (value: string) => {
+        router.get(
+            dashboard().url,
+            {
+                year: value,
+                teacher_id: null,
+                grade_id: null,
+                section_id: null,
+            },
+            { preserveState: false, preserveScroll: true },
+        );
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -249,20 +267,37 @@ export default function AdminDashboard({
                             Vista general del rendimiento institucional
                         </p>
                     </div>
-                    {activeYear && (
-                        <Link
-                            href={`/admin/academic-years/${activeYear.id}`}
-                            className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm transition-colors hover:bg-accent"
+                    <div className="flex flex-wrap items-center gap-2">
+                        {activeYear && (
+                            <Link
+                                href={`/admin/academic-years/${activeYear.id}`}
+                                className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm transition-colors hover:bg-accent"
+                            >
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-medium">
+                                    {activeYear.name}
+                                </span>
+                                <span className="text-muted-foreground">
+                                    ({activeYear.requiredHours}h requeridas)
+                                </span>
+                            </Link>
+                        )}
+                        <Select
+                            value={activeYear?.id.toString()}
+                            onValueChange={handleYearChange}
                         >
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">
-                                {activeYear.name}
-                            </span>
-                            <span className="text-muted-foreground">
-                                ({activeYear.requiredHours}h requeridas)
-                            </span>
-                        </Link>
-                    )}
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Año escolar" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {availableYears.map((year) => (
+                                    <SelectItem key={year.id} value={year.id.toString()}>
+                                        {year.name}{year.isActive ? ' (actual)' : ''}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
                 {/* Critical Alerts */}

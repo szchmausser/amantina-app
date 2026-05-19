@@ -75,7 +75,9 @@ class DashboardController extends Controller
 
         // All grades for filter dropdown
         $grades = Grade::query()
+            ->when($yearId, fn ($q) => $q->where('academic_year_id', $yearId))
             ->whereNull('deleted_at')
+            ->orderBy('order')
             ->orderBy('name')
             ->get(['id', 'name'])
             ->toArray();
@@ -83,8 +85,10 @@ class DashboardController extends Controller
         // All sections for filter dropdown
         $sections = Section::query()
             ->join('grades', 'sections.grade_id', '=', 'grades.id')
+            ->when($yearId, fn ($q) => $q->where('sections.academic_year_id', $yearId))
             ->whereNull('sections.deleted_at')
             ->whereNull('grades.deleted_at')
+            ->orderBy('grades.order')
             ->orderBy('grades.name')
             ->orderBy('sections.name')
             ->get(['sections.id', 'sections.name', 'sections.grade_id'])
@@ -92,6 +96,9 @@ class DashboardController extends Controller
 
         // All teachers (users with 'profesor' role) for filter dropdown
         $teachers = User::role('profesor')
+            ->whereHas('teacherAssignments', fn ($q) => $q
+                ->when($yearId, fn ($query) => $query->where('academic_year_id', $yearId))
+                ->whereNull('deleted_at'))
             ->orderBy('name')
             ->get(['id', 'name'])
             ->toArray();
@@ -102,6 +109,7 @@ class DashboardController extends Controller
                 'name' => $year->name,
                 'requiredHours' => (float) $year->required_hours,
             ] : null,
+            'availableYears' => $this->dashboardAcademicYears(),
             'totalStudents' => $overview['totalStudents'] ?? 0,
             'requiredHours' => $overview['requiredHours'] ?? 0,
             'averageHours' => $overview['averageHours'] ?? 0,
@@ -159,7 +167,9 @@ class DashboardController extends Controller
             ->values();
 
         $teacherSections = Section::whereIn('id', $teacherSectionIds)
-            ->with('grade')->get();
+            ->when($yearId, fn ($q) => $q->where('academic_year_id', $yearId))
+            ->with('grade')
+            ->get();
 
         $grades = $teacherSections->map(fn ($s) => $s->grade)
             ->unique('id')
@@ -180,6 +190,7 @@ class DashboardController extends Controller
                 'name' => $year->name,
                 'requiredHours' => (float) $year->required_hours,
             ] : null,
+            'availableYears' => $this->dashboardAcademicYears(),
             'sections' => $data['sections'] ?? [],
             'ownSessions' => $data['ownSessions'] ?? [],
             'pendingAttendance' => $data['pendingAttendance'] ?? 0,
@@ -223,6 +234,7 @@ class DashboardController extends Controller
                 'name' => $year->name,
                 'requiredHours' => (float) $year->required_hours,
             ] : null,
+            'availableYears' => $this->dashboardAcademicYears(),
             'progress' => $data['progress'] ?? [],
             'breakdownByYear' => $data['breakdownByYear'] ?? [],
             'breakdownByTerm' => $data['breakdownByTerm'] ?? [],
@@ -250,6 +262,7 @@ class DashboardController extends Controller
                 'name' => $year->name,
                 'requiredHours' => (float) $year->required_hours,
             ] : null,
+            'availableYears' => $this->dashboardAcademicYears(),
             'students' => $data['students'] ?? [],
         ]);
     }
@@ -259,7 +272,7 @@ class DashboardController extends Controller
      * Renders the same student dashboard the student would see,
      * but only if the authenticated representative is linked to this student.
      */
-    public function studentDetail(User $student): Response
+    public function studentDetail(Request $request, User $student): Response
     {
         // Verify the authenticated user is a representante linked to this student
         $linked = StudentRepresentative::where('representative_id', auth()->id())
@@ -270,7 +283,10 @@ class DashboardController extends Controller
             abort(403);
         }
 
-        $year = AcademicYear::where('is_active', true)->first();
+        $yearId = $request->integer('year');
+        $year = $yearId
+            ? AcademicYear::find($yearId)
+            : AcademicYear::where('is_active', true)->first();
         $data = $this->hourAccumulator->getStudentDashboard($student->id, $year?->id);
 
         return Inertia::render('student/dashboard', [
@@ -279,6 +295,7 @@ class DashboardController extends Controller
                 'name' => $year->name,
                 'requiredHours' => (float) $year->required_hours,
             ] : null,
+            'availableYears' => $this->dashboardAcademicYears(),
             'progress' => $data['progress'] ?? [],
             'breakdownByYear' => $data['breakdownByYear'] ?? [],
             'breakdownByTerm' => $data['breakdownByTerm'] ?? [],
@@ -292,5 +309,18 @@ class DashboardController extends Controller
             'viewingAs' => $student->name,
             'studentId' => $student->id,
         ]);
+    }
+
+    protected function dashboardAcademicYears(): array
+    {
+        return AcademicYear::currentAndPast()
+            ->orderByDesc('start_date')
+            ->get(['id', 'name', 'is_active'])
+            ->map(fn (AcademicYear $year) => [
+                'id' => $year->id,
+                'name' => $year->name,
+                'isActive' => $year->is_active,
+            ])
+            ->toArray();
     }
 }

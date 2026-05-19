@@ -130,6 +130,8 @@ class HourAccumulatorService
         $students = DB::table('enrollments')
             ->join('users', 'enrollments.user_id', '=', 'users.id')
             ->where('enrollments.section_id', $sectionId)
+            ->when($yearId, fn ($q) => $q->where('enrollments.academic_year_id', $yearId))
+            ->where('users.is_active', true)
             ->whereNull('enrollments.deleted_at')
             ->whereNull('users.deleted_at')
             ->select('users.id as student_id', 'users.name')
@@ -169,6 +171,8 @@ class HourAccumulatorService
             ->join('users', 'enrollments.user_id', '=', 'users.id')
             ->join('sections', 'enrollments.section_id', '=', 'sections.id')
             ->join('grades', 'sections.grade_id', '=', 'grades.id')
+            ->when($yearId, fn ($q) => $q->where('enrollments.academic_year_id', $yearId))
+            ->where('users.is_active', true)
             ->whereNull('enrollments.deleted_at')
             ->whereNull('users.deleted_at')
             ->whereNull('sections.deleted_at')
@@ -246,6 +250,7 @@ class HourAccumulatorService
         // Section ranking with distribution
         $sections = DB::table('sections')
             ->join('grades', 'sections.grade_id', '=', 'grades.id')
+            ->when($yearId, fn ($q) => $q->where('sections.academic_year_id', $yearId))
             ->whereNull('sections.deleted_at')
             ->whereNull('grades.deleted_at')
             ->select(
@@ -349,6 +354,7 @@ class HourAccumulatorService
             ->leftJoin('users as teachers', 'field_sessions.user_id', '=', 'teachers.id')
             ->whereNull('field_sessions.deleted_at')
             ->where('field_session_statuses.name', 'realized')
+            ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
             ->whereNull('attendances.id')
             ->select(
                 'field_sessions.id',
@@ -385,6 +391,7 @@ class HourAccumulatorService
             ->leftJoin('users as teachers', 'field_sessions.user_id', '=', 'teachers.id')
             ->whereNull('field_sessions.deleted_at')
             ->where('field_session_statuses.name', 'realized')
+            ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
             ->whereNull('attendance_activities.id')
             ->select(
                 'field_sessions.id',
@@ -426,6 +433,8 @@ class HourAccumulatorService
             ->where('field_session_statuses.name', 'realized')
             ->whereNull('attendances.deleted_at')
             ->whereNull('field_sessions.deleted_at')
+            ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
+            ->when($yearId, fn ($q) => $q->where('enrollments.academic_year_id', $yearId))
             ->whereNull('students.deleted_at')
             ->whereNull('enrollments.deleted_at')
             ->select(
@@ -618,10 +627,11 @@ class HourAccumulatorService
      *
      * @return Collection<int, int>
      */
-    public function getTeacherSectionIds(int $teacherId): Collection
+    public function getTeacherSectionIds(int $teacherId, ?int $yearId = null): Collection
     {
         return DB::table('teacher_assignments')
             ->where('user_id', $teacherId)
+            ->when($yearId, fn ($q) => $q->where('academic_year_id', $yearId))
             ->whereNull('deleted_at')
             ->pluck('section_id');
     }
@@ -646,7 +656,7 @@ class HourAccumulatorService
     {
         $yearId = $this->resolveYearId($yearId);
         $quota = $this->getQuota($yearId);
-        $sectionIds = $this->getTeacherSectionIds($teacherId);
+        $sectionIds = $this->getTeacherSectionIds($teacherId, $yearId);
 
         if ($sectionIds->isEmpty()) {
             return [
@@ -668,6 +678,7 @@ class HourAccumulatorService
             ->join('grades', 'sections.grade_id', '=', 'grades.id')
             ->whereIn('enrollments.section_id', $sectionIds)
             ->when($yearId, fn ($q) => $q->where('enrollments.academic_year_id', $yearId))
+            ->where('users.is_active', true)
             ->whereNull('enrollments.deleted_at')
             ->whereNull('users.deleted_at')
             ->whereNull('sections.deleted_at')
@@ -769,7 +780,8 @@ class HourAccumulatorService
      */
     public function getTeacherUpcomingSessions(int $teacherId, ?int $yearId): array
     {
-        $sectionIds = $this->getTeacherSectionIds($teacherId);
+        $yearId = $this->resolveYearId($yearId);
+        $sectionIds = $this->getTeacherSectionIds($teacherId, $yearId);
 
         if ($sectionIds->isEmpty()) {
             return [];
@@ -830,6 +842,7 @@ class HourAccumulatorService
             ->join('sections', 'teacher_assignments.section_id', '=', 'sections.id')
             ->join('grades', 'sections.grade_id', '=', 'grades.id')
             ->where('teacher_assignments.user_id', $teacherId)
+            ->when($yearId, fn ($q) => $q->where('teacher_assignments.academic_year_id', $yearId))
             ->whereNull('teacher_assignments.deleted_at')
             ->whereNull('sections.deleted_at')
             ->whereNull('grades.deleted_at')
@@ -892,6 +905,7 @@ class HourAccumulatorService
             })
             ->where('field_sessions.user_id', $teacherId)
             ->where('field_session_statuses.name', 'completed')
+            ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
             ->whereNull('field_sessions.deleted_at')
             ->whereNull('attendances.id')
             ->count();
@@ -901,10 +915,11 @@ class HourAccumulatorService
             ->join('users', 'enrollments.user_id', '=', 'users.id')
             ->join('sections', 'enrollments.section_id', '=', 'sections.id')
             ->join('grades', 'sections.grade_id', '=', 'grades.id')
-            ->leftJoin('attendances', function ($join) use ($teacherId) {
+            ->leftJoin('attendances', function ($join) use ($teacherId, $yearId) {
                 $join->on('attendances.user_id', '=', 'users.id')
                     ->join('field_sessions as fs', 'attendances.field_session_id', '=', 'fs.id')
                     ->where('fs.user_id', $teacherId)
+                    ->when($yearId, fn ($q) => $q->where('fs.academic_year_id', $yearId))
                     ->whereNull('attendances.deleted_at')
                     ->whereNull('fs.deleted_at');
             })
@@ -913,6 +928,7 @@ class HourAccumulatorService
                     ->whereNull('attendance_activities.deleted_at');
             })
             ->whereIn('enrollments.section_id', $assignedSections->pluck('section_id'))
+            ->when($yearId, fn ($q) => $q->where('enrollments.academic_year_id', $yearId))
             ->whereNull('enrollments.deleted_at')
             ->whereNull('users.deleted_at')
             ->where('attendances.attended', true)
@@ -1068,6 +1084,7 @@ class HourAccumulatorService
             ->join('attendances', 'student_health_records.user_id', '=', 'attendances.user_id')
             ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
             ->where('field_sessions.user_id', $teacherId)
+            ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
             ->whereNull('student_health_records.deleted_at')
             ->whereNull('users.deleted_at')
             ->whereNull('health_conditions.deleted_at')
@@ -1171,6 +1188,7 @@ class HourAccumulatorService
             ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
             ->where('attendances.user_id', $studentId)
             ->where('attendances.attended', true)
+            ->when($yearId, fn ($q) => $q->where('attendances.academic_year_id', $yearId))
             ->whereNull('attendances.deleted_at')
             ->whereNull('field_sessions.deleted_at')
             ->select(
@@ -1239,7 +1257,7 @@ class HourAccumulatorService
             ->toArray();
 
         // Closure projection
-        $closureProjection = $this->calculateClosureProjection($studentId, $quota, $progress['total_hours']);
+        $closureProjection = $this->calculateClosureProjection($studentId, $quota, $progress['total_hours'], $yearId);
 
         // Category participation
         $categoryParticipation = DB::table('attendance_activities')
@@ -1271,6 +1289,7 @@ class HourAccumulatorService
             ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
             ->where('attendances.user_id', $studentId)
             ->where('attendances.attended', true)
+            ->when($yearId, fn ($q) => $q->where('attendances.academic_year_id', $yearId))
             ->whereNull('attendances.deleted_at')
             ->whereNull('field_sessions.deleted_at')
             ->select(
@@ -1290,6 +1309,7 @@ class HourAccumulatorService
             ->join('attendance_activities', 'media.model_id', '=', 'attendance_activities.id')
             ->join('attendances', 'attendance_activities.attendance_id', '=', 'attendances.id')
             ->where('attendances.user_id', $studentId)
+            ->when($yearId, fn ($q) => $q->where('attendances.academic_year_id', $yearId))
             ->where('media.model_type', 'App\\Models\\AttendanceActivity')
             ->whereNull('attendance_activities.deleted_at')
             ->whereNull('attendances.deleted_at')
@@ -1376,6 +1396,7 @@ class HourAccumulatorService
                     $nextSession = DB::table('field_sessions')
                         ->join('field_session_statuses', 'field_sessions.status_id', '=', 'field_session_statuses.id')
                         ->whereIn('field_sessions.user_id', $teacherIds)
+                        ->when($yearId, fn ($q) => $q->where('field_sessions.academic_year_id', $yearId))
                         ->where('field_session_statuses.name', 'planned')
                         ->where('field_sessions.start_datetime', '>', now())
                         ->whereNull('field_sessions.deleted_at')
@@ -1414,7 +1435,7 @@ class HourAccumulatorService
      *
      * @return array{projected_date: string|null, days_remaining: int|null, is_on_track: bool}
      */
-    protected function calculateClosureProjection(int $studentId, float $quota, float $currentHours): array
+    protected function calculateClosureProjection(int $studentId, float $quota, float $currentHours, ?int $yearId = null): array
     {
         if ($currentHours >= $quota) {
             return [
@@ -1429,6 +1450,7 @@ class HourAccumulatorService
             ->join('field_sessions', 'attendances.field_session_id', '=', 'field_sessions.id')
             ->where('attendances.user_id', $studentId)
             ->where('attendances.attended', true)
+            ->when($yearId, fn ($q) => $q->where('attendances.academic_year_id', $yearId))
             ->whereNull('attendances.deleted_at')
             ->whereNull('field_sessions.deleted_at')
             ->orderBy('field_sessions.start_datetime')

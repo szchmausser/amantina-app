@@ -163,6 +163,7 @@ export interface TeacherDashboardData {
         name: string;
         requiredHours: number;
     } | null;
+    availableYears: { id: number; name: string; isActive: boolean }[];
     sections: EnhancedSectionProgress[];
     ownSessions: {
         total: number;
